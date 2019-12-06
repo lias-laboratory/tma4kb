@@ -31,6 +31,15 @@ public interface QueryFactory {
      * @return the resulting query
      */
     Query createQuery(String rdfQuery);
+    
+    /**
+     * Creates a subquery of a query
+     * 
+     * @param rdfQuery string of the subquery
+     * @param initialQuery the intial query
+     * @return a new query
+     */
+    Query createQuery(String rdfQuery, Query initialQuery);
 
 
     /**

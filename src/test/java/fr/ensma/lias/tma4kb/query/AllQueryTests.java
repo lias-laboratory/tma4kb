@@ -29,6 +29,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(value = { 
 	QueryTest.class, 
-	TriplePatternTest.class})
+	TriplePatternTest.class,
+	BaselineTest.class})
 public class AllQueryTests {
 }

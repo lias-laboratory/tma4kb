@@ -20,6 +20,7 @@
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Stephane JEAN
@@ -48,5 +49,59 @@ public interface Query {
 	 * @return the triple patterns of the query
 	 */
 	List<TriplePattern> getTriplePatterns();
+	
+    /**
+     * Add a triple pattern to this query
+     * 
+     * @param tp the added triple pattern
+     */
+    void addTriplePattern(TriplePattern tp);
+    
+    /**
+     * Remove the input triple pattern from this query
+     * 
+     * @param the triple pattern to remove
+     */
+    void removeTriplePattern(TriplePattern t);
+    
+    /**
+     * Get all the subqueries of this query
+     * @return the subqueries of this query
+     */
+    List<Query> getSubQueries();
+    
+    /**
+     * Get all the superqueries of this query
+     * @return the superqueries of this query
+     */
+    List<Query> getSuperQueries();
+    
+    /**
+     * Return true if this query is empty
+     * @return true if this query is empty
+     */
+    boolean isTheEmptyQuery();
+	
+    /**
+     * Return the current MFISs of this query
+     * 
+     * @return the MFISs of this query
+     */
+    Set<Query> getAllMFIS();
+
+    /**
+     * Return the current XSSs of this query
+     * 
+     * @return the XSSs of this query
+     */
+    Set<Query> getAllXSS();
+    
+    /**
+     * Run the Baseline algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+    void runBaseline(Session session, int k);
 
 }

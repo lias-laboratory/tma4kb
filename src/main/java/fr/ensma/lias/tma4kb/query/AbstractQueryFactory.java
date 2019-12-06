@@ -27,14 +27,21 @@ import org.aeonbits.owner.ConfigFactory;
  */
 public abstract class AbstractQueryFactory implements QueryFactory {
 
-    private TMA4KBConfig config;
+	private TMA4KBConfig config;
 
-    public AbstractQueryFactory() {
-    	config = ConfigFactory.create(TMA4KBConfig.class);
-    }
+	public AbstractQueryFactory() {
+		config = ConfigFactory.create(TMA4KBConfig.class);
+	}
 
-    protected TMA4KBConfig getConfig() {
-    	return this.config;
-    }
+	protected TMA4KBConfig getConfig() {
+		return this.config;
+	}
+
+	@Override
+	public Query createQuery(String rdfQuery, Query initialQuery) {
+		final Query createQuery = this.createQuery(rdfQuery);
+		((AbstractQuery) createQuery).setInitialQuery(initialQuery);
+		return createQuery;
+	}
 
 }

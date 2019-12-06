@@ -20,15 +20,17 @@
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stéphane JEAN
  * @author Ibrahim DELLAL
  */
 public abstract class AbstractQuery implements Query {
-
 
 	/**
 	 * Factory to create other queries
@@ -55,14 +57,27 @@ public abstract class AbstractQuery implements Query {
 	 */
 	protected int nbTriplePatterns;
 
+	/**
+	 * List of the MFIS of this query
+	 */
+	public Set<Query> allMFIS;
+
+	/**
+	 * List of the XSS of this query
+	 */
+	public Set<Query> allXSS;
+
+	/**
+	 * Most queries will be created during the execution of algorithms the
+	 * newInitialQuery represents the query on which algorithms was executed
+	 */
+	protected Query initialQuery;
 
 	/**
 	 * Builds a query from its string and a reference to its factory
 	 * 
-	 * @param factory
-	 *            a factory to create some queries
-	 * @param query
-	 *            the string of this query
+	 * @param factory a factory to create some queries
+	 * @param query the string of this query
 	 */
 	public AbstractQuery(QueryFactory factory, String query) {
 		this.factory = factory;
@@ -94,7 +109,6 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -122,6 +136,34 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
+	public Set<Query> getAllMFIS() {
+		return this.allMFIS;
+	}
+
+	@Override
+	public Set<Query> getAllXSS() {
+		return this.allXSS;
+	}
+
+	/**
+	 * Get the initial query on which algorithms was executed
+	 * 
+	 * @return
+	 */
+	public Query getInitialQuery() {
+		return this.initialQuery;
+	}
+
+	/**
+	 * Set the initial query on which algorithms was executed
+	 * 
+	 * @param query the initial query on which algorithms was executed
+	 */
+	public void setInitialQuery(Query query) {
+		this.initialQuery = query;
+	}
+
+	@Override
 	public List<TriplePattern> getTriplePatterns() {
 		return triplePatterns;
 	}
@@ -131,6 +173,7 @@ public abstract class AbstractQuery implements Query {
 		return rdfQuery;
 	}
 
+	@Override
 	public boolean isTheEmptyQuery() {
 		return nbTriplePatterns == 0;
 	}
@@ -138,12 +181,12 @@ public abstract class AbstractQuery implements Query {
 	@Override
 	public boolean isFailing(Session session, int k) {
 		if (isTheEmptyQuery())
-			return true; // TODO check that this is the behaviour that we want
+			return false;
 		return isFailingAux(session, k);
 	}
 
 	protected abstract boolean isFailingAux(Session session, int k);
-	
+
 	/**
 	 * Check whether a query includes another one
 	 * 
@@ -157,7 +200,7 @@ public abstract class AbstractQuery implements Query {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Check whether this query includes a triple pattern
 	 * 
@@ -170,5 +213,140 @@ public abstract class AbstractQuery implements Query {
 		return true;
 	}
 
+	protected String toSimpleString(Query initialQuery) {
+		TriplePattern temp;
+		String res = "";
+		for (int i = 0; i < triplePatterns.size(); i++) {
+			if (i > 0)
+				res += " ^ ";
+			temp = triplePatterns.get(i);
+			if (initialQuery != null)
+				res += "t" + (initialQuery.getTriplePatterns().indexOf(temp) + 1);
+		}
+		return res;
+	}
+
+	public List<Query> getSubQueries() {
+		List<Query> res = new ArrayList<Query>();
+		for (TriplePattern tp : getTriplePatterns()) {
+			Query qNew = factory.createQuery(toString(),initialQuery);
+			qNew.removeTriplePattern(tp);
+			res.add(qNew);
+		}
+		return res;
+	}
+
+	public List<Query> getSuperQueries() {
+		List<Query> res = new ArrayList<Query>();
+		for (TriplePattern tp : initialQuery.getTriplePatterns()) {
+			if (!includes(tp)) {
+				Query qNew = factory.createQuery(toString());
+				qNew.addTriplePattern(tp);
+				res.add(qNew);
+			}
+		}
+		return res;
+	}
+	
+	@Override
+	public void addTriplePattern(TriplePattern tp) {
+		triplePatterns.add(tp);
+		nbTriplePatterns++;
+		rdfQuery = computeRDFQuery(triplePatterns);
+	}
+	
+	@Override
+	public void removeTriplePattern(TriplePattern t) {
+		triplePatterns.remove(t);
+		nbTriplePatterns--;
+		rdfQuery = computeRDFQuery(triplePatterns);
+	}
+	
+	/**
+	 * Computes the string of this query from a list of triple patterns
+	 * 
+	 * @param listTP
+	 *            a list of triple patterns
+	 * @return the string of this query
+	 */
+	private String computeRDFQuery(List<TriplePattern> listTP) {
+		String res = "";
+		int nbTPs = listTP.size();
+		if (nbTPs > 0) {
+			res = "SELECT * WHERE { ";
+			for (int i = 0; i < nbTPs; i++) {
+				if (i > 0)
+					res += " . ";
+				res += listTP.get(i).toString();
+			}
+			res += " }";
+		}
+		return res;
+	}
+	
+	/**
+	 * 
+	 * @param executedQueries a cache of already executed queries
+	 * @param s connection to the KB
+	 * @return true iff this query is failing
+	 */
+	private boolean isFailingForDFS(Map<Query, Boolean> executedQueries, Session s, int k) {
+		if (this.equals(this.getInitialQuery())) {
+			executedQueries.put(this, true);
+			return true;
+		}
+		Boolean val = executedQueries.get(this);
+		if (val == null) {
+			val = isFailing(s, k);
+			executedQueries.put(this, val);
+		}
+		return val;
+	}
+
+	@Override
+	public void runBaseline(Session session, int k) {
+		System.out.println("===================== RUN Baseline ==================");
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			//System.out.println("Process " + (((AbstractQuery) qTemp).toSimpleString(initialQuery)));
+			List<Query> subqueries = qTemp.getSubQueries();
+			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
+				// this is a potential MFS
+				// System.out.println("potential mfs");
+				boolean isMFIS = true;
+				for (Query subquery : subqueries) {
+					if (((AbstractQuery) subquery).isFailingForDFS(executedQueries, session, k))
+						isMFIS = false;
+				}
+				if (isMFIS)
+					allMFIS.add(qTemp);
+			} else { // Potential XSS
+				List<Query> superqueries = qTemp.getSuperQueries();
+				boolean isXSS = true;
+				for (Query superquery : superqueries) {
+					if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
+						isXSS = false;
+				}
+				if (isXSS && !qTemp.isTheEmptyQuery())
+					allXSS.add(qTemp);
+			}
+			for (Query subquery : subqueries) {
+				if (!markedQueries.containsKey(subquery)) {
+					markedQueries.put(subquery, true);
+					//System.out.println("Add " + ((AbstractQuery)subquery).toSimpleString(initialQuery));
+					listQuery.add(subquery);
+				}
+			}
+		}
+	}
 
 }

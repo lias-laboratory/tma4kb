@@ -45,6 +45,8 @@ public class HSQLDBQuery extends AbstractQuery {
 			Statement stmt = ((HSQLDBSession) session).getConnection().createStatement();
 			ResultSet rset = stmt.executeQuery(toNativeQuery());
 			session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
+			System.out.println("exécution de " + this.toSimpleString(initialQuery));
+			System.out.println("exécution de " + this);
 			// This code is probably not efficient
 			// since it's only used for test issue, it's fine
 			for (int i=0 ; i < k ; i++) {
