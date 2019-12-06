@@ -229,7 +229,7 @@ public abstract class AbstractQuery implements Query {
 	public List<Query> getSubQueries() {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : getTriplePatterns()) {
-			Query qNew = factory.createQuery(toString(),initialQuery);
+			Query qNew = factory.createQuery(toString(), initialQuery);
 			qNew.removeTriplePattern(tp);
 			res.add(qNew);
 		}
@@ -247,26 +247,25 @@ public abstract class AbstractQuery implements Query {
 		}
 		return res;
 	}
-	
+
 	@Override
 	public void addTriplePattern(TriplePattern tp) {
 		triplePatterns.add(tp);
 		nbTriplePatterns++;
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
-	
+
 	@Override
 	public void removeTriplePattern(TriplePattern t) {
 		triplePatterns.remove(t);
 		nbTriplePatterns--;
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
-	
+
 	/**
 	 * Computes the string of this query from a list of triple patterns
 	 * 
-	 * @param listTP
-	 *            a list of triple patterns
+	 * @param listTP a list of triple patterns
 	 * @return the string of this query
 	 */
 	private String computeRDFQuery(List<TriplePattern> listTP) {
@@ -283,7 +282,7 @@ public abstract class AbstractQuery implements Query {
 		}
 		return res;
 	}
-	
+
 	/**
 	 * 
 	 * @param executedQueries a cache of already executed queries
@@ -313,24 +312,29 @@ public abstract class AbstractQuery implements Query {
 		List<Query> listQuery = new ArrayList<Query>();
 		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			//System.out.println("Process " + (((AbstractQuery) qTemp).toSimpleString(initialQuery)));
+			// System.out.println("Process " + (((AbstractQuery)
+			// qTemp).toSimpleString(initialQuery)));
 			List<Query> subqueries = qTemp.getSubQueries();
+			List<Query> superqueries = qTemp.getSuperQueries();
 			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
 				// this is a potential MFS
 				// System.out.println("potential mfs");
-				boolean isMFIS = true;
-				for (Query subquery : subqueries) {
-					if (((AbstractQuery) subquery).isFailingForDFS(executedQueries, session, k))
-						isMFIS = false;
+				boolean isAnFIS = true;
+				while (isAnFIS && !subqueries.isEmpty()) {
+					Query superquery = superqueries.remove(0);
+					if (!listFIS.containsKey(superquery)) {
+						isAnFIS = false;
+					}
 				}
-				if (isMFIS)
-					allMFIS.add(qTemp);
+                if (isAnFIS) 
+                	listFIS.put(this, true);
 			} else { // Potential XSS
-				List<Query> superqueries = qTemp.getSuperQueries();
+
 				boolean isXSS = true;
 				for (Query superquery : superqueries) {
 					if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
@@ -342,10 +346,19 @@ public abstract class AbstractQuery implements Query {
 			for (Query subquery : subqueries) {
 				if (!markedQueries.containsKey(subquery)) {
 					markedQueries.put(subquery, true);
-					//System.out.println("Add " + ((AbstractQuery)subquery).toSimpleString(initialQuery));
+					// System.out.println("Add " +
+					// ((AbstractQuery)subquery).toSimpleString(initialQuery));
 					listQuery.add(subquery);
 				}
 			}
+			// compute the list of MFIS from the list of FIS
+			for (Query fis : listFIS.keySet()) {
+				boolean isAnMFIS = true;
+				// TODO
+			}
+			
+				
+			
 		}
 	}
 
