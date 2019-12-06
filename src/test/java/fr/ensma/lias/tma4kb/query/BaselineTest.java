@@ -36,12 +36,12 @@ public class BaselineTest {
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
 		q.runBaseline(instance, 3);
-		/*for (Query mfis : q.getAllMFIS()) {
+		for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
 		}
 		for (Query xss : q.getAllXSS()) {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
-		}*/
+		}
 		
 		assertEquals(14, instance.getExecutedQueryCount());
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));

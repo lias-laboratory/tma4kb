@@ -304,7 +304,7 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runBaseline(Session session, int k) {
-		System.out.println("===================== RUN Baseline ==================");
+		//System.out.println("===================== RUN Baseline ==================");
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -317,22 +317,22 @@ public abstract class AbstractQuery implements Query {
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			// System.out.println("Process " + (((AbstractQuery)
-			// qTemp).toSimpleString(initialQuery)));
+			//System.out.println("Process " + (((AbstractQuery)
+			 //qTemp).toSimpleString(initialQuery)));
 			List<Query> subqueries = qTemp.getSubQueries();
 			List<Query> superqueries = qTemp.getSuperQueries();
 			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
 				// this is a potential MFS
 				// System.out.println("potential mfs");
 				boolean isAnFIS = true;
-				while (isAnFIS && !subqueries.isEmpty()) {
+				while (isAnFIS && !superqueries.isEmpty()) {
 					Query superquery = superqueries.remove(0);
 					if (!listFIS.containsKey(superquery)) {
 						isAnFIS = false;
 					}
 				}
                 if (isAnFIS) 
-                	listFIS.put(this, true);
+                	listFIS.put(qTemp, true);
 			} else { // Potential XSS
 
 				boolean isXSS = true;
@@ -350,16 +350,29 @@ public abstract class AbstractQuery implements Query {
 					// ((AbstractQuery)subquery).toSimpleString(initialQuery));
 					listQuery.add(subquery);
 				}
-			}
-			// compute the list of MFIS from the list of FIS
-			for (Query fis : listFIS.keySet()) {
-				boolean isAnMFIS = true;
-				// TODO
-			}
-			
-				
+			}	
 			
 		}
-	}
+		// compute the list of MFIS from the list of FIS
+		allMFIS.add(initialQuery);
+		Set<Query> notMFIS = new HashSet<Query>();
+		for (Query fis : listFIS.keySet()) {
+			boolean isAnMFIS = true;
+			for (Query mfis : allMFIS) {
+				if (((AbstractQuery)mfis).includesSimple(fis)) {
+					notMFIS.add(mfis);
+				}
+				else if (((AbstractQuery)fis).includesSimple(mfis)) {
+					isAnMFIS=false;
+				}
+			}
+			if(isAnMFIS) {
+				allMFIS.add(fis);
+			}
 
+			for (Query notmfis : notMFIS) {
+				allMFIS.remove(notmfis);
+			}
+		}
+	}
 }
