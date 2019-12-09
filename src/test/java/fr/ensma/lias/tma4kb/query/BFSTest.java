@@ -15,7 +15,7 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 public class BFSTest {
 
 	@Test
-	public void testBaseline() throws Exception {
+	public void testBFS() throws Exception {
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
 		final Session instance = currentQueryFactory.createSession(); 
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);

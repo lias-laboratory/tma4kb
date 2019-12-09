@@ -332,8 +332,15 @@ public abstract class AbstractQuery implements Query {
 						isAnFIS = false;
 					}
 				}
-                if (isAnFIS) 
+                if (isAnFIS) {
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
                 	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                }
 			} else { // Potential XSS
 
 				boolean isXSS = true;
@@ -353,20 +360,6 @@ public abstract class AbstractQuery implements Query {
 				}
 			}	
 			
-		}
-		// compute the list of MFIS from the list of FIS
-		allMFIS.add(initialQuery);
-		Set<Query> notMFIS = new HashSet<Query>();
-		for (Query fis : listFIS.keySet()) {
-			for (Query mfis : allMFIS) {
-				if (((AbstractQuery)mfis).includesSimple(fis)) {
-					notMFIS.add(mfis);
-				}
-			}
-			for (Query notmfis : notMFIS) {
-				allMFIS.remove(notmfis);
-			}
-			allMFIS.add(fis);
 		}
 	}
 	@Override
@@ -398,8 +391,15 @@ public abstract class AbstractQuery implements Query {
 						isAnFIS = false;
 					}
 				}
-                if (isAnFIS) 
+				if (isAnFIS) {
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
                 	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                }
 			} else { // Potential XSS
 
 				boolean isXSS = true;
@@ -428,20 +428,6 @@ public abstract class AbstractQuery implements Query {
 				}
 			}
 			
-		}
-		// compute the list of MFIS from the list of FIS
-		allMFIS.add(initialQuery);
-		Set<Query> notMFIS = new HashSet<Query>();
-		for (Query fis : listFIS.keySet()) {
-			for (Query mfis : allMFIS) {
-				if (((AbstractQuery)mfis).includesSimple(fis)) {
-					notMFIS.add(mfis);
-				}
-			}
-			for (Query notmfis : notMFIS) {
-				allMFIS.remove(notmfis);
-			}
-			allMFIS.add(fis);
 		}
 	}
 }
