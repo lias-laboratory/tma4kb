@@ -77,6 +77,12 @@ public interface Query {
     List<Query> getSuperQueries();
     
     /**
+     * Get all the subqueries of this query, which are superqueries of base
+     * @return the subqueries of this query, which are superqueries of base
+     */
+	List<Query> getBaseSubQueries(Query base);
+    
+    /**
      * Return true if this query is empty
      * @return true if this query is empty
      */
@@ -111,5 +117,27 @@ public interface Query {
      * @param k maximum number of results
      */
     void runBFS(Session session, int k);
+
+    /**
+     * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
+     * 
+     * @param session connection to the KB
+     */
+	void findQbase(Session instance);
+
+	/**
+     * Use local cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
+     * 
+     * @param session connection to the KB
+     */
+	void findQbaseLocal(Session instance);
+	
+	/**
+     * Run the CardAlgo algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+    void runCardAlgo(Session session, int k,Query q);
 
 }

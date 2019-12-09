@@ -69,9 +69,15 @@ public abstract class AbstractQuery implements Query {
 
 	/**
 	 * Most queries will be created during the execution of algorithms the
-	 * newInitialQuery represents the query on which algorithms was executed
+	 * initialQuery represents the query on which algorithms was executed
 	 */
 	protected Query initialQuery;
+	
+	/**
+	 * baseQuery is the starting point for CardAlgo
+	 * This is the conjunction of triple patterns with predicates having maxCard = 1
+	 */
+	protected Query baseQuery;
 
 	/**
 	 * Builds a query from its string and a reference to its factory
@@ -220,8 +226,10 @@ public abstract class AbstractQuery implements Query {
 			if (i > 0)
 				res += " ^ ";
 			temp = triplePatterns.get(i);
-			if (initialQuery != null)
+			if (initialQuery != null) {
 				res += "t" + (initialQuery.getTriplePatterns().indexOf(temp) + 1);
+			}
+		
 		}
 		return res;
 	}
@@ -235,12 +243,24 @@ public abstract class AbstractQuery implements Query {
 		}
 		return res;
 	}
+	
+	public List<Query> getBaseSubQueries(Query base) {
+		List<Query> res = new ArrayList<Query>();
+		for (TriplePattern tp : getTriplePatterns()) {
+			if (!((AbstractQuery)base).includes(tp)) {
+				Query qNew = factory.createQuery(toString(), initialQuery);
+				qNew.removeTriplePattern(tp);
+				res.add(qNew);
+			}
+		}
+		return res;
+	}
 
 	public List<Query> getSuperQueries() {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : initialQuery.getTriplePatterns()) {
 			if (!includes(tp)) {
-				Query qNew = factory.createQuery(toString());
+				Query qNew = factory.createQuery(toString(),initialQuery);
 				qNew.addTriplePattern(tp);
 				res.add(qNew);
 			}
@@ -429,5 +449,109 @@ public abstract class AbstractQuery implements Query {
 			}
 			
 		}
+	}
+
+	@Override
+	public void findQbase(Session instance) {
+		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		for (TriplePattern t : this.getTriplePatterns()) {
+			if (t.getCardMax() > 1)
+				baseQuery.removeTriplePattern(t);
+		}
+	}
+	
+	@Override
+	public void findQbaseLocal(Session instance) {
+		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		do {
+			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
+			for (TriplePattern t : this.getTriplePatterns()) {
+				if (t.getCardMax(currentQuery) > 1)
+					baseQuery.removeTriplePattern(t);
+			}
+		} while (!baseQuery.equals(currentQuery));
+	}
+	
+	@Override	
+	public void runCardAlgo(Session session, int k, Query q) {
+		//System.out.println("===================== RUN CardAlgo ==================");
+				Set <Query> allMFISbase = new HashSet<Query>();
+				allMFIS = new HashSet<Query>();
+				allXSS = new HashSet<Query>();
+				session.clearExecutedQueryCount();
+				initialQuery = this;
+				//findQbase(session);
+				baseQuery=q;
+				List<Query> listQuery = new ArrayList<Query>();
+				Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+				Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+				Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+				markedQueries.put(this, true);
+				listQuery.add(this);
+				while (!listQuery.isEmpty()) {
+					Query qTemp = listQuery.remove(0);
+					System.out.println("Process " + (((AbstractQuery)
+					 qTemp).toSimpleString(initialQuery)));
+					List<Query> subqueries = qTemp.getBaseSubQueries(baseQuery); 
+					List<Query> superqueries = qTemp.getSuperQueries();
+					if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
+						// this is a potential MFS
+						// System.out.println("potential mfs");
+						boolean isAnFIS = true;
+						while (isAnFIS && !superqueries.isEmpty()) {
+							Query superquery = superqueries.remove(0);
+							if (!listFIS.containsKey(superquery)) {
+								isAnFIS = false;
+							}
+						}
+						if (isAnFIS) {
+		                	for (Query fis : listFIS.keySet()) {
+		                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+		                			allMFISbase.remove(fis);
+		                		}
+		                	}
+		                	listFIS.put(qTemp, true);
+		                	allMFISbase.add(qTemp);
+		                }
+					} else { // Potential XSS
+
+						boolean isXSS = true;
+						for (Query superquery : superqueries) {
+							if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
+								isXSS = false;
+						}
+						if (isXSS && !qTemp.isTheEmptyQuery())
+							allXSS.add(qTemp);
+						for (Query subquery : subqueries) {
+							if (executedQueries.get(subquery)==null) {
+								// We are not interested in any queries that have a succeeding superquery.
+								// We put that any such query succeeds (this may not be the case) to avoid executing them. 
+								executedQueries.put(subquery, false); 
+								//System.out.println("Avoid " +
+									//((AbstractQuery)subquery).toSimpleString(initialQuery));
+							}
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							System.out.println("Add " +
+							((AbstractQuery)subquery).toSimpleString(initialQuery));
+							listQuery.add(subquery);
+						}
+					}
+					
+				}
+
+				System.out.println(this.toString());
+				for (Query mfisb:allMFISbase) {
+					Query mfis = (AbstractQuery) factory.createQuery(mfisb.toString(),initialQuery);
+					for (TriplePattern t: baseQuery.getTriplePatterns()) {
+						mfis.removeTriplePattern(t);
+					}
+					allMFIS.add(mfis);
+				}
+				System.out.println(this.toString());
 	}
 }

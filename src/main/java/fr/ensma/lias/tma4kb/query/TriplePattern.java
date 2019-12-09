@@ -58,6 +58,11 @@ public class TriplePattern {
 	 * indice of this triple pattern in a query
 	 */
 	private int indiceInQuery;
+	
+	/**
+	 * global maximum cardiniality of the predicate 
+	 */
+	private Integer cardMax;
 
 	/**
 	 * Get the subject of this triple pattern
@@ -297,6 +302,25 @@ public class TriplePattern {
 		if (!valWhere.isEmpty())
 			res += " where " + listWithSeparator(valWhere, " and ");
 		return res;
+	}
+
+	/**
+	 * Computes global maximum cardinality of the predicate
+	 * @return global maximum cardinality of the predicate
+	 */
+	public int getCardMax() {
+		//TODO
+		return cardMax;
+	}
+
+	/**
+	 * Computes local maximum cardinality of the predicate in the domain of q
+	 * @param Query q
+	 * @return local maximum cardinality of the predicate in the domain of q
+	 */
+	public int getCardMax(Query q) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
