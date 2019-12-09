@@ -15,8 +15,7 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 
 public class CardinalityTest {
 
-	/*@Test
-	public void testFindQbase() throws Exception {
+	@Test	public void testFindQbase() throws Exception {
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
 		final Session instance = currentQueryFactory.createSession(); 
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
@@ -31,7 +30,9 @@ public class CardinalityTest {
 		
 		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
 	}
-	*/
+	
+	
+	
 	@Test
 	public void testCardAlgo() throws Exception {
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();

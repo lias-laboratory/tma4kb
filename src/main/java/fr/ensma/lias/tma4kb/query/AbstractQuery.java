@@ -309,7 +309,7 @@ public abstract class AbstractQuery implements Query {
 	 * @param s connection to the KB
 	 * @return true iff this query is failing
 	 */
-	private boolean isFailingForDFS(Map<Query, Boolean> executedQueries, Session s, int k) {
+	private boolean isFailing(Map<Query, Boolean> executedQueries, Session s, int k) {
 		if (this.equals(this.getInitialQuery())) {
 			executedQueries.put(this, true);
 			return true;
@@ -342,7 +342,7 @@ public abstract class AbstractQuery implements Query {
 			 //qTemp).toSimpleString(initialQuery)));
 			List<Query> subqueries = qTemp.getSubQueries();
 			List<Query> superqueries = qTemp.getSuperQueries();
-			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
+			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 				// this is a potential MFS
 				// System.out.println("potential mfs");
 				boolean isAnFIS = true;
@@ -364,9 +364,11 @@ public abstract class AbstractQuery implements Query {
 			} else { // Potential XSS
 
 				boolean isXSS = true;
-				for (Query superquery : superqueries) {
-					if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
+				while (isXSS && !superqueries.isEmpty()) {
+					Query superquery = superqueries.remove(0);
+					if (!listFIS.containsKey(superquery)) {
 						isXSS = false;
+					}
 				}
 				if (isXSS && !qTemp.isTheEmptyQuery())
 					allXSS.add(qTemp);
@@ -382,9 +384,9 @@ public abstract class AbstractQuery implements Query {
 			
 		}
 	}
+
 	@Override
 	public void runBFS(Session session, int k) {
-		//System.out.println("===================== RUN BFS ==================");
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -397,21 +399,17 @@ public abstract class AbstractQuery implements Query {
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			//System.out.println("Process " + (((AbstractQuery)
-			 //qTemp).toSimpleString(initialQuery)));
-			List<Query> subqueries = qTemp.getSubQueries();
 			List<Query> superqueries = qTemp.getSuperQueries();
-			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
-				// this is a potential MFS
-				// System.out.println("potential mfs");
-				boolean isAnFIS = true;
-				while (isAnFIS && !superqueries.isEmpty()) {
-					Query superquery = superqueries.remove(0);
-					if (!listFIS.containsKey(superquery)) {
-						isAnFIS = false;
-					}
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
 				}
-				if (isAnFIS) {
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			if (parentsFIS) {
+				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
                 			allMFIS.remove(fis);
@@ -419,35 +417,20 @@ public abstract class AbstractQuery implements Query {
                 	}
                 	listFIS.put(qTemp, true);
                 	allMFIS.add(qTemp);
+                	List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
+    				for (Query subquery : subqueries) {
+    					if (!markedQueries.containsKey(subquery)) {
+    						markedQueries.put(subquery, true);
+    						listQuery.add(subquery);
+    					}
+    				}
+    			
                 }
-			} else { // Potential XSS
-
-				boolean isXSS = true;
-				for (Query superquery : superqueries) {
-					if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
-						isXSS = false;
-				}
-				if (isXSS && !qTemp.isTheEmptyQuery())
+				else { // XSS
+				if (!qTemp.isTheEmptyQuery())
 					allXSS.add(qTemp);
-				for (Query subquery : subqueries) {
-					if (executedQueries.get(subquery)==null) {
-						// We are not interested in any queries that have a succeeding superquery.
-						// We put that any such query succeeds (this may not be the case) to avoid executing them. 
-						executedQueries.put(subquery, false); 
-						//System.out.println("Avoid " +
-							//((AbstractQuery)subquery).toSimpleString(initialQuery));
-					}
 				}
 			}
-			for (Query subquery : subqueries) {
-				if (!markedQueries.containsKey(subquery)) {
-					markedQueries.put(subquery, true);
-					//System.out.println("Add " +
-					//((AbstractQuery)subquery).toSimpleString(initialQuery));
-					listQuery.add(subquery);
-				}
-			}
-			
 		}
 	}
 
@@ -474,84 +457,62 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override	
-	public void runCardAlgo(Session session, int k, Query q) {
-		//System.out.println("===================== RUN CardAlgo ==================");
-				Set <Query> allMFISbase = new HashSet<Query>();
-				allMFIS = new HashSet<Query>();
-				allXSS = new HashSet<Query>();
-				session.clearExecutedQueryCount();
-				initialQuery = this;
-				//findQbase(session);
-				baseQuery=q;
-				List<Query> listQuery = new ArrayList<Query>();
-				Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
-				Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-				Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-				markedQueries.put(this, true);
-				listQuery.add(this);
-				while (!listQuery.isEmpty()) {
-					Query qTemp = listQuery.remove(0);
-					System.out.println("Process " + (((AbstractQuery)
-					 qTemp).toSimpleString(initialQuery)));
-					List<Query> subqueries = qTemp.getBaseSubQueries(baseQuery); 
-					List<Query> superqueries = qTemp.getSuperQueries();
-					if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
-						// this is a potential MFS
-						// System.out.println("potential mfs");
-						boolean isAnFIS = true;
-						while (isAnFIS && !superqueries.isEmpty()) {
-							Query superquery = superqueries.remove(0);
-							if (!listFIS.containsKey(superquery)) {
-								isAnFIS = false;
-							}
-						}
-						if (isAnFIS) {
-		                	for (Query fis : listFIS.keySet()) {
-		                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-		                			allMFISbase.remove(fis);
-		                		}
-		                	}
-		                	listFIS.put(qTemp, true);
-		                	allMFISbase.add(qTemp);
-		                }
-					} else { // Potential XSS
-
-						boolean isXSS = true;
-						for (Query superquery : superqueries) {
-							if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
-								isXSS = false;
-						}
-						if (isXSS && !qTemp.isTheEmptyQuery())
-							allXSS.add(qTemp);
-						for (Query subquery : subqueries) {
-							if (executedQueries.get(subquery)==null) {
-								// We are not interested in any queries that have a succeeding superquery.
-								// We put that any such query succeeds (this may not be the case) to avoid executing them. 
-								executedQueries.put(subquery, false); 
-								//System.out.println("Avoid " +
-									//((AbstractQuery)subquery).toSimpleString(initialQuery));
-							}
-						}
-					}
+	public void runCardAlgo(Session session, int k,Query q) {
+		Set <Query> allMFISbase = new HashSet<Query>();
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		//findQbase(session);
+		baseQuery=q;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			if (parentsFIS) {
+				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+					// FIS
+	            	for (Query fis : listFIS.keySet()) {
+	            		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+	            			allMFISbase.remove(fis);
+	            		}
+	            	}
+	            	listFIS.put(qTemp, true);
+	            	allMFISbase.add(qTemp);
+	            	List<Query> subqueries = qTemp.getBaseSubQueries(baseQuery); // we only study subqueries of FISs
 					for (Query subquery : subqueries) {
 						if (!markedQueries.containsKey(subquery)) {
 							markedQueries.put(subquery, true);
-							System.out.println("Add " +
-							((AbstractQuery)subquery).toSimpleString(initialQuery));
 							listQuery.add(subquery);
 						}
 					}
-					
+				
+	            }
+				else { // XSS
+				if (!qTemp.isTheEmptyQuery())
+					allXSS.add(qTemp);
 				}
-
-				System.out.println(this.toString());
-				for (Query mfisb:allMFISbase) {
-					Query mfis = (AbstractQuery) factory.createQuery(mfisb.toString(),initialQuery);
-					for (TriplePattern t: baseQuery.getTriplePatterns()) {
-						mfis.removeTriplePattern(t);
-					}
-					allMFIS.add(mfis);
-				}
-				System.out.println(this.toString());
+			}
+		}
+		System.out.println(this.toString());
+		for (Query mfisb:allMFISbase) {
+			Query mfis = (AbstractQuery) factory.createQuery(mfisb.toString(),initialQuery);
+			for (TriplePattern t: baseQuery.getTriplePatterns()) {
+				mfis.removeTriplePattern(t);
+			}
+			allMFIS.add(mfis);
+		}
 	}
 }
