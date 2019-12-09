@@ -30,6 +30,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(value = { 
 	QueryTest.class, 
 	TriplePatternTest.class,
-	BaselineTest.class})
+	BaselineTest.class,
+	BFSTest.class})
 public class AllQueryTests {
 }
