@@ -358,22 +358,15 @@ public abstract class AbstractQuery implements Query {
 		allMFIS.add(initialQuery);
 		Set<Query> notMFIS = new HashSet<Query>();
 		for (Query fis : listFIS.keySet()) {
-			boolean isAnMFIS = true;
 			for (Query mfis : allMFIS) {
 				if (((AbstractQuery)mfis).includesSimple(fis)) {
 					notMFIS.add(mfis);
 				}
-				else if (((AbstractQuery)fis).includesSimple(mfis)) {
-					isAnMFIS=false;
-				}
 			}
-			if(isAnMFIS) {
-				allMFIS.add(fis);
-			}
-
 			for (Query notmfis : notMFIS) {
 				allMFIS.remove(notmfis);
 			}
+			allMFIS.add(fis);
 		}
 	}
 	@Override
@@ -418,9 +411,11 @@ public abstract class AbstractQuery implements Query {
 					allXSS.add(qTemp);
 				for (Query subquery : subqueries) {
 					if (executedQueries.get(subquery)==null) {
-						executedQueries.put(subquery, false);
+						// We are not interested in any queries that have a succeeding superquery.
+						// We put that any such query succeeds (this may not be the case) to avoid executing them. 
+						executedQueries.put(subquery, false); 
 						//System.out.println("Avoid " +
-							//	((AbstractQuery)subquery).toSimpleString(initialQuery));
+							//((AbstractQuery)subquery).toSimpleString(initialQuery));
 					}
 				}
 			}
@@ -438,22 +433,15 @@ public abstract class AbstractQuery implements Query {
 		allMFIS.add(initialQuery);
 		Set<Query> notMFIS = new HashSet<Query>();
 		for (Query fis : listFIS.keySet()) {
-			boolean isAnMFIS = true;
 			for (Query mfis : allMFIS) {
 				if (((AbstractQuery)mfis).includesSimple(fis)) {
 					notMFIS.add(mfis);
 				}
-				else if (((AbstractQuery)fis).includesSimple(mfis)) {
-					isAnMFIS=false;
-				}
 			}
-			if(isAnMFIS) {
-				allMFIS.add(fis);
-			}
-
 			for (Query notmfis : notMFIS) {
 				allMFIS.remove(notmfis);
 			}
+			allMFIS.add(fis);
 		}
 	}
 }
