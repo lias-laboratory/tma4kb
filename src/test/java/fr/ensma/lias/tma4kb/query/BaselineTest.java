@@ -35,7 +35,8 @@ public class BaselineTest {
 		expectedXSS.add(t1t2t3);
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
-		q.runBaseline(instance, 3);
+		//q.runBaseline(instance, 3);
+		q.runBFS(instance, 3);
 		for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
 		}
@@ -43,7 +44,8 @@ public class BaselineTest {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
 		}
 		
-		assertEquals(14, instance.getExecutedQueryCount());
+		//assertEquals(14, instance.getExecutedQueryCount()); // for Baseline
+		assertEquals(8, instance.getExecutedQueryCount()); // for BFS
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
 		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));

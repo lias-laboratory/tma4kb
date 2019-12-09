@@ -103,5 +103,13 @@ public interface Query {
      * @param k maximum number of results
      */
     void runBaseline(Session session, int k);
+    
+    /**
+     * Run the BFS algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+    void runBFS(Session session, int k);
 
 }

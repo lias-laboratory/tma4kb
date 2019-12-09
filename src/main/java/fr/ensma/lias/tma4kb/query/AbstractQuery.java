@@ -297,6 +297,7 @@ public abstract class AbstractQuery implements Query {
 		Boolean val = executedQueries.get(this);
 		if (val == null) {
 			val = isFailing(s, k);
+			//System.out.println("Execute " + (this.toSimpleString(initialQuery)));
 			executedQueries.put(this, val);
 		}
 		return val;
@@ -351,6 +352,86 @@ public abstract class AbstractQuery implements Query {
 					listQuery.add(subquery);
 				}
 			}	
+			
+		}
+		// compute the list of MFIS from the list of FIS
+		allMFIS.add(initialQuery);
+		Set<Query> notMFIS = new HashSet<Query>();
+		for (Query fis : listFIS.keySet()) {
+			boolean isAnMFIS = true;
+			for (Query mfis : allMFIS) {
+				if (((AbstractQuery)mfis).includesSimple(fis)) {
+					notMFIS.add(mfis);
+				}
+				else if (((AbstractQuery)fis).includesSimple(mfis)) {
+					isAnMFIS=false;
+				}
+			}
+			if(isAnMFIS) {
+				allMFIS.add(fis);
+			}
+
+			for (Query notmfis : notMFIS) {
+				allMFIS.remove(notmfis);
+			}
+		}
+	}
+	@Override
+	public void runBFS(Session session, int k) {
+		//System.out.println("===================== RUN BFS ==================");
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			//System.out.println("Process " + (((AbstractQuery)
+			 //qTemp).toSimpleString(initialQuery)));
+			List<Query> subqueries = qTemp.getSubQueries();
+			List<Query> superqueries = qTemp.getSuperQueries();
+			if (((AbstractQuery) qTemp).isFailingForDFS(executedQueries, session, k)) {
+				// this is a potential MFS
+				// System.out.println("potential mfs");
+				boolean isAnFIS = true;
+				while (isAnFIS && !superqueries.isEmpty()) {
+					Query superquery = superqueries.remove(0);
+					if (!listFIS.containsKey(superquery)) {
+						isAnFIS = false;
+					}
+				}
+                if (isAnFIS) 
+                	listFIS.put(qTemp, true);
+			} else { // Potential XSS
+
+				boolean isXSS = true;
+				for (Query superquery : superqueries) {
+					if (!((AbstractQuery) superquery).isFailingForDFS(executedQueries, session, k))
+						isXSS = false;
+				}
+				if (isXSS && !qTemp.isTheEmptyQuery())
+					allXSS.add(qTemp);
+				for (Query subquery : subqueries) {
+					if (executedQueries.get(subquery)==null) {
+						executedQueries.put(subquery, false);
+						//System.out.println("Avoid " +
+							//	((AbstractQuery)subquery).toSimpleString(initialQuery));
+					}
+				}
+			}
+			for (Query subquery : subqueries) {
+				if (!markedQueries.containsKey(subquery)) {
+					markedQueries.put(subquery, true);
+					//System.out.println("Add " +
+					//((AbstractQuery)subquery).toSimpleString(initialQuery));
+					listQuery.add(subquery);
+				}
+			}
 			
 		}
 		// compute the list of MFIS from the list of FIS
