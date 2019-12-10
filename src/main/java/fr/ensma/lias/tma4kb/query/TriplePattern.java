@@ -60,12 +60,31 @@ public class TriplePattern {
 	private int indiceInQuery;
 	
 	/**
-	 * global maximum cardiniality of the predicate 
+	 * global maximum cardinality of the predicate 
 	 */
 	private Integer cardMax;
 	
 	public void setCardMax(int card) {
 		cardMax=card;
+	}
+
+	/**
+	 * Computes global maximum cardinality of the predicate
+	 * @return global maximum cardinality of the predicate
+	 */
+	public int getCardMax() {
+		//TODO
+		return cardMax;
+	}
+
+	/**
+	 * Computes local maximum cardinality of the predicate in the domain of q
+	 * @param Query q
+	 * @return local maximum cardinality of the predicate in the domain of q
+	 */
+	public int getCardMax(Query q) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	/**
@@ -307,26 +326,5 @@ public class TriplePattern {
 			res += " where " + listWithSeparator(valWhere, " and ");
 		return res;
 	}
-
-	/**
-	 * Computes global maximum cardinality of the predicate
-	 * @return global maximum cardinality of the predicate
-	 */
-	public int getCardMax() {
-		//TODO
-		return cardMax;
-	}
-
-	/**
-	 * Computes local maximum cardinality of the predicate in the domain of q
-	 * @param Query q
-	 * @return local maximum cardinality of the predicate in the domain of q
-	 */
-	public int getCardMax(Query q) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
 
 }

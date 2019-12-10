@@ -191,6 +191,13 @@ public abstract class AbstractQuery implements Query {
 		return isFailingAux(session, k);
 	}
 
+	/**
+	 * Checks whether this query has too many answers or not
+	 * 
+	 * @param s the connection to the triplestore
+	 * @param k the number maximum of answers
+	 * @return true is the result if this query has too many answers
+	 */
 	protected abstract boolean isFailingAux(Session session, int k);
 
 	/**
@@ -219,6 +226,11 @@ public abstract class AbstractQuery implements Query {
 		return true;
 	}
 
+	/**
+	 * Creates a string representation of a query in the shape ti^tj^...^tk
+	 * 
+	 * @return the string representation of the query
+	 */
 	protected String toSimpleString(Query initialQuery) {
 		TriplePattern temp;
 		String res = "";
@@ -234,6 +246,11 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 
+	/**
+	 * Computes the direct subqueries of this query
+	 * 
+	 * @return the list of direct subqueries of the query
+	 */
 	public List<Query> getSubQueries() {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : getTriplePatterns()) {
@@ -244,6 +261,12 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 	
+	/**
+	 * Computes the direct subqueries of this query that are superqueries of the base query
+	 * 
+	 * @param the base query
+	 * @return the list of direct subqueries of this query that are superqueries of the base query
+	 */
 	public List<Query> getBaseSubQueries(Query base) {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : getTriplePatterns()) {
@@ -256,6 +279,11 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 
+	/**
+	 * Computes the direct superqueries of this query
+	 * 
+	 * @return the list of direct superqueries of the query
+	 */
 	public List<Query> getSuperQueries() {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : initialQuery.getTriplePatterns()) {
@@ -433,7 +461,7 @@ public abstract class AbstractQuery implements Query {
 	@Override
 	public void findQbase(Session instance) throws Exception {
 		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
-		c.computeCardinalities(this);
+		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
 			if (t.getCardMax() > 1)

@@ -32,7 +32,7 @@ public interface Query {
 	 * 
 	 * @param s the connection to the triplestore
 	 * @param k the number maximum of answers
-	 * @return true is the result of this query has too many answers
+	 * @return true is the result if this query has too many answers
 	 */
 	boolean isFailing(Session session, int k);
 	

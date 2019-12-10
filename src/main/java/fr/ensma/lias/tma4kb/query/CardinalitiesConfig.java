@@ -5,6 +5,9 @@ import org.aeonbits.owner.Config.Sources;
 
 @Sources("classpath:cardinalities.config")
 public interface CardinalitiesConfig extends Config {
+	/**
+	 * This interface creates a correspondence between fields in a .config file and functions used in the project 
+	 */
 	
 	@Key("type.max")
 	 Integer typeMax();

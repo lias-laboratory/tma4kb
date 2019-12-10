@@ -8,8 +8,14 @@ import org.aeonbits.owner.ConfigFactory;
 
 public class ComputeCardinalitiesConfig {
 
-	
-    public void computeCardinalities(Query query) throws Exception {
+/**
+ * Calculates maximum cardinalities of the predicates of all triple patterns of a query and 
+ * fills the cardMax attributes of these triple patterns
+ * Uses the .config file included in the resources 
+ * @param the query that contains all triple patterns whose predicates we want to determine the cardinality of
+ * @throws Exception
+ */
+    public void computeMaxCardinalities(Query query) throws Exception {
     	   
     	CardinalitiesConfig config = ConfigFactory.create(CardinalitiesConfig.class);
     	List<TriplePattern> triples = ((AbstractQuery)query).getTriplePatterns();

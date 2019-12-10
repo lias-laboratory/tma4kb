@@ -27,8 +27,6 @@ public class CardinalityTest {
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
 		
-		
-		
 		q.findQbase(instance);
 		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
 		
