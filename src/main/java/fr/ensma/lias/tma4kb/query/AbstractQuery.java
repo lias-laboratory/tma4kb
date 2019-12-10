@@ -281,6 +281,10 @@ public abstract class AbstractQuery implements Query {
 		nbTriplePatterns--;
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
+	
+	public void setCardMax(int triple, int cardMax) {
+		this.triplePatterns.get(triple).setCardMax(cardMax);
+	}
 
 	/**
 	 * Computes the string of this query from a list of triple patterns
@@ -317,7 +321,6 @@ public abstract class AbstractQuery implements Query {
 		Boolean val = executedQueries.get(this);
 		if (val == null) {
 			val = isFailing(s, k);
-			//System.out.println("Execute " + (this.toSimpleString(initialQuery)));
 			executedQueries.put(this, val);
 		}
 		return val;
@@ -325,7 +328,6 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runBaseline(Session session, int k) {
-		//System.out.println("===================== RUN Baseline ==================");
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -338,13 +340,9 @@ public abstract class AbstractQuery implements Query {
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			//System.out.println("Process " + (((AbstractQuery)
-			 //qTemp).toSimpleString(initialQuery)));
 			List<Query> subqueries = qTemp.getSubQueries();
 			List<Query> superqueries = qTemp.getSuperQueries();
 			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-				// this is a potential MFS
-				// System.out.println("potential mfs");
 				boolean isAnFIS = true;
 				while (isAnFIS && !superqueries.isEmpty()) {
 					Query superquery = superqueries.remove(0);
@@ -376,8 +374,6 @@ public abstract class AbstractQuery implements Query {
 			for (Query subquery : subqueries) {
 				if (!markedQueries.containsKey(subquery)) {
 					markedQueries.put(subquery, true);
-					// System.out.println("Add " +
-					// ((AbstractQuery)subquery).toSimpleString(initialQuery));
 					listQuery.add(subquery);
 				}
 			}	
@@ -435,7 +431,9 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void findQbase(Session instance) {
+	public void findQbase(Session instance) throws Exception {
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
+		c.computeCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
 			if (t.getCardMax() > 1)
@@ -457,14 +455,13 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override	
-	public void runCardAlgo(Session session, int k,Query q) {
+	public void runCardAlgo(Session session, int k) throws Exception {
 		Set <Query> allMFISbase = new HashSet<Query>();
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		//findQbase(session);
-		baseQuery=q;
+		findQbase(session);
 		List<Query> listQuery = new ArrayList<Query>();
 		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();

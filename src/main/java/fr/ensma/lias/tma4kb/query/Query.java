@@ -122,8 +122,9 @@ public interface Query {
      * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
      * 
      * @param session connection to the KB
+     * @throws Exception 
      */
-	void findQbase(Session instance);
+	void findQbase(Session instance) throws Exception;
 
 	/**
      * Use local cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
@@ -137,7 +138,8 @@ public interface Query {
      * 
      * @param session connection to the KB
      * @param k maximum number of results
+	 * @throws Exception 
      */
-    void runCardAlgo(Session session, int k,Query q);
+    void runCardAlgo(Session session, int k) throws Exception;
 
 }

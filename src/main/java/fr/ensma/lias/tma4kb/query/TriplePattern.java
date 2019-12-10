@@ -63,6 +63,10 @@ public class TriplePattern {
 	 * global maximum cardiniality of the predicate 
 	 */
 	private Integer cardMax;
+	
+	public void setCardMax(int card) {
+		cardMax=card;
+	}
 
 	/**
 	 * Get the subject of this triple pattern
@@ -322,5 +326,7 @@ public class TriplePattern {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	
 
 }

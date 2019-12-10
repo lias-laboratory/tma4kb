@@ -16,6 +16,7 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 public class CardinalityTest {
 
 	@Test	public void testFindQbase() throws Exception {
+		
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
 		final Session instance = currentQueryFactory.createSession(); 
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
@@ -25,8 +26,11 @@ public class CardinalityTest {
 		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+		
+		
+		
 		q.findQbase(instance);
-		System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
+		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
 		
 		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
 	}
@@ -52,13 +56,13 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 		
 		
-		q.runCardAlgo(instance, 3,t1t2t3);
-		for (Query mfis : q.getAllMFIS()) {
+		q.runCardAlgo(instance, 3);
+		/*for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
 		}
 		for (Query xss : q.getAllXSS()) {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
-		}
+		}*/
 		
 		assertEquals(1, instance.getExecutedQueryCount()); 
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
