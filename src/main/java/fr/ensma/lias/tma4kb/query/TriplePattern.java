@@ -64,28 +64,55 @@ public class TriplePattern {
 	 */
 	private Integer cardMax;
 	
-	public void setCardMax(int card) {
-		cardMax=card;
-	}
+	/**
+	 * domain of the predicate 
+	 */
+	private String domain="thing";
+	
+	/**
+	 * all superclasses of the domain of the predicate 
+	 */
+	private Set<String> superclasses;
+	
 
 	/**
 	 * Computes global maximum cardinality of the predicate
 	 * @return global maximum cardinality of the predicate
 	 */
 	public int getCardMax() {
-		//TODO
 		return cardMax;
+	}
+	
+	public void setCardMax(int card) {
+		cardMax=card;
 	}
 
 	/**
-	 * Computes local maximum cardinality of the predicate in the domain of q
-	 * @param Query q
-	 * @return local maximum cardinality of the predicate in the domain of q
+	 * Computes domain of the predicate
+	 * @return domain of the predicate
 	 */
-	public int getCardMax(Query q) {
-		// TODO Auto-generated method stub
-		return 0;
+	public String getDomain() {
+		return domain;
 	}
+	
+	public void setDomain(String dom) {
+		domain=dom;
+	}
+
+	/**
+	 * Computes all superclasses of the domain of the predicate
+	 * @return all superclasses of the domain of the predicate
+	 */
+	public Set<String> getSuperclasses() {
+		return superclasses;
+	}
+	
+	public void setSuperclasses(Set<String> classes) {
+		superclasses=classes;
+	}
+
+	
+
 
 	/**
 	 * Get the subject of this triple pattern

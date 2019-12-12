@@ -42,4 +42,15 @@ public interface CardinalitiesConfig extends Config {
 	@Key("StudentteacherOf.max")
 	 Integer StudentteacherOfMax();
 	
+	@Key("type.domain")
+	 String typeDomain();
+	@Key("age.domain")
+	 String ageDomain();
+	@Key("nationality.domain")
+	 String nationalityDomain();
+	@Key("advisor.domain")
+	 String advisorDomain();
+	@Key("teacherOf.domain")
+	 String teacherOfDomain();
+	
 }

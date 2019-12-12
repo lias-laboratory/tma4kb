@@ -448,7 +448,6 @@ public abstract class AbstractQuery implements Query {
     						listQuery.add(subquery);
     					}
     				}
-    			
                 }
 				else { // XSS
 				if (!qTemp.isTheEmptyQuery())
@@ -470,14 +469,30 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override
-	public void findQbaseLocal(Session instance) {
+	public void findQbaseLocal(Session instance) throws Exception {
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
 		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		boolean first =true;
 		do {
 			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
-			for (TriplePattern t : this.getTriplePatterns()) {
-				if (t.getCardMax(currentQuery) > 1)
+			c.computeDomains(currentQuery);
+			/// move this
+			Set<String> classes = new HashSet<String>();
+			classes.add("thing");
+			currentQuery.getTriplePatterns().get(2).setSuperclasses(classes);
+			classes.add("Person");
+			currentQuery.getTriplePatterns().get(0).setSuperclasses(classes);
+			currentQuery.getTriplePatterns().get(1).setSuperclasses(classes);
+			if (first) currentQuery.getTriplePatterns().get(3).setSuperclasses(classes);
+			first=false;
+			System.out.println(currentQuery.toString());
+			///
+			c.computeMaxLocalCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
+			for (TriplePattern t : currentQuery.getTriplePatterns()) {
+				if (t.getCardMax() > 1) {
 					baseQuery.removeTriplePattern(t);
+				}
 			}
 		} while (!baseQuery.equals(currentQuery));
 	}

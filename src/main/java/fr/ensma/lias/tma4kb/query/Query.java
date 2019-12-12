@@ -130,8 +130,9 @@ public interface Query {
      * Use local cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
      * 
      * @param session connection to the KB
+	 * @throws Exception 
      */
-	void findQbaseLocal(Session instance);
+	void findQbaseLocal(Session instance) throws Exception;
 	
 	/**
      * Run the CardAlgo algorithm and fills allMFIS and allXSS

@@ -6,7 +6,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -31,6 +33,35 @@ public class CardinalityTest {
 		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
 		
 		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
+	}
+	
+	@Test	public void testFindQbaseLocal() throws Exception {
+		
+		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
+		final Session instance = currentQueryFactory.createSession(); 
+		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
+		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");   
+		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
+		
+		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
+		
+		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+		q.getTriplePatterns().get(0).setDomain("FullProfessor");
+		q.getTriplePatterns().get(2).setDomain("Person");
+		q.getTriplePatterns().get(1).setDomain("FullProfessor");
+		q.getTriplePatterns().get(3).setDomain("FullProfessor");
+		Set<String> classes = new HashSet<String>();
+		classes.add("thing");
+		q.getTriplePatterns().get(2).setSuperclasses(classes);
+		classes.add("Person");
+		q.getTriplePatterns().get(0).setSuperclasses(classes);
+		q.getTriplePatterns().get(1).setSuperclasses(classes);
+		q.getTriplePatterns().get(3).setSuperclasses(classes);
+		
+		q.findQbaseLocal(instance);
+		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
+		
+		assertEquals(t1t2t3,((AbstractQuery)q).baseQuery); 
 	}
 	
 	
