@@ -51,4 +51,5 @@ public class HSQLDBQueryFactory extends AbstractQueryFactory {
 			throw new TripleStoreException(e.getMessage());
 		}
 	}
+
 }

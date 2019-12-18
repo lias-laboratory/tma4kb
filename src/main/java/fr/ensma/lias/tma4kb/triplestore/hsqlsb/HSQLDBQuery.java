@@ -74,5 +74,4 @@ public class HSQLDBQuery extends AbstractQuery {
 		}
 		return res;
 	}
-
 }

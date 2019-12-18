@@ -22,6 +22,8 @@ package fr.ensma.lias.tma4kb.query;
 import java.util.List;
 import java.util.Set;
 
+
+
 /**
  * @author Stephane JEAN
  */
@@ -34,8 +36,8 @@ public interface Query {
 	 * @param k the number maximum of answers
 	 * @return true is the result if this query has too many answers
 	 */
-	boolean isFailing(Session session, int k);
-	
+	boolean isFailing(Session session, int k);    
+    
 	/**
 	 * get the factory that created this query
 	 * 

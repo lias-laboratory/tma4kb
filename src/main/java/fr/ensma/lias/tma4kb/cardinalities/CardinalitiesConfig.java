@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.query;
+package fr.ensma.lias.tma4kb.cardinalities;
 
 import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Config.Sources;

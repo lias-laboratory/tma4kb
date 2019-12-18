@@ -63,7 +63,6 @@ public class TriplePattern {
 	 * global maximum cardinality of the predicate 
 	 */
 	private Integer cardMax;
-	
 	/**
 	 * domain of the predicate 
 	 */

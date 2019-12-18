@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+
+
 /**
  * @author Stéphane JEAN
  * @author Ibrahim DELLAL
@@ -78,7 +81,7 @@ public abstract class AbstractQuery implements Query {
 	 * This is the conjunction of triple patterns with predicates having maxCard = 1
 	 */
 	protected Query baseQuery;
-
+	   
 	/**
 	 * Builds a query from its string and a reference to its factory
 	 * 
@@ -91,6 +94,7 @@ public abstract class AbstractQuery implements Query {
 		this.decomposeQuery();
 		nbTriplePatterns = triplePatterns.size();
 	}
+	
 
 	/**
 	 * Decompose a SPARQL Query into a set of triple patterns.
@@ -187,7 +191,7 @@ public abstract class AbstractQuery implements Query {
 	@Override
 	public boolean isFailing(Session session, int k) {
 		if (isTheEmptyQuery())
-			return false;
+			return true;
 		return isFailingAux(session, k);
 	}
 
@@ -450,8 +454,8 @@ public abstract class AbstractQuery implements Query {
     				}
                 }
 				else { // XSS
-				if (!qTemp.isTheEmptyQuery())
-					allXSS.add(qTemp);
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
 				}
 			}
 		}
@@ -463,7 +467,7 @@ public abstract class AbstractQuery implements Query {
 		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
-			if (t.getCardMax() > 1)
+			if (t.getCardMax() > 1 && t.isObjectVariable())
 				baseQuery.removeTriplePattern(t);
 		}
 	}
@@ -477,7 +481,7 @@ public abstract class AbstractQuery implements Query {
 		do {
 			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
 			c.computeDomains(currentQuery);
-			/// move this
+			/// change this
 			Set<String> classes = new HashSet<String>();
 			classes.add("thing");
 			currentQuery.getTriplePatterns().get(2).setSuperclasses(classes);
@@ -490,7 +494,7 @@ public abstract class AbstractQuery implements Query {
 			///
 			c.computeMaxLocalCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
 			for (TriplePattern t : currentQuery.getTriplePatterns()) {
-				if (t.getCardMax() > 1) {
+				if (t.getCardMax() > 1 && t.isObjectVariable()) {
 					baseQuery.removeTriplePattern(t);
 				}
 			}
@@ -505,6 +509,7 @@ public abstract class AbstractQuery implements Query {
 		session.clearExecutedQueryCount();
 		initialQuery = this;
 		findQbase(session);
+		System.out.println("Qbase : "+baseQuery);
 		List<Query> listQuery = new ArrayList<Query>();
 		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
@@ -546,7 +551,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			}
 		}
-		System.out.println(this.toString());
+		//System.out.println(this.toString());
 		for (Query mfisb:allMFISbase) {
 			Query mfis = (AbstractQuery) factory.createQuery(mfisb.toString(),initialQuery);
 			for (TriplePattern t: baseQuery.getTriplePatterns()) {
