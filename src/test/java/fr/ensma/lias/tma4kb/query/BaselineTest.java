@@ -14,8 +14,6 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 
 public class BaselineTest {
-	
-	
 
 	@Test
 	public void testBaseline() throws Exception {
@@ -43,13 +41,11 @@ public class BaselineTest {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
 		}
 		
-		assertEquals(14, instance.getExecutedQueryCount());
+		assertEquals(15, instance.getExecutedQueryCount());
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
 		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));
 		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
-		
-		
 		
 	}
 

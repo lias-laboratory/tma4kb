@@ -1,7 +1,5 @@
 package fr.ensma.lias.tma4kb.query;
 
-
-
 public interface QueryHelper {
 
     /**
@@ -17,5 +15,12 @@ public interface QueryHelper {
 	 * @return true if the query fails, false otherwise
 	 */
     boolean executeQuery(Session session,int k);
+
+    /**
+	 * Executes a query and returns the number of answers
+	 * @param session
+	 * @return true if the query fails, false otherwise
+	 */
+	int countQuery(Session session,int k);
     
 }

@@ -32,6 +32,7 @@ public class BFSTest {
 		expectedXSS.add(t1t2t3);
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+
 		q.runBFS(instance, 3);
 		for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
@@ -40,11 +41,10 @@ public class BFSTest {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
 		}
 		
-		assertEquals(8, instance.getExecutedQueryCount()); 
+		assertEquals(9, instance.getExecutedQueryCount()); //8 if not executing initial query, 9 if executing initial query
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
 		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));
 		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
 	}
-
 }

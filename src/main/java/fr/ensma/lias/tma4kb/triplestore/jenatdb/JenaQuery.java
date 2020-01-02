@@ -29,5 +29,10 @@ public class JenaQuery extends AbstractQuery {
     public boolean isFailingAux(Session session, int k) {
     	return helper.executeQuery(session,k);
     }
+    
+    @Override
+    public int isFailingNb(Session session,int k) {
+    	return helper.countQuery(session,k);
+    }
 
 }

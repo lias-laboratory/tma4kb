@@ -63,6 +63,30 @@ public class HSQLDBQuery extends AbstractQuery {
 			throw new TripleStoreException();
 		}
 	}
+	
+	@Override
+	public int isFailingNb(Session session,int k) {
+		try {
+			Statement stmt = ((HSQLDBSession) session).getConnection().createStatement();
+			ResultSet rset = stmt.executeQuery(toNativeQuery());
+			int i=0;
+			session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
+			//System.out.println("exécution de " + this.toSimpleString(initialQuery));
+			//System.out.println("exécution de " + this);
+			// This code is probably not efficient
+			// since it's only used for test issue, it's fine
+			while (rset.next() ) { // Stop once more than k answers are found : && i<=k) { the result is inaccurate but boolean failure is correct
+				i++;
+			}
+			rset.close();
+			stmt.close();
+			return i;
+		} catch (SQLException e) {
+			System.out.println("Unable to execute the query: " + e.getMessage());
+			e.printStackTrace();
+			throw new TripleStoreException();
+		}
+	}
 
 	private String toNativeQuery() {
 		String res = "select * from ";
@@ -74,4 +98,5 @@ public class HSQLDBQuery extends AbstractQuery {
 		}
 		return res;
 	}
+
 }

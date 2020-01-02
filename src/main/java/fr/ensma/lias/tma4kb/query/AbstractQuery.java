@@ -81,6 +81,12 @@ public abstract class AbstractQuery implements Query {
 	 * This is the conjunction of triple patterns with predicates having maxCard = 1
 	 */
 	protected Query baseQuery;
+	
+	/**
+	 * decomposition of the query into sets of triples so that each variable appears in only one set
+	 * decomp is used to avoid executing cartesian products
+	 */
+	protected List<Set<TriplePattern>> decomp;
 	   
 	/**
 	 * Builds a query from its string and a reference to its factory
@@ -91,6 +97,7 @@ public abstract class AbstractQuery implements Query {
 	public AbstractQuery(QueryFactory factory, String query) {
 		this.factory = factory;
 		this.rdfQuery = query;
+		this.decomp = new ArrayList<Set<TriplePattern>>();
 		this.decomposeQuery();
 		nbTriplePatterns = triplePatterns.size();
 	}
@@ -154,6 +161,18 @@ public abstract class AbstractQuery implements Query {
 	public Set<Query> getAllXSS() {
 		return this.allXSS;
 	}
+	
+	/**
+	 * Get the decomposition of cartesian products
+	 * 
+	 * @return
+	 */
+	public List<Set<TriplePattern>> getDecomp() {
+		if(decomp.size()==0) {
+			setDecomp();
+		}
+		return this.decomp;
+	}
 
 	/**
 	 * Get the initial query on which algorithms was executed
@@ -171,6 +190,26 @@ public abstract class AbstractQuery implements Query {
 	 */
 	public void setInitialQuery(Query query) {
 		this.initialQuery = query;
+	}
+	/**
+	 * Set the decomposition of cartesian products
+	 */
+	public void setDecomp() {
+		if (initialQuery==null || initialQuery==this) {
+			decomposePC();
+		}
+		else {
+			for (Set<TriplePattern> s :((AbstractQuery)initialQuery).getDecomp()) {
+				Set<TriplePattern> newSet= new HashSet<TriplePattern>();
+				for (TriplePattern t :s) {
+					if (triplePatterns.contains(t)) {
+						newSet.add(t);
+					}
+				}
+				if(!newSet.isEmpty())
+					this.decomp.add(newSet);
+			}
+		}
 	}
 
 	@Override
@@ -194,16 +233,32 @@ public abstract class AbstractQuery implements Query {
 			return true;
 		return isFailingAux(session, k);
 	}
+	
+	
+	public boolean isFailing2(Session session, int k) {
+		if (isTheEmptyQuery())
+			return true;
+		return (isFailingNb(session, k)>k);
+	}
 
 	/**
 	 * Checks whether this query has too many answers or not
 	 * 
 	 * @param s the connection to the triplestore
-	 * @param k the number maximum of answers
+	 * @param k the maximum number of answers
 	 * @return true is the result if this query has too many answers
 	 */
 	protected abstract boolean isFailingAux(Session session, int k);
 
+	/**
+	 * Counts number of answers of the query
+	 * 
+	 * @param s the connection to the triplestore
+	 * @param k the maximum number of answers
+	 * @return the number of answers
+	 */
+	protected abstract int isFailingNb(Session session,int k) ;
+	
 	/**
 	 * Check whether a query includes another one
 	 * 
@@ -340,22 +395,117 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	/**
+	 * Returns a boolean : true if the query fails (returns more than k results)
 	 * 
 	 * @param executedQueries a cache of already executed queries
 	 * @param s connection to the KB
+	 * @param k the maximum number of results
 	 * @return true iff this query is failing
 	 */
 	private boolean isFailing(Map<Query, Boolean> executedQueries, Session s, int k) {
-		if (this.equals(this.getInitialQuery())) {
+		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
 			executedQueries.put(this, true);
 			return true;
-		}
+		}*/
 		Boolean val = executedQueries.get(this);
 		if (val == null) {
 			val = isFailing(s, k);
 			executedQueries.put(this, val);
 		}
 		return val;
+	}
+	
+	/**
+	 * Returns the number of results to a query. Avoids executing cartesian products by multiplying the number of results of the subqueries
+	 * 
+	 * @param executedQueries a cache of already executed queries associated with their nb of results
+	 * @param s connection to the KB
+	 * @param k the maximum number of results
+	 * @return true iff this query is failing
+	 */
+	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
+		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
+			executedQueries.put(this, true);
+			return true;
+		}*/
+		Integer val = executedQueries.get(this);
+		if (val == null) {
+			if (decomp.size()==0) {
+				setDecomp();
+			}
+			if (decomp.size()==1) {
+				val=isFailingNb(s, k);
+				executedQueries.put(this, val);
+			}
+			else {
+				List<Query> subQ=new ArrayList<Query>();
+				for (Set<TriplePattern> set:decomp) {
+					Query q = factory.createQuery("", initialQuery);
+					for (TriplePattern t :set) {
+						q.addTriplePattern(t);
+					}
+					subQ.add(q);
+				}
+				val=1;
+				Integer val2;
+				for (Query q:subQ) {
+					val2= executedQueries.get(q);
+					if (val2!=null) {
+						val*=val2;
+						subQ.remove(q);
+					}
+				}
+				while (!subQ.isEmpty()&val<=k) {
+					Query q = subQ.remove(0);
+					val2=((AbstractQuery)q).isFailingNb(s,k);
+					val*=val2;
+				}
+				executedQueries.put(this, val);
+			}
+		}
+		return val;
+	}
+	
+	/**
+	 * decompose cartesian products and fill the decomp field with disjoined sets of triple patterns
+	 * @return
+	 */
+	public void decomposePC(){
+		int i =0;
+		Query initQuery=factory.createQuery(rdfQuery);
+		List<TriplePattern> triples= new ArrayList<TriplePattern>();
+		List<String> vars= new ArrayList<String>();
+		List<String> oldVars= new ArrayList<String>();
+		while (!initQuery.isTheEmptyQuery()) {
+			System.out.println("decomp"+decomp);
+			TriplePattern t = initQuery.getTriplePatterns().get(0);
+			decomp.add(new HashSet<TriplePattern>());
+			decomp.get(i).add(t);
+			initQuery.removeTriplePattern(t);
+			for (String v : t.getVariables()) {
+				vars.add(v);
+			}
+			while (!vars.isEmpty()) {
+				String v2=vars.remove(0);
+				for (TriplePattern tp : initQuery.getTriplePatterns()) {
+					if (tp.getVariables().contains(v2)) {
+						triples.add(tp);
+					}
+				}
+				oldVars.add(v2);
+				while (!triples.isEmpty()) {
+					TriplePattern tp=triples.remove(0);
+					decomp.get(i).add(tp);
+					initQuery.removeTriplePattern(tp);
+					for (String v3:tp.getVariables()) {
+						if (!vars.contains(v3)&&!oldVars.contains(v3)) {
+							vars.add(v3);
+						}
+					}
+				}
+			}
+			i++;
+		}
 	}
 
 	@Override
@@ -420,7 +570,7 @@ public abstract class AbstractQuery implements Query {
 		session.clearExecutedQueryCount();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
 		markedQueries.put(this, true);
@@ -436,7 +586,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)>k) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
@@ -458,6 +608,20 @@ public abstract class AbstractQuery implements Query {
 						allXSS.add(qTemp);
 				}
 			}
+		}
+	}
+	
+	/**
+     * Uses filtering conditions (only one variable) to find Qbase starting point and fills Qbase
+     * 
+     * @param session connection to the KB
+     * @throws Exception 
+     */
+	public void findQbaseGeneral(Session instance) throws Exception {
+		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		for (TriplePattern t : this.getTriplePatterns()) {
+			if (!(t.getVariables().size()==1))
+				baseQuery.removeTriplePattern(t);
 		}
 	}
 
@@ -508,7 +672,7 @@ public abstract class AbstractQuery implements Query {
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		findQbase(session);
+		findQbaseGeneral(session);
 		System.out.println("Qbase : "+baseQuery);
 		List<Query> listQuery = new ArrayList<Query>();
 		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
@@ -560,4 +724,6 @@ public abstract class AbstractQuery implements Query {
 			allMFIS.add(mfis);
 		}
 	}
+
+
 }
