@@ -17,7 +17,27 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 
 public class CardinalityTest {
 
-	@Test	public void testFindQbase() throws Exception {
+	@Test	
+	public void testFindQbaseCS() throws Exception {
+		
+		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
+		final Session instance = currentQueryFactory.createSession(); 
+		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
+		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");   
+		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
+		
+		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
+		
+		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+		
+		((AbstractQuery)q).findQbaseCS(instance);
+		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
+		
+		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
+	}
+	
+	@Test	
+	public void testFindQbase() throws Exception {
 		
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
 		final Session instance = currentQueryFactory.createSession(); 
@@ -35,7 +55,8 @@ public class CardinalityTest {
 		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
 	}
 	
-	@Test	public void testFindQbaseLocal() throws Exception {
+	@Test	
+	public void testFindQbaseLocal() throws Exception {
 		
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
 		final Session instance = currentQueryFactory.createSession(); 

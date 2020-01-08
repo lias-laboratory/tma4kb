@@ -2,8 +2,10 @@ package fr.ensma.lias.tma4kb.cardinalities;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -14,12 +16,12 @@ import fr.ensma.lias.tma4kb.query.TriplePattern;
 
 public class ComputeCardinalitiesConfig {
 	
-	//public CardinalitiesConfig config;
-	public GlobalConfigLUBM config;
+	public CardinalitiesConfig config;
+	//public GlobalConfigLUBM config;
 	
 	public ComputeCardinalitiesConfig() {
-		//config = ConfigFactory.create(CardinalitiesConfig.class);
-		config=ConfigFactory.create(GlobalConfigLUBM.class);
+		config = ConfigFactory.create(CardinalitiesConfig.class);
+		//config=ConfigFactory.create(GlobalConfigLUBM.class);
 	}
 	
 	public String getNiceName(String uri) {
@@ -55,8 +57,11 @@ public class ComputeCardinalitiesConfig {
 
     		Method method = c.getDeclaredMethod(getNiceName(p)+"Max");
     		Integer cardMax = Integer.parseInt(method.invoke(config).toString());	
-		
-    		((AbstractQuery)query).setCardMax(i, cardMax);
+    		//((AbstractQuery)query).setCardMax(i, cardMax);
+    		if (cardMax<=1)
+    			((AbstractQuery)query).setCardMax(i, true);
+    		else
+    			((AbstractQuery)query).setCardMax(i, false);
     		i++;
     	}
     }
@@ -116,9 +121,64 @@ public class ComputeCardinalitiesConfig {
     					cardMax=newCard;
     			}
     		}
-    		((AbstractQuery)query).setCardMax(i, cardMax);
+    		//((AbstractQuery)query).setCardMax(i, cardMax);
+    		if (cardMax<=1)
+    			((AbstractQuery)query).setCardMax(i, true);
+    		else
+    			((AbstractQuery)query).setCardMax(i, false);
     		i++;
     	}
+    }
+
+    public void computeMaxCSCardinalities(Query query) throws Exception {
+    	List<CharacteristicSet> charSets=getCS();
+    	List<TriplePattern> triples = ((AbstractQuery)query).getTriplePatterns();
+    	List<String> predicates = new ArrayList<String>();
+    	List<CharacteristicSet> characSets = new ArrayList<CharacteristicSet>();
+    	for (TriplePattern t : triples) {
+    		predicates.add(t.getPredicate());
+    	}
+    	for (CharacteristicSet cs:charSets) {
+    		if(cs.getPredicates().keySet().containsAll(predicates)) {
+    			characSets.add(cs);
+    		}
+    	}
+    	
+    	int i = 0;
+    	for (String p : predicates) {	
+        	Boolean maxCard1=true;
+        	for (CharacteristicSet cs:charSets) {
+        		if(cs.getPredicates().containsKey(p)&&cs.getPredicates().get(p)>cs.getSubjectNb()) {
+        			maxCard1=false;
+        		}
+        	}
+    		((AbstractQuery)query).setCardMax(i, maxCard1);
+    		i++;
+    	}
+    }
+    public List<CharacteristicSet> getCS() throws Exception{
+    	Class c = config.getClass();
+		Method methode = c.getDeclaredMethod("CharacteristicSet");
+		String cs = methode.invoke(config).toString();
+		List<CharacteristicSet> result= new ArrayList<CharacteristicSet>();
+		int i=0;
+		while(i<cs.length()) {
+			Integer subjNb=Integer.parseInt(cs.substring(i, i+1));
+			Map<String,Integer> map=new HashMap<String,Integer>();
+			i++;
+			while (!(cs.charAt(i)==';')) {
+				int j=i+1;
+				String predicate=cs.substring(j,j+cs.substring(j).indexOf(':'));
+				j+=predicate.length();
+				int card= Integer.parseInt(cs.substring(j+1, j+2));
+				i=j+2;
+				map.put(predicate,card);
+			}
+			i++;
+			CharacteristicSet set = new CharacteristicSet(subjNb, map);
+			result.add(set);
+		}
+		return result;
     }
     
 }

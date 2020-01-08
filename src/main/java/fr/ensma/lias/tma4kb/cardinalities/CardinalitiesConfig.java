@@ -53,4 +53,7 @@ public interface CardinalitiesConfig extends Config {
 	@Key("teacherOf.domain")
 	 String teacherOfDomain();
 	
+	@Key("CharacteristicSet")
+	 String CharacteristicSet();
+	
 }

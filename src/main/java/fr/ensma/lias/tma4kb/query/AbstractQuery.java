@@ -369,8 +369,11 @@ public abstract class AbstractQuery implements Query {
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
 	
-	public void setCardMax(int triple, int cardMax) {
+	/*public void setCardMax(int triple, int cardMax) {
 		this.triplePatterns.get(triple).setCardMax(cardMax);
+	}*/
+	public void setCardMax(int triple, boolean cardMax) {
+		this.triplePatterns.get(triple).setCardMax1(cardMax);
 	}
 
 	/**
@@ -631,7 +634,8 @@ public abstract class AbstractQuery implements Query {
 		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
-			if (t.getCardMax() > 1 && t.isObjectVariable())
+			//if (t.getCardMax() > 1 && t.isObjectVariable())
+			if (!t.getCardMax1() && t.isObjectVariable())
 				baseQuery.removeTriplePattern(t);
 		}
 	}
@@ -658,7 +662,22 @@ public abstract class AbstractQuery implements Query {
 			///
 			c.computeMaxLocalCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
 			for (TriplePattern t : currentQuery.getTriplePatterns()) {
-				if (t.getCardMax() > 1 && t.isObjectVariable()) {
+				if (!t.getCardMax1() && t.isObjectVariable()) {
+					baseQuery.removeTriplePattern(t);
+				}
+			}
+		} while (!baseQuery.equals(currentQuery));
+	}
+	
+	public void findQbaseCS(Session instance) throws Exception {
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
+		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		do {
+			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
+			c.computeMaxCSCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
+			for (TriplePattern t : currentQuery.getTriplePatterns()) {
+				if (!t.getCardMax1() && t.isObjectVariable()) {
 					baseQuery.removeTriplePattern(t);
 				}
 			}
