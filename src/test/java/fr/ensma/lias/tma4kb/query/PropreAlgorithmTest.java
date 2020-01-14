@@ -1,24 +1,3 @@
-
-
-/*********************************************************************************
-* This file is part of QARS4UKB Project.
-* Copyright (C) 2017 LIAS - ENSMA
-*   Teleport 2 - 1 avenue Clement Ader
-*   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
-* 
-* QARS4UKB is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* QARS4UKB is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-* 
-* You should have received a copy of the GNU Lesser General Public License
-* along with QARS4UKB.  If not, see <http://www.gnu.org/licenses/>.
-**********************************************************************************/
 package fr.ensma.lias.tma4kb.query;
 
 
@@ -32,7 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,7 +46,7 @@ public class PropreAlgorithmTest {
 	 public void testAlgorithms() throws Exception {
 		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList("/" + FILE_QUERIES);
 		 try {	
-		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
+		 //ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsCardGlo = new ExpRelaxResult(NB_EXEC);
 		 //ExpRelaxResult resultsCardLoc = new ExpRelaxResult(NB_EXEC);
 			for (int i = 0; i<newTestResultPairList.size(); i++) {
@@ -76,8 +54,8 @@ public class PropreAlgorithmTest {
 				QueryExplain qExplain = newTestResultPairList.get(i);
 				String description = qExplain.getDescription();
 				
-				
-				// *********************** Card Q1******************************
+				/*
+				// *********************** BFS******************************
 				Query q1 = qExplain.getQuery();
 				description = qExplain.getDescription();
 				System.out.println("-----------------------------------------------------------");
@@ -123,8 +101,8 @@ public class PropreAlgorithmTest {
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();
-					//System.out.println("Q1 nbr de requête dfs " + session.getExecutedQueryCount());
-					//System.out.println("time dfs " + ((float) (end - time)) / 1000f);
+					//System.out.println("Q1 nbr de requête local " + session.getExecutedQueryCount());
+					//System.out.println("time local " + ((float) (end - time)) / 1000f);
 					
 					
 					
@@ -146,7 +124,7 @@ public class PropreAlgorithmTest {
 					long time = System.currentTimeMillis();
 					q.runCardAlgo(session, 8);
 					long end = System.currentTimeMillis();
-					float tps = ((float) (end - time)) / 1000f;
+					float tps = ((float) (end - time)) ;
 					int nbExecutedQuery = session.getExecutedQueryCount();
 					//System.out.println("Q1 nbr de requête dfs " + session.getExecutedQueryCount());
 					//System.out.println("time dfs " + ((float) (end - time)) / 1000f);
@@ -163,7 +141,7 @@ public class PropreAlgorithmTest {
 				for(Query t : q.getAllMFIS()){
 					System.out.println("card global MFIS " +t);
 				}
-				
+				/*
 				for(Query t : q1.getAllMFIS()){
 					System.out.println("bfs MFIS " +t);
 				}
@@ -190,13 +168,13 @@ public class PropreAlgorithmTest {
 			System.out.println("------------------------------------");
 
 			resultsCardLoc.toFile("exp-jena-cardLoc.csv");*/
-			
+			/*
 			System.out.println("---------- BILAN BFS------------------");
 			System.out.println(resultsBFS.toString());
 			System.out.println("------------------------------------");
 
 			resultsBFS.toFile("exp-jena-bfs.csv");
-
+*/
 		} catch (IOException e) {
 			System.out.println("Unable to read the queries in the file.");
 			e.printStackTrace();

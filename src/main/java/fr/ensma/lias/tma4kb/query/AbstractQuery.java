@@ -426,13 +426,17 @@ public abstract class AbstractQuery implements Query {
 	 * @param k the maximum number of results
 	 * @return true iff this query is failing
 	 */
-	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
+	protected boolean isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
 		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
 			executedQueries.put(this, true);
 			return true;
 		}*/
 		Integer val = executedQueries.get(this);
 		if (val == null) {
+			if (this.isTheEmptyQuery()) {
+				executedQueries.put(this, k+1);
+				return true;
+			}
 			if (decomp.size()==0) {
 				setDecomp();
 			}
@@ -466,7 +470,7 @@ public abstract class AbstractQuery implements Query {
 				executedQueries.put(this, val);
 			}
 		}
-		return val;
+		return val>k;
 	}
 	
 	/**
@@ -480,7 +484,6 @@ public abstract class AbstractQuery implements Query {
 		List<String> vars= new ArrayList<String>();
 		List<String> oldVars= new ArrayList<String>();
 		while (!initQuery.isTheEmptyQuery()) {
-			System.out.println("decomp"+decomp);
 			TriplePattern t = initQuery.getTriplePatterns().get(0);
 			decomp.add(new HashSet<TriplePattern>());
 			decomp.get(i).add(t);
@@ -589,7 +592,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)>k) {
+				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
@@ -645,21 +648,9 @@ public abstract class AbstractQuery implements Query {
 		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
 		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		boolean first =true;
 		do {
 			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
 			c.computeDomains(currentQuery);
-			/// change this
-			Set<String> classes = new HashSet<String>();
-			classes.add("thing");
-			currentQuery.getTriplePatterns().get(2).setSuperclasses(classes);
-			classes.add("Person");
-			currentQuery.getTriplePatterns().get(0).setSuperclasses(classes);
-			currentQuery.getTriplePatterns().get(1).setSuperclasses(classes);
-			if (first) currentQuery.getTriplePatterns().get(3).setSuperclasses(classes);
-			first=false;
-			System.out.println(currentQuery.toString());
-			///
 			c.computeMaxLocalCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
 			for (TriplePattern t : currentQuery.getTriplePatterns()) {
 				if (!t.getCardMax1() && t.isObjectVariable()) {

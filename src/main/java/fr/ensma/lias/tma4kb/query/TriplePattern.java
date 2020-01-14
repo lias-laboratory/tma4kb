@@ -77,7 +77,7 @@ public class TriplePattern {
 	/**
 	 * all superclasses of the domain of the predicate 
 	 */
-	private Set<String> superclasses;
+	//private Set<String> superclasses= new HashSet<String>();
 	
 
 	/**
@@ -120,13 +120,13 @@ public class TriplePattern {
 	 * Computes all superclasses of the domain of the predicate
 	 * @return all superclasses of the domain of the predicate
 	 */
-	public Set<String> getSuperclasses() {
+	/*public Set<String> getSuperclasses() {
 		return superclasses;
 	}
 	
-	public void setSuperclasses(Set<String> classes) {
-		superclasses=classes;
-	}
+	public void addSuperclass(String classes) {
+		superclasses.add(classes);
+	}*/
 
 	
 

@@ -6,9 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -67,17 +65,6 @@ public class CardinalityTest {
 		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
-		q.getTriplePatterns().get(0).setDomain("FullProfessor");
-		q.getTriplePatterns().get(2).setDomain("Person");
-		q.getTriplePatterns().get(1).setDomain("FullProfessor");
-		q.getTriplePatterns().get(3).setDomain("FullProfessor");
-		Set<String> classes = new HashSet<String>();
-		classes.add("thing");
-		q.getTriplePatterns().get(2).setSuperclasses(classes);
-		classes.add("Person");
-		q.getTriplePatterns().get(0).setSuperclasses(classes);
-		q.getTriplePatterns().get(1).setSuperclasses(classes);
-		q.getTriplePatterns().get(3).setSuperclasses(classes);
 		
 		q.findQbaseLocal(instance);
 		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));

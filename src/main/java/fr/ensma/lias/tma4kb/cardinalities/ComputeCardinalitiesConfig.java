@@ -77,10 +77,37 @@ public class ComputeCardinalitiesConfig {
     	for (TriplePattern t : triples) {
     		String predicate=t.getPredicate();
     		Class c = config.getClass();
-
-    		Method method = c.getDeclaredMethod(predicate+"Domain");
-    		String domain = method.invoke(config).toString();	
-    		t.setDomain(domain);
+    		String domain;
+    		if (predicate.equals("type")) {
+    			domain=t.getObject();
+    			t.setDomain(domain);
+    		}
+    		else {
+    			try {
+        		Method method = c.getDeclaredMethod(predicate+"Domain");
+    			domain = method.invoke(config).toString();
+        		int i=0;
+        		int j=domain.indexOf(',');
+        		while (j>-1) {
+        			t.setDomain(domain.substring(i, j));
+        			i=j+1;
+        			j= domain.indexOf(',', i);
+        		}
+        		t.setDomain(domain.substring(i));
+    			}catch (NoSuchMethodException e) {
+					// if there is no domain, do nothing
+				}
+    		}
+    		/*method = c.getDeclaredMethod(domain+"Superclasses");
+    		String superclasses = method.invoke(config).toString();
+    		int i=0;
+    		int j=superclasses.indexOf(',');
+    		while (j>-1) {
+    			t.addSuperclass(superclasses.substring(i, j));
+    			i=j+1;
+    			j= superclasses.indexOf(',', i);
+    		}
+    		t.addSuperclass(superclasses.substring(i));*/
     	}
     }
     
@@ -88,38 +115,43 @@ public class ComputeCardinalitiesConfig {
  	   
     	List<TriplePattern> triples = ((AbstractQuery)query).getTriplePatterns();
     	List<String> predicates = new ArrayList<String>();
-    	Set<String> domains=new HashSet<String>(); 
-    	Set<String> superclasses=new HashSet<String>();
+    	List<String> domains=new ArrayList<String>(); 
+    	//Set<String> superclasses=new HashSet<String>();
     	for (TriplePattern t : triples) {
     		predicates.add(t.getPredicate());
     		String domain=t.getDomain();
     		if(!domains.contains(domain)) {
     			domains.add(domain);
-        		for (String sc:t.getSuperclasses()) {
+        		/*for (String sc:t.getSuperclasses()) {
         			if(!superclasses.contains(sc))
         				superclasses.add(sc);
-        		}
+        		}*/
     		}
     	}
-    	for (String sc:superclasses) {
+    	/*for (String sc:superclasses) {
    			for (String dom: domains) {
     			if (dom.equals(sc))
         			domains.remove(dom);
     		}
-    	}
+    	}*/
     	
     	int i = 0;
     	for (String p : predicates) {
     		Class c = config.getClass();
     		Method methode = c.getDeclaredMethod(getNiceName(p)+"Max");
     		Integer cardMax = Integer.parseInt(methode.invoke(config).toString());	//commencer par la cardinalité globale
-    		if (cardMax>1) { // si la cardinalité globale max est 1, la cardinalité locale max est aussi 1 (on ne distingue pas le cas 0)
-    			for (String classe : domains) {
+    		int j=0;
+    		while (cardMax>1 && j<domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale max est aussi 1 (on ne distingue pas le cas 0)
+    			String classe=domains.get(j);
+    			try {
     				Method method = c.getDeclaredMethod(classe+getNiceName(p)+"Max");
     				Integer newCard = Integer.parseInt(method.invoke(config).toString());
     				if (newCard<cardMax)
     					cardMax=newCard;
-    			}
+    			}catch (NoSuchMethodException e) {
+    				//if there is no domain, do nothing
+				}
+    			j++;
     		}
     		//((AbstractQuery)query).setCardMax(i, cardMax);
     		if (cardMax<=1)
