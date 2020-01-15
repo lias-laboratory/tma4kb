@@ -16,12 +16,18 @@ import fr.ensma.lias.tma4kb.query.TriplePattern;
 
 public class ComputeCardinalitiesConfig {
 	
-	public CardinalitiesConfig config;
+	//public CardinalitiesConfig config;
 	//public GlobalConfigLUBM config;
+	//public GlobalConfig config;
+	public LocalConfig config;
+	//public CSConfig config;
 	
 	public ComputeCardinalitiesConfig() {
-		config = ConfigFactory.create(CardinalitiesConfig.class);
+		//config = ConfigFactory.create(CardinalitiesConfig.class);
 		//config=ConfigFactory.create(GlobalConfigLUBM.class);
+		//config=ConfigFactory.create(GlobalConfig.class);
+		config=ConfigFactory.create(LocalConfig.class);
+		//config = ConfigFactory.create(CSConfig.class);
 	}
 	
 	public String getNiceName(String uri) {
@@ -34,7 +40,7 @@ public class ComputeCardinalitiesConfig {
 			int indexOfSlash = uri.lastIndexOf("/");
 			return uri.substring(indexOfSlash + 1, uri.length());
 		}
-	    }
+	}
 
 /**
  * Calculates maximum cardinalities of the predicates of all triple patterns of a query and 
@@ -180,7 +186,7 @@ public class ComputeCardinalitiesConfig {
     	for (String p : predicates) {	
         	Boolean maxCard1=true;
         	for (CharacteristicSet cs:charSets) {
-        		if(cs.getPredicates().containsKey(p)&&cs.getPredicates().get(p)>cs.getSubjectNb()) {
+        		if(cs.getPredicates().containsKey(getNiceName(p))&&cs.getPredicates().get(getNiceName(p))>cs.getSubjectNb()) {
         			maxCard1=false;
         		}
         	}
@@ -193,17 +199,56 @@ public class ComputeCardinalitiesConfig {
 		Method methode = c.getDeclaredMethod("CharacteristicSet");
 		String cs = methode.invoke(config).toString();
 		List<CharacteristicSet> result= new ArrayList<CharacteristicSet>();
-		int i=0;
-		while(i<cs.length()) {
-			Integer subjNb=Integer.parseInt(cs.substring(i, i+1));
+		int col=cs.indexOf(":");
+		int comma=cs.indexOf(",");
+		int sem=0;
+		while(comma>-1) {
+			if (!(sem==0))
+				sem++;
+			Integer subjNb=Integer.parseInt(cs.substring(sem, comma));
 			Map<String,Integer> map=new HashMap<String,Integer>();
-			i++;
-			while (!(cs.charAt(i)==';')) {
-				int j=i+1;
-				String predicate=cs.substring(j,j+cs.substring(j).indexOf(':'));
-				j+=predicate.length();
-				int card= Integer.parseInt(cs.substring(j+1, j+2));
-				i=j+2;
+			sem=cs.indexOf(";",sem);
+			while (comma<sem&&comma>-1) {
+				String predicate=cs.substring(comma+1,col);
+				int nextCom=cs.indexOf(",",comma+1);
+				int card;
+				if (nextCom<sem&&nextCom>-1) {
+					card= Integer.parseInt(cs.substring(col+1,nextCom));
+				}
+				else
+					card= Integer.parseInt(cs.substring(col+1,sem));
+				map.put(predicate,card);
+				col=cs.indexOf(":",col+1);
+				comma=nextCom;
+			}
+			CharacteristicSet set = new CharacteristicSet(subjNb, map);
+			result.add(set);
+		}
+		return result;
+    }
+
+    public List<CharacteristicSet> getCS2() throws Exception{
+    	Class c = config.getClass();
+		Method methode = c.getDeclaredMethod("CharacteristicSetNb");
+		Integer countCS=Integer.parseInt(methode.invoke(config).toString());
+		List<CharacteristicSet> result= new ArrayList<CharacteristicSet>();
+		int i=0;
+		while(i<countCS) {
+			methode = c.getDeclaredMethod("CS"+i+"Value");
+			String cs = methode.invoke(config).toString();
+			int j=cs.indexOf(",");
+			Integer subjNb=Integer.parseInt(cs.substring(0,j));
+			Map<String,Integer> map=new HashMap<String,Integer>();
+			while (j>-1) {
+				int k=cs.indexOf(":", j);
+				String predicate=cs.substring(j+1,k);
+				int l=cs.indexOf(",", j+1);
+				j=l;
+				if (l==-1) {
+					l=cs.length();
+					j=-1;
+				}
+				Integer card =Integer.parseInt(cs.substring(k+1,l));
 				map.put(predicate,card);
 			}
 			i++;
