@@ -627,7 +627,68 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 	
-	
+	@Override
+	public void runHybrid(Session session, int k) throws Exception {
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+    	findQbase(session);
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			boolean sameVariables = false;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+				if (((AbstractQuery)superquery).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) {
+					sameVariables=true;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			if (parentsFIS) {
+				if (sameVariables) { // if this query has the same number of variables as one of its superqueries, then it must fail
+					executedQueries.put(qTemp, k+1);
+				}
+				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+					// FIS
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
+                	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                	List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
+               		for (TriplePattern tp : getTriplePatterns()) {
+               			Query qNew = factory.createQuery(toString(), initialQuery);
+                		qNew.removeTriplePattern(tp);
+                		subqueries.add(qNew);
+                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject()))
+                			executedQueries.put(qNew, k+1);
+                	}
+    				for (Query subquery : subqueries) {
+    					if (!markedQueries.containsKey(subquery)) {
+    						markedQueries.put(subquery, true);
+    						listQuery.add(subquery);
+    					}
+    				}
+                }
+				else { // XSS
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
+				}
+			}
+		}
+	}
 	
 	
 	/**

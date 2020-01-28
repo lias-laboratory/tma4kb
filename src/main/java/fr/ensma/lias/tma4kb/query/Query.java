@@ -120,6 +120,13 @@ public interface Query {
      */
     void runBFS(Session session, int k);
     
+    /**
+     * Run the Hybrid algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+    void runHybrid(Session session, int k)throws Exception;
 
     /**
      * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
