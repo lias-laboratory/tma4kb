@@ -93,7 +93,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 		
 		
-		q.runCardAlgo(instance, 3);
+		q.runCardAlgo(instance, 3,"global");
 		/*for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
 		}

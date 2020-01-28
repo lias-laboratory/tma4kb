@@ -74,23 +74,7 @@ public class TriplePattern {
 	 */
 	private String domain="thing";
 	
-	/**
-	 * all superclasses of the domain of the predicate 
-	 */
-	//private Set<String> superclasses= new HashSet<String>();
 	
-
-	/**
-	 * Computes global maximum cardinality of the predicate
-	 * @return global maximum cardinality of the predicate
-	 */
-	/*public int getCardMax() {
-		return cardMax;
-	}
-	
-	public void setCardMax(int card) {
-		cardMax=card;
-	}*/
 	
 	/**
 	 * Compares maximum cardinality of the predicate to 1
@@ -115,18 +99,6 @@ public class TriplePattern {
 	public void setDomain(String dom) {
 		domain=dom;
 	}
-
-	/**
-	 * Computes all superclasses of the domain of the predicate
-	 * @return all superclasses of the domain of the predicate
-	 */
-	/*public Set<String> getSuperclasses() {
-		return superclasses;
-	}
-	
-	public void addSuperclass(String classes) {
-		superclasses.add(classes);
-	}*/
 
 	
 

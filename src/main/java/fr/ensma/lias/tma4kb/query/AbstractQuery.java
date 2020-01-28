@@ -169,6 +169,7 @@ public abstract class AbstractQuery implements Query {
 	 */
 	public List<Set<TriplePattern>> getDecomp() {
 		if(decomp.size()==0) {
+			//decomposePC();
 			setDecomp();
 		}
 		return this.decomp;
@@ -194,7 +195,7 @@ public abstract class AbstractQuery implements Query {
 	/**
 	 * Set the decomposition of cartesian products
 	 */
-	public void setDecomp() {
+	private void setDecomp() {
 		if (initialQuery==null || initialQuery==this) {
 			decomposePC();
 		}
@@ -375,6 +376,13 @@ public abstract class AbstractQuery implements Query {
 	public void setCardMax(int triple, boolean cardMax) {
 		this.triplePatterns.get(triple).setCardMax1(cardMax);
 	}
+	
+	public Set<String> getVariables(){
+		Set<String> result = new HashSet<String>();
+		for (TriplePattern tp:this.getTriplePatterns())
+			result.addAll(tp.getVariables());
+		return result;
+	}
 
 	/**
 	 * Computes the string of this query from a list of triple patterns
@@ -438,6 +446,7 @@ public abstract class AbstractQuery implements Query {
 				return true;
 			}
 			if (decomp.size()==0) {
+				//decomposePC();
 				setDecomp();
 			}
 			if (decomp.size()==1) {
@@ -513,6 +522,7 @@ public abstract class AbstractQuery implements Query {
 			i++;
 		}
 	}
+	
 
 	@Override
 	public void runBaseline(Session session, int k) {
@@ -617,27 +627,30 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 	
+	
+	
+	
 	/**
      * Uses filtering conditions (only one variable) to find Qbase starting point and fills Qbase
      * 
      * @param session connection to the KB
      * @throws Exception 
      */
-	public void findQbaseGeneral(Session instance) throws Exception {
+	/* probably don't need this, as the case of single variable patterns is included in "same amount of variables when pattern is removed"
+	private void findQbaseGeneral(Session instance) throws Exception {
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
 			if (!(t.getVariables().size()==1))
 				baseQuery.removeTriplePattern(t);
 		}
-	}
+	}*/
 
 	@Override
 	public void findQbase(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("global");
 		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
-			//if (t.getCardMax() > 1 && t.isObjectVariable())
 			if (!t.getCardMax1() && t.isObjectVariable())
 				baseQuery.removeTriplePattern(t);
 		}
@@ -645,7 +658,7 @@ public abstract class AbstractQuery implements Query {
 	
 	@Override
 	public void findQbaseLocal(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("local");
 		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		do {
@@ -660,8 +673,9 @@ public abstract class AbstractQuery implements Query {
 		} while (!baseQuery.equals(currentQuery));
 	}
 	
+	@Override
 	public void findQbaseCS(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig();
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("cs");
 		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		do {
@@ -676,13 +690,29 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override	
-	public void runCardAlgo(Session session, int k) throws Exception {
+	public void runCardAlgo(Session session, int k, String type) throws Exception {
 		Set <Query> allMFISbase = new HashSet<Query>();
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		findQbaseGeneral(session);
+		switch (type) {
+		case "global":{
+			findQbase(session);
+			break;}
+		case "local":{
+			findQbaseLocal(session);
+			break;}
+		case "cs":{
+			findQbaseCS(session);
+			break;}
+		case "db":{
+			baseQuery= factory.createQuery("SELECT * WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/SoccerPlayer> }"); 
+			break;
+		}
+		default:
+			throw (new Exception("Not a valide algorithm type : "+type));
+		}
 		System.out.println("Qbase : "+baseQuery);
 		List<Query> listQuery = new ArrayList<Query>();
 		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();

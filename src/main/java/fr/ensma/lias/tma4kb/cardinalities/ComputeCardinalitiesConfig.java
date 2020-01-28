@@ -3,11 +3,10 @@ package fr.ensma.lias.tma4kb.cardinalities;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.aeonbits.owner.Config;
 import org.aeonbits.owner.ConfigFactory;
 
 import fr.ensma.lias.tma4kb.query.AbstractQuery;
@@ -16,18 +15,23 @@ import fr.ensma.lias.tma4kb.query.TriplePattern;
 
 public class ComputeCardinalitiesConfig {
 	
-	//public CardinalitiesConfig config;
-	//public GlobalConfigLUBM config;
-	//public GlobalConfig config;
-	public LocalConfig config;
-	//public CSConfig config;
-	
-	public ComputeCardinalitiesConfig() {
-		//config = ConfigFactory.create(CardinalitiesConfig.class);
-		//config=ConfigFactory.create(GlobalConfigLUBM.class);
-		//config=ConfigFactory.create(GlobalConfig.class);
-		config=ConfigFactory.create(LocalConfig.class);
-		//config = ConfigFactory.create(CSConfig.class);
+	public Config config;
+
+	public ComputeCardinalitiesConfig(String type) throws Exception {
+		switch(type) {
+		case ("local") :{
+			config=ConfigFactory.create(LocalConfig.class);
+			break;
+		}
+		case ("global"):{
+			config=ConfigFactory.create(GlobalConfig.class);
+			break;}
+		case ("cs"):{
+			config = ConfigFactory.create(CSConfig.class);
+			break;}
+		default:
+			throw (new Exception("Not a valide algorithm type : "+type));
+		}
 	}
 	
 	public String getNiceName(String uri) {
@@ -92,28 +96,11 @@ public class ComputeCardinalitiesConfig {
     			try {
         		Method method = c.getDeclaredMethod(predicate+"Domain");
     			domain = method.invoke(config).toString();
-        		int i=0;
-        		int j=domain.indexOf(',');
-        		while (j>-1) {
-        			t.setDomain(domain.substring(i, j));
-        			i=j+1;
-        			j= domain.indexOf(',', i);
-        		}
-        		t.setDomain(domain.substring(i));
+        		t.setDomain(domain);
     			}catch (NoSuchMethodException e) {
 					// if there is no domain, do nothing
 				}
     		}
-    		/*method = c.getDeclaredMethod(domain+"Superclasses");
-    		String superclasses = method.invoke(config).toString();
-    		int i=0;
-    		int j=superclasses.indexOf(',');
-    		while (j>-1) {
-    			t.addSuperclass(superclasses.substring(i, j));
-    			i=j+1;
-    			j= superclasses.indexOf(',', i);
-    		}
-    		t.addSuperclass(superclasses.substring(i));*/
     	}
     }
     
@@ -122,24 +109,22 @@ public class ComputeCardinalitiesConfig {
     	List<TriplePattern> triples = ((AbstractQuery)query).getTriplePatterns();
     	List<String> predicates = new ArrayList<String>();
     	List<String> domains=new ArrayList<String>(); 
-    	//Set<String> superclasses=new HashSet<String>();
     	for (TriplePattern t : triples) {
     		predicates.add(t.getPredicate());
     		String domain=t.getDomain();
-    		if(!domains.contains(domain)) {
-    			domains.add(domain);
-        		/*for (String sc:t.getSuperclasses()) {
-        			if(!superclasses.contains(sc))
-        				superclasses.add(sc);
-        		}*/
+    		int i=0;
+    		int j=domain.indexOf(',');
+    		while (j>-1) {
+    			if(!domains.contains(domain.substring(i, j))) {
+        			domains.add(domain.substring(i, j));
+        		}
+    			i=j+1;
+    			j= domain.indexOf(',', i);
+    		}
+    		if(!domains.contains(domain.substring(i))) {
+    			domains.add(domain.substring(i));
     		}
     	}
-    	/*for (String sc:superclasses) {
-   			for (String dom: domains) {
-    			if (dom.equals(sc))
-        			domains.remove(dom);
-    		}
-    	}*/
     	
     	int i = 0;
     	for (String p : predicates) {
@@ -147,7 +132,7 @@ public class ComputeCardinalitiesConfig {
     		Method methode = c.getDeclaredMethod(getNiceName(p)+"Max");
     		Integer cardMax = Integer.parseInt(methode.invoke(config).toString());	//commencer par la cardinalité globale
     		int j=0;
-    		while (cardMax>1 && j<domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale max est aussi 1 (on ne distingue pas le cas 0)
+    		while (cardMax>1 && j<domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale max est aussi 1
     			String classe=domains.get(j);
     			try {
     				Method method = c.getDeclaredMethod(classe+getNiceName(p)+"Max");
