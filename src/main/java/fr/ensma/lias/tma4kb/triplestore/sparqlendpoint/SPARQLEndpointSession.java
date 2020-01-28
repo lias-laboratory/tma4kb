@@ -1,6 +1,6 @@
 /*********************************************************************************
-* This file is part of TMA4KB Project.
-* Copyright (C) 2019 LIAS - ENSMA
+* This file is part of QARS4UKB Project.
+* Copyright (C) 2017 LIAS - ENSMA
 *   Teleport 2 - 1 avenue Clement Ader
 *   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
 * 
@@ -15,44 +15,29 @@
 * GNU Lesser General Public License for more details.
 * 
 * You should have received a copy of the GNU Lesser General Public License
-* along with TMA4KB.  If not, see <http://www.gnu.org/licenses/>.
+* along with QARS4UKB.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************************/
-package fr.ensma.lias.tma4kb.query;
+package fr.ensma.lias.tma4kb.triplestore.sparqlendpoint;
 
-import org.aeonbits.owner.Config;
-import org.aeonbits.owner.Config.Sources;
+import fr.ensma.lias.tma4kb.query.AbstractSession;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.util.SPARQLEndpointClient;
 
 /**
  * @author Mickael BARON
  */
-@Sources("classpath:triplestores.config")
-public interface TMA4KBConfig extends Config {
+public class SPARQLEndpointSession extends AbstractSession {
 
-	
-    @Key("jenatdb.repository")
-    String jenaRepository();
+    private SPARQLEndpointClient currentSession;
 
-    @Key("jdbc.database")
-    String jdbcDatabase();
-    
-    @Key("jdbc.url")
-    String jdbcUrl();
+    public SPARQLEndpointSession(SPARQLEndpointClient pCurrentSession) {
+	this.currentSession = pCurrentSession;
+    }
 
-    @Key("jdbc.driver")
-    String jdbcDriver();
+    public SPARQLEndpointClient getSPARQLEndpointClient() {
+	return currentSession;
+    }
 
-    @Key("jdbc.login")
-    String jdbcLogin();
-
-    @Key("jdbc.password")
-    String jdbcPassword();
-    
-
-    @Key("sparqlendpoint.url")
-    String sparqlendpointUrl();
-
-    @Key("sparqlendpoint.defaultgraphuri")
-	String sparqlendpointDefaultGraphURI();
-
-
+    @Override
+    public void close() throws Exception {
+    }
 }
