@@ -637,7 +637,9 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session);
+    	//findQbase(session);
+    	//baseQuery=factory.createQuery("SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> }");
+		baseQuery=factory.createQuery("SELECT * WHERE { ?a <age> ?b }");
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -667,13 +669,14 @@ public abstract class AbstractQuery implements Query {
                 	}
                 	listFIS.put(qTemp, true);
                 	allMFIS.add(qTemp);
-                	List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
-               		for (TriplePattern tp : getTriplePatterns()) {
-               			Query qNew = factory.createQuery(toString(), initialQuery);
+                	List<Query> subqueries = new ArrayList<Query>(); 
+               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
+               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
                 		qNew.removeTriplePattern(tp);
                 		subqueries.add(qNew);
-                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject()))
+                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) {
                 			executedQueries.put(qNew, k+1);
+                		}
                 	}
     				for (Query subquery : subqueries) {
     					if (!markedQueries.containsKey(subquery)) {
@@ -768,7 +771,9 @@ public abstract class AbstractQuery implements Query {
 			findQbaseCS(session);
 			break;}
 		case "db":{
-			baseQuery= factory.createQuery("SELECT * WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/SoccerPlayer> }"); 
+			//baseQuery= factory.createQuery("SELECT * WHERE {?person <http://dbpedia.org/property/birthPlace> <http://dbpedia.org/resource/London> }");//q1
+			//baseQuery= factory.createQuery("SELECT * WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/SoccerPlayer> }"); //q2
+			baseQuery=factory.createQuery("SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> }");
 			break;
 		}
 		default:
