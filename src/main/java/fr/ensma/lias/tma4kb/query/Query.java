@@ -119,7 +119,15 @@ public interface Query {
      * @param k maximum number of results
      */
     void runBFS(Session session, int k);
-    
+
+    /**
+     * Run the variable-based algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+	void runVarBased(Session session, int k) throws Exception;
+	
     /**
      * Run the cardinality-based algorithm and fills allMFIS and allXSS
      * 
@@ -134,41 +142,8 @@ public interface Query {
      * @param session connection to the KB
      * @throws Exception 
      */
-	void findQbase(Session instance) throws Exception;
+	void findQbase(Session instance, String source) throws Exception;
 
-	/**
-     * Use local cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
-     * 
-     * @param session connection to the KB
-	 * @throws Exception 
-     */
-	void findQbaseLocal(Session instance) throws Exception;
-	
-	/**
-     * Use Characteristic Set cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
-     * 
-     * @param session connection to the KB
-	 * @throws Exception 
-     */
-	void findQbaseCS(Session instance) throws Exception;
-	
-	/**
-     * Run the CardAlgo algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     * @param type the method of calculating cardinalities
-	 * @throws Exception 
-     */
-    void runCardAlgo(Session session, int k,String type) throws Exception;
-
-    /**
-     * Run the variable-based algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     */
-	void runVarBased(Session session, int k) throws Exception;
 
 
 }

@@ -15,24 +15,6 @@ import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
 
 public class CardinalityTest {
 
-	@Test	
-	public void testFindQbaseCS() throws Exception {
-		
-		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-		final Session instance = currentQueryFactory.createSession(); 
-		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
-		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");   
-		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
-		
-		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
-		
-		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
-		
-		((AbstractQuery)q).findQbaseCS(instance);
-		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
-		
-		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
-	}
 	
 	@Test	
 	public void testFindQbase() throws Exception {
@@ -47,31 +29,13 @@ public class CardinalityTest {
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
 		
-		q.findQbase(instance);
+		q.findQbase(instance,"/cardinalities.config");
 		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
 		
 		assertEquals(((AbstractQuery)q).baseQuery, t1t2t3); 
 	}
 	
-	@Test	
-	public void testFindQbaseLocal() throws Exception {
-		
-		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-		final Session instance = currentQueryFactory.createSession(); 
-		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession)instance).getConnection(), false, false);
-		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");   
-		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
-		
-		Query t1t2t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }"); 
-		
-		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
-		
-		q.findQbaseLocal(instance);
-		//System.out.println("Qbase : " + ((AbstractQuery)((AbstractQuery)q).baseQuery).toSimpleString(q));
-		
-		assertEquals(t1t2t3,((AbstractQuery)q).baseQuery); 
-	}
-	
+
 	
 	
 	@Test
@@ -93,7 +57,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 		
 		
-		q.runCardAlgo(instance, 3,"global");
+		q.runCardBased(instance, 3);
 		/*for (Query mfis : q.getAllMFIS()) {
 			System.out.println("MFIS : " + ((AbstractQuery)mfis).toSimpleString(q));
 		}

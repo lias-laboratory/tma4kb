@@ -676,68 +676,6 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override
-	public void runCardBased(Session session, int k) throws Exception {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
-		session.clearExecutedQueryCount();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session);
-    	//baseQuery=factory.createQuery("SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> }");
-		//baseQuery=factory.createQuery("SELECT * WHERE { ?a <age> ?b }");
-		markedQueries.put(this, true);
-		listQuery.add(this);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
-			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
-					// FIS
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                	List<Query> subqueries = new ArrayList<Query>(); 
-               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
-               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-                		qNew.removeTriplePattern(tp);
-                		subqueries.add(qNew);
-                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) { //cardinality property
-                			executedQueries.put(qNew, k+1);
-                		}
-        				if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
-                			executedQueries.put(qNew, k+1);
-        				}
-                	}
-    				for (Query subquery : subqueries) {
-    					if (!markedQueries.containsKey(subquery)) {
-    						markedQueries.put(subquery, true);
-    						listQuery.add(subquery);
-    					}
-    				}
-                }
-				else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-	
-	@Override
 	public void runVarBased(Session session, int k) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
@@ -792,83 +730,18 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 	}
-
-
-	@Override
-	public void findQbase(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("wd");
-		c.computeMaxCardinalities(this);
-		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		for (TriplePattern t : this.getTriplePatterns()) {
-			if (!t.getCardMax1() && t.isObjectVariable())
-				baseQuery.removeTriplePattern(t);
-		}
-	}
 	
 	@Override
-	public void findQbaseLocal(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("local");
-		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		do {
-			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
-			c.computeDomains(currentQuery);
-			c.computeMaxLocalCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
-			for (TriplePattern t : currentQuery.getTriplePatterns()) {
-				if (!t.getCardMax1() && t.isObjectVariable()) {
-					baseQuery.removeTriplePattern(t);
-				}
-			}
-		} while (!baseQuery.equals(currentQuery));
-	}
-	
-	@Override
-	public void findQbaseCS(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("cs");
-		Query currentQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		do {
-			currentQuery = (AbstractQuery) factory.createQuery(baseQuery.toString(),initialQuery);
-			c.computeMaxCSCardinalities(currentQuery); // fills maxCard with cardinality in the domain of currentQuery
-			for (TriplePattern t : currentQuery.getTriplePatterns()) {
-				if (!t.getCardMax1() && t.isObjectVariable()) {
-					baseQuery.removeTriplePattern(t);
-				}
-			}
-		} while (!baseQuery.equals(currentQuery));
-	}
-	
-	@Override	
-	public void runCardAlgo(Session session, int k, String type) throws Exception {
-		Set <Query> allMFISbase = new HashSet<Query>();
+	public void runCardBased(Session session, int k) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		switch (type) {
-		case "global":{
-			findQbase(session);
-			break;}
-		case "local":{
-			findQbaseLocal(session);
-			break;}
-		case "cs":{
-			findQbaseCS(session);
-			break;}
-		case "db":{
-			//baseQuery= factory.createQuery("SELECT * WHERE {?person <http://dbpedia.org/property/birthPlace> <http://dbpedia.org/resource/London> }");//q1
-			//baseQuery= factory.createQuery("SELECT * WHERE { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/SoccerPlayer> }"); //q2
-			baseQuery=factory.createQuery("SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> }");
-			break;
-		}
-		default:
-			throw (new Exception("Not a valide algorithm type : "+type));
-		}
-		System.out.println("Qbase : "+baseQuery);
 		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+    	findQbase(session,"/wd100card.config");
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -882,39 +755,51 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
 					// FIS
-	            	for (Query fis : listFIS.keySet()) {
-	            		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-	            			allMFISbase.remove(fis);
-	            		}
-	            	}
-	            	listFIS.put(qTemp, true);
-	            	allMFISbase.add(qTemp);
-	            	List<Query> subqueries = qTemp.getBaseSubQueries(baseQuery); // we only study subqueries of FISs
-					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
-							listQuery.add(subquery);
-						}
-					}
-				
-	            }
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
+                	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                	List<Query> subqueries = new ArrayList<Query>(); 
+               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
+               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+                		qNew.removeTriplePattern(tp);
+                		subqueries.add(qNew);
+                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) { //cardinality property
+                			executedQueries.put(qNew, k+1);
+                		}
+        				if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
+                			executedQueries.put(qNew, k+1);
+        				}
+                	}
+    				for (Query subquery : subqueries) {
+    					if (!markedQueries.containsKey(subquery)) {
+    						markedQueries.put(subquery, true);
+    						listQuery.add(subquery);
+    					}
+    				}
+                }
 				else { // XSS
-				if (!qTemp.isTheEmptyQuery())
-					allXSS.add(qTemp);
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
 				}
 			}
 		}
-		//System.out.println(this.toString());
-		for (Query mfisb:allMFISbase) {
-			Query mfis = (AbstractQuery) factory.createQuery(mfisb.toString(),initialQuery);
-			for (TriplePattern t: baseQuery.getTriplePatterns()) {
-				mfis.removeTriplePattern(t);
-			}
-			allMFIS.add(mfis);
-		}
 	}
 
-
+	@Override
+	public void findQbase(Session instance, String source) throws Exception {
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig(source);
+		c.computeMaxCardinalities(this);
+		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		for (TriplePattern t : this.getTriplePatterns()) {
+			if (!t.getCardMax1() && t.isObjectVariable())
+				baseQuery.removeTriplePattern(t);
+		}
+	}
+	
 }

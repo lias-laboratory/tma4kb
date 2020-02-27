@@ -8,27 +8,10 @@ import fr.ensma.lias.tma4kb.cardinalities.CardinalitiesMakeConfig;
 
 public class MakeCard {
 	
-	@Test
-	public void GlobalMakeConfigTest() throws IOException {
-		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/", "src/test/resources/");
-		c.makeGlobalConfig();
-	}
 	
 	@Test
-	public void LocalMakeConfigTest() throws IOException {
-		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/", "src/test/resources/");
-		c.makeLocalConfig();
-	}
-	
-	@Test
-	public void CSMakeConfigTest() throws IOException {
-		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/", "src/test/resources/");
-		c.makeCSConfig();
-	}
-	
-	@Test
-	public void WDMakeConfigTest() throws IOException {
-		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/WD100", "src/test/resources/");
+	public void MakeConfigTest() throws IOException {
+		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("src/main/resources/", "src/test/resources/");
 		c.makeGlobalConfig();
 	}
 

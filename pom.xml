@@ -37,8 +37,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.aeonbits.owner</groupId>
-			<artifactId>owner</artifactId>
-			<version>1.0.8</version>
+			<artifactId>owner-java8</artifactId>
+			<version>1.0.10</version>
 		</dependency>
 	</dependencies><build>
 		<plugins>
@@ -68,13 +68,7 @@
 			</plugin>
 
 		</plugins>
-		<resources>
-    <resource>
-      <directory>src/main/resources</directory>
-      <includes>
-        <include>queriesWatDiv100.test</include>
-      </includes>
-    </resource>
-  </resources>
+	<!-- <resources> <resource> <directory>src/main/resources</directory> <includes> 
+		<include>queriesWatDiv100.test</include> </includes> </resource> </resources> -->
 	</build>
 </project>
