@@ -28,7 +28,8 @@ import org.aeonbits.owner.Config.Sources;
  * @author Mickael BARON
  */
 @LoadPolicy(LoadType.MERGE)
-@Sources({ "system:env","classpath:TMA4KBConfig.properties" })
+@Sources({ "classpath:TMA4KBConfig.properties" })
+//"system:env",
 public interface TMA4KBConfig extends Config {
 
 	@Key("jenatdb.repository")
