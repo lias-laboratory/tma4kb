@@ -70,7 +70,10 @@
 		</plugins>
 		<resources>
     <resource>
-      <directory>src/main/resources</directory>
+      <directory>src/my-resources</directory>
+      <includes>
+        <include>queriesWatDiv100.test</include>
+      </includes>
     </resource>
   </resources>
 	</build>
