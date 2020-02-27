@@ -38,7 +38,7 @@ public class PropreAlgorithm {
 		  
 
 	 public void testGenAlgorithms() throws Exception {
-		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList("/home/adminlias/tma4kb/target/classes/" + FILE_QUERIES);
+		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList("/" + FILE_QUERIES);
 		 //try {	
 		 ExpRelaxResult resultsBaseline = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
