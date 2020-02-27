@@ -1,4 +1,4 @@
-package test;
+package fr.ensma.lias.tma4kb.execution;
 
 /**
  * @author Stephane JEAN

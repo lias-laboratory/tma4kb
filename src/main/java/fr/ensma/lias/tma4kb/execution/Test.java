@@ -1,4 +1,4 @@
-package test;
+package fr.ensma.lias.tma4kb.execution;
 
 public class Test {
 	public static void main(String[] args) {
