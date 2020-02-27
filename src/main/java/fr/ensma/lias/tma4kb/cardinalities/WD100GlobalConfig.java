@@ -2,7 +2,7 @@ package fr.ensma.lias.tma4kb.cardinalities;
 import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Config.Sources;
 
-@Sources("/WD100cardinalitiesGlobal.config")
+@Sources("classpath:/WD100cardinalitiesGlobal.config")
 public interface WD100GlobalConfig extends Config { 
 
 	@Key("gender.max")
