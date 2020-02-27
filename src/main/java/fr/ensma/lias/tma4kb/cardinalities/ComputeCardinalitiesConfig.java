@@ -29,6 +29,12 @@ public class ComputeCardinalitiesConfig {
 		case ("cs"):{
 			config = ConfigFactory.create(CSConfig.class);
 			break;}
+		case ("wd"):{
+			config = ConfigFactory.create(WD100GlobalConfig.class);
+			break;}
+		case ("test"):{
+			config = ConfigFactory.create(CardinalitiesConfig.class);
+			break;}
 		default:
 			throw (new Exception("Not a valide algorithm type : "+type));
 		}

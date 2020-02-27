@@ -53,10 +53,14 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 		(session).setExecutedQueryCount((session).getExecutedQueryCount() + 1);
 		while(results.hasNext()){
 			i++;
-			results.next();
+			/*if (i<10)
+				System.out.println(results.next());
+			else*/
+				results.next();
 		}	
 		qexec.close();
-		   
+
+    	//System.out.println(sparqlQueryString + i);
 		return i;
 	}
 	

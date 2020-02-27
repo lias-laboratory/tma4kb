@@ -1,4 +1,6 @@
 # Test 1 (Query Q1 5-TP)
 SELECT * WHERE { ?person <http://dbpedia.org/property/birthPlace> <http://dbpedia.org/resource/London> . ?person <http://dbpedia.org/ontology/birthDate> ?birth . ?person <http://xmlns.com/foaf/0.1/name> ?name . ?person <http://dbpedia.org/ontology/deathDate> ?death }
-# Test 1 (Query Q2 4-TP)
+# Test 2 (Query Q2 4-TP)
 SELECT * WHERE { ?s <http://xmlns.com/foaf/0.1/name> ?player . ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/SoccerPlayer> . ?s <http://dbpedia.org/property/position> ?position . ?s <http://dbpedia.org/property/clubs> ?club . ?s <http://dbpedia.org/ontology/birthPlace> ?place }
+# Test 3 (Query Q3 4-TP)
+SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> . ?nation <http://dbpedia.org/ontology/language> ?lang . ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> . ?nation <http://www.w3.org/2000/01/rdf-schema#comment> ?com }

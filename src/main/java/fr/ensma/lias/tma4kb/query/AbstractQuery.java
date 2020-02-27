@@ -445,10 +445,7 @@ public abstract class AbstractQuery implements Query {
 				executedQueries.put(this, k+1);
 				return true;
 			}
-			if (decomp.size()==0) {
-				//decomposePC();
-				setDecomp();
-			}
+			decomposePC();
 			if (decomp.size()==1) {
 				val=isFailingNb(s, k);
 				executedQueries.put(this, val);
@@ -464,16 +461,13 @@ public abstract class AbstractQuery implements Query {
 				}
 				val=1;
 				Integer val2;
-				for (Query q:subQ) {
-					val2= executedQueries.get(q);
-					if (val2!=null) {
-						val*=val2;
-						subQ.remove(q);
-					}
-				}
 				while (!subQ.isEmpty()&val<=k) {
 					Query q = subQ.remove(0);
-					val2=((AbstractQuery)q).isFailingNb(s,k);
+					val2=executedQueries.get(q);
+					if (val2==null) {
+						val2=((AbstractQuery)q).isFailingNb(s,k);
+						executedQueries.put(q, val2);
+					}
 					val*=val2;
 				}
 				executedQueries.put(this, val);
@@ -524,8 +518,8 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 
-	@Override
-	public void runBaseline(Session session, int k) {
+	//@Override
+	public void runBaseline1(Session session, int k) {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -578,7 +572,61 @@ public abstract class AbstractQuery implements Query {
 			
 		}
 	}
+	
+	@Override
+	public void runBaseline(Session session, int k) {
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			List<Query> subqueries = qTemp.getSubQueries();
+			List<Query> superqueries = qTemp.getSuperQueries();
+			if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+				boolean isAnFIS = true;
+				while (isAnFIS && !superqueries.isEmpty()) {
+					Query superquery = superqueries.remove(0);
+					if (!listFIS.containsKey(superquery)) {
+						isAnFIS = false;
+					}
+				}
+                if (isAnFIS) {
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
+                	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                }
+			} else { // Potential XSS
 
+				boolean isXSS = true;
+				while (isXSS && !superqueries.isEmpty()) {
+					Query superquery = superqueries.remove(0);
+					if (!listFIS.containsKey(superquery)) {
+						isXSS = false;
+					}
+				}
+				if (isXSS && !qTemp.isTheEmptyQuery())
+					allXSS.add(qTemp);
+			}
+			for (Query subquery : subqueries) {
+				if (!markedQueries.containsKey(subquery)) {
+					markedQueries.put(subquery, true);
+					listQuery.add(subquery);
+				}
+			}	
+			
+		}
+	}
 	@Override
 	public void runBFS(Session session, int k) {
 		allMFIS = new HashSet<Query>();
@@ -628,7 +676,7 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override
-	public void runHybrid(Session session, int k) throws Exception {
+	public void runCardBased(Session session, int k) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -637,29 +685,22 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	//findQbase(session);
+    	findQbase(session);
     	//baseQuery=factory.createQuery("SELECT * WHERE { ?lang <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Language> ?nation <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Country> }");
-		baseQuery=factory.createQuery("SELECT * WHERE { ?a <age> ?b }");
+		//baseQuery=factory.createQuery("SELECT * WHERE { ?a <age> ?b }");
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
 			List<Query> superqueries = qTemp.getSuperQueries();
 			boolean parentsFIS = true;
-			boolean sameVariables = false;
 			while (parentsFIS && !superqueries.isEmpty()) {
 				Query superquery = superqueries.remove(0);
 				if (!listFIS.containsKey(superquery)) {
 					parentsFIS = false;
 				}
-				if (((AbstractQuery)superquery).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) {
-					sameVariables=true;
-				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (sameVariables) { // if this query has the same number of variables as one of its superqueries, then it must fail
-					executedQueries.put(qTemp, k+1);
-				}
 				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
@@ -674,9 +715,12 @@ public abstract class AbstractQuery implements Query {
                			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
                 		qNew.removeTriplePattern(tp);
                 		subqueries.add(qNew);
-                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) {
+                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) { //cardinality property
                 			executedQueries.put(qNew, k+1);
                 		}
+        				if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
+                			executedQueries.put(qNew, k+1);
+        				}
                 	}
     				for (Query subquery : subqueries) {
     					if (!markedQueries.containsKey(subquery)) {
@@ -693,25 +737,66 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 	
-	
-	/**
-     * Uses filtering conditions (only one variable) to find Qbase starting point and fills Qbase
-     * 
-     * @param session connection to the KB
-     * @throws Exception 
-     */
-	/* probably don't need this, as the case of single variable patterns is included in "same amount of variables when pattern is removed"
-	private void findQbaseGeneral(Session instance) throws Exception {
-		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
-		for (TriplePattern t : this.getTriplePatterns()) {
-			if (!(t.getVariables().size()==1))
-				baseQuery.removeTriplePattern(t);
+	@Override
+	public void runVarBased(Session session, int k) throws Exception {
+		allMFIS = new HashSet<Query>();
+		allXSS = new HashSet<Query>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<Query>();
+		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
+		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
+		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			if (parentsFIS) {
+				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+					// FIS
+                	for (Query fis : listFIS.keySet()) {
+                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
+                			allMFIS.remove(fis);
+                		}
+                	}
+                	listFIS.put(qTemp, true);
+                	allMFIS.add(qTemp);
+                	List<Query> subqueries = new ArrayList<Query>(); 
+               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
+               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+                		qNew.removeTriplePattern(tp);
+                		subqueries.add(qNew);
+                		if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
+                			executedQueries.put(qNew, k+1);
+        				}
+                	}
+    				for (Query subquery : subqueries) {
+    					if (!markedQueries.containsKey(subquery)) {
+    						markedQueries.put(subquery, true);
+    						listQuery.add(subquery);
+    					}
+    				}
+                }
+				else { // XSS
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
+				}
+			}
 		}
-	}*/
+	}
+
 
 	@Override
 	public void findQbase(Session instance) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("global");
+		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig("wd");
 		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {

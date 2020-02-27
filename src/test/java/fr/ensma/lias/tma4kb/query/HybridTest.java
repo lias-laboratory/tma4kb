@@ -26,7 +26,7 @@ public class HybridTest {
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
 
-		q.runHybrid(instance, 4);
+		q.runCardBased(instance, 4);
 		
 		List<Query> expectedMFIS = new ArrayList<>();
 		List<Query> expectedXSS = new ArrayList<>();
@@ -50,7 +50,7 @@ public class HybridTest {
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));
 		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
 		
-		q.runHybrid(instance, 3);
+		q.runCardBased(instance, 3);
 		
 		expectedMFIS = new ArrayList<>();
 		expectedXSS = new ArrayList<>();

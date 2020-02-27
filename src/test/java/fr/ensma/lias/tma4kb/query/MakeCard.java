@@ -25,5 +25,11 @@ public class MakeCard {
 		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/", "src/test/resources/");
 		c.makeCSConfig();
 	}
+	
+	@Test
+	public void WDMakeConfigTest() throws IOException {
+		CardinalitiesMakeConfig c = new CardinalitiesMakeConfig("C:/Doctorat/TMA/WD100", "src/test/resources/");
+		c.makeGlobalConfig();
+	}
 
 }

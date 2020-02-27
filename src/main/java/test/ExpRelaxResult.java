@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.query;
+package test;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import fr.ensma.lias.tma4kb.query.Query;
 
 
 

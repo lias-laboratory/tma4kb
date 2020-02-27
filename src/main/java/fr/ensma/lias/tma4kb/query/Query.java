@@ -121,12 +121,12 @@ public interface Query {
     void runBFS(Session session, int k);
     
     /**
-     * Run the Hybrid algorithm and fills allMFIS and allXSS
+     * Run the cardinality-based algorithm and fills allMFIS and allXSS
      * 
      * @param session connection to the KB
      * @param k maximum number of results
      */
-    void runHybrid(Session session, int k)throws Exception;
+    void runCardBased(Session session, int k)throws Exception;
 
     /**
      * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
@@ -161,5 +161,14 @@ public interface Query {
 	 * @throws Exception 
      */
     void runCardAlgo(Session session, int k,String type) throws Exception;
+
+    /**
+     * Run the variable-based algorithm and fills allMFIS and allXSS
+     * 
+     * @param session connection to the KB
+     * @param k maximum number of results
+     */
+	void runVarBased(Session session, int k) throws Exception;
+
 
 }
