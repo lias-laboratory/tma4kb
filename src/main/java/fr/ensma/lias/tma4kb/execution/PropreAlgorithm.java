@@ -4,6 +4,8 @@ package fr.ensma.lias.tma4kb.execution;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ public class PropreAlgorithm {
 		  
 
 	 public void testGenAlgorithms() throws Exception {
-		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList(FILE_QUERIES);
+		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList("/"+FILE_QUERIES);
 		 //try {	
 		 ExpRelaxResult resultsBaseline = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
@@ -250,8 +252,8 @@ public class PropreAlgorithm {
 
 		protected List<QueryExplain> newTestResultPairList(final String filename) throws IOException {
 			final List<QueryExplain> queries = new ArrayList<QueryExplain>();
-			final URL fileUrl = PropreAlgorithm.class.getResource(filename);
-			final FileReader file = new FileReader(fileUrl.getFile());
+			final InputStream fileUrl = PropreAlgorithm.class.getResourceAsStream(filename);
+			final InputStreamReader file = new InputStreamReader(fileUrl);
 			BufferedReader in = null;
 			try {
 				in = new BufferedReader(file);
