@@ -797,7 +797,7 @@ public abstract class AbstractQuery implements Query {
 		c.computeMaxCardinalities(this);
 		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
-			if (!t.getCardMax1() && t.isObjectVariable())
+			if (!t.isPredicateVariable() && !t.getCardMax1() )
 				baseQuery.removeTriplePattern(t);
 		}
 	}

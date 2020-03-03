@@ -51,7 +51,8 @@ public class ComputeCardinalitiesConfig {
     	List<TriplePattern> triples = ((AbstractQuery)query).getTriplePatterns();
     	List<String> predicates = new ArrayList<String>();
     	for (TriplePattern t : triples) {
-    		predicates.add(t.getPredicate());
+    		if (!t.isPredicateVariable())
+    			predicates.add(t.getPredicate());
     	}
     	
     	int i = 0;
