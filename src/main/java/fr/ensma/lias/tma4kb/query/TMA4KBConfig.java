@@ -32,7 +32,7 @@ import org.aeonbits.owner.Config.Sources;
 //"system:env",
 public interface TMA4KBConfig extends Config {
 
-	@Key("jenatdb.repository")
+	@Key("jenatdb_repository")
 	String jenaRepository();
 
 	@Key("jdbc.database")
