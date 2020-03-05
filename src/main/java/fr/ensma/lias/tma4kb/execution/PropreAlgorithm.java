@@ -44,7 +44,8 @@ public class PropreAlgorithm {
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsCard = new ExpRelaxResult(NB_EXEC);
-		 int K =200;
+		 //int K =200;
+		 int K[] = {2000,300,200000,5000,100,200000,5000,5000,150} ;
 			for (int i = 0; i<newTestResultPairList.size(); i++) {
 			// ***************   bfs Q ****************** 
 				QueryExplain qExplain = newTestResultPairList.get(i);
@@ -62,7 +63,7 @@ public class PropreAlgorithm {
 					q0 = factory.createQuery(q0.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q0.runBaseline(session, K);
+					q0.runBaseline(session, K[i]);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
@@ -87,7 +88,7 @@ public class PropreAlgorithm {
 					q1 = factory.createQuery(q1.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q1.runBFS(session, K);
+					q1.runBFS(session, K[i]);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
@@ -111,7 +112,7 @@ public class PropreAlgorithm {
 					q = factory.createQuery(q.toString());
 					session = ((JenaQueryFactory) factory).createSession();				
 					long time = System.currentTimeMillis();
-					q.runVarBased(session, K);
+					q.runVarBased(session, K[i]);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ; // /1000f) ;
 					int nbExecutedQuery = session.getExecutedQueryCount();
@@ -137,7 +138,7 @@ public class PropreAlgorithm {
 					q2 = factory.createQuery(q2.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q2.runCardBased(session, K);
+					q2.runCardBased(session, K[i]);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time));
 					int nbExecutedQuery = session.getExecutedQueryCount();
