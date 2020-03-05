@@ -24,7 +24,7 @@ public class PropreAlgorithm {
 
 	private QueryFactory factory;
 	private Session session;
-	private String FILE_QUERIES = "queriesWatDiv100.test";
+	private String FILE_QUERIES = "queriesDBpedia.test";
 	private int NB_EXEC = 5;
 
 	public void setUp() {

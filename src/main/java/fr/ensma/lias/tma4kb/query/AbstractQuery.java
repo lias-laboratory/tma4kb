@@ -741,7 +741,7 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session,"/wdcard.config");
+    	findQbase(session,"/dbpcard.config");
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
