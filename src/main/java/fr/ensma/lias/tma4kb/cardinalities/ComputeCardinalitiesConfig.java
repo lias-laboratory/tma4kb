@@ -1,32 +1,35 @@
 package fr.ensma.lias.tma4kb.cardinalities;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.aeonbits.owner.Config;
-
-import fr.ensma.lias.tma4kb.execution.MyTest;
 import fr.ensma.lias.tma4kb.query.AbstractQuery;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.TriplePattern;
 
 public class ComputeCardinalitiesConfig {
 	
-	public Config config;
 	Properties properties = new Properties();
 
-	public ComputeCardinalitiesConfig(String source) throws Exception {
-		InputStream input = MyTest.class.getResourceAsStream(source);
-		try{
-			properties.load(input);
-		}
-		finally{
-			input.close();
-		} 
+	/**
+	 * 
+	 * @param source the file containing cardinalities
+	 * @throws IOException 
+	 */
+	public ComputeCardinalitiesConfig(String source) throws IOException {
+		InputStream input = ComputeCardinalitiesConfig.class.getResourceAsStream(source);
+		properties.load(input);
+		input.close();
 	}
 	
+	/**
+	 * Removes the prefix from an URI
+	 * @param uri the URI to remove the prefix from
+	 * @return the URI without its prefix
+	 */
 	public String getNiceName(String uri) {
 		int indexOfSeparator = uri.indexOf('#');
 		
@@ -58,7 +61,6 @@ public class ComputeCardinalitiesConfig {
     	int i = 0;
     	for (String p : predicates) {
     		Integer cardMax = Integer.parseInt(properties.get(getNiceName(p)+".max").toString());
-    		//((AbstractQuery)query).setCardMax(i, cardMax);
     		if (cardMax<=1)
     			((AbstractQuery)query).setCardMax(i, true);
     		else
