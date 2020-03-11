@@ -1,8 +1,8 @@
 package fr.ensma.lias.tma4kb.execution;
 
 /**
- * @author Stephane JEAN
- * @author Ibrahim DELLAL
+ * A class to store the execution time and number of executed queries for each algorithm execution
+ * 
  */
 public class QueryResult {
 
@@ -10,13 +10,10 @@ public class QueryResult {
 
 	private int nbExecutedQuery;
 
-	private int nbCacheHits;
-
-	public QueryResult(float time, int nbExecutedQuery, int nbCacheHits) {	
+	public QueryResult(float time, int nbExecutedQuery) {	
 		super();
 		this.time = time;
 		this.nbExecutedQuery = nbExecutedQuery;
-		this.nbCacheHits = nbCacheHits;
 	}
 
 	public float getTime() {
@@ -27,7 +24,4 @@ public class QueryResult {
 		return nbExecutedQuery;
 	}
 
-	public int getNbCacheHits() {
-		return nbCacheHits;
-	}
 }

@@ -33,8 +33,6 @@ public class ExpRelaxResult {
     
     private static int ID_NB_EXECUTED_QUERY = 2;
     
-    private static int ID_NB_CACHE_HITS = 3;
-
     /**
      * Number of execution of each algorithm
      */
@@ -52,14 +50,14 @@ public class ExpRelaxResult {
 	this.resultsByQuery = new HashMap<Query, QueryResult[]>();
     }
 
-    public void addQueryResult(int i, Query q, float time, int nbExecutedQuery, int nbCacheHits) {
+    public void addQueryResult(int i, Query q, float time, int nbExecutedQuery) {
     	
     	QueryResult[] queryResults = resultsByQuery.get(q);
     	if (queryResults==null) {
     		queryResults = new QueryResult[nbExecutions];
     		listOfQueries.add(q);
 	    }
-    	queryResults[i] = new QueryResult(time, nbExecutedQuery, nbCacheHits);
+    	queryResults[i] = new QueryResult(time, nbExecutedQuery);
     	resultsByQuery.put(q, queryResults);
     }
 
@@ -86,14 +84,6 @@ public class ExpRelaxResult {
 	return getAvgMetric(q, ID_NB_EXECUTED_QUERY);
     }
     
-    /**
-     * Get the average of the number of cache hits
-     * @param q the query
-     * @return the average of the number of cache hits
-     */
-    public float getAvgCacheHits(Query q) {
-	return getAvgMetric(q, ID_NB_CACHE_HITS);
-    }
 
     /**
      * Computes the average of a given metrics 
@@ -110,8 +100,6 @@ public class ExpRelaxResult {
    		    res += results[j].getTime();
    		else if (idMetric == ID_NB_EXECUTED_QUERY)
    		    res += results[j].getNbExecutedQuery();
-   		else if (idMetric == ID_NB_CACHE_HITS)
-   		    res += results[j].getNbCacheHits();
    	    }
    	}
    	return res / nbExecutions;

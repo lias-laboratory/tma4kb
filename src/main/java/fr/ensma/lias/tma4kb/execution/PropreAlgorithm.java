@@ -24,7 +24,7 @@ public class PropreAlgorithm {
 
 	private QueryFactory factory;
 	private Session session;
-	private String FILE_QUERIES = "queriesDBpedia.test";
+	private String FILE_QUERIES = "queriesWatDiv100.test";
 	private int NB_EXEC = 5;
 
 	public void setUp() {
@@ -44,8 +44,8 @@ public class PropreAlgorithm {
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsCard = new ExpRelaxResult(NB_EXEC);
-		 //int K =200;
-		 int K[] = {2000,300,200000,5000,100,200000,5000,5000,150} ;
+		 int K =100;
+		 //int K[] = {2000,300,200000,5000,100,200000,5000,5000,150} ;
 			for (int i = 0; i<newTestResultPairList.size(); i++) {
 			// ***************   bfs Q ****************** 
 				QueryExplain qExplain = newTestResultPairList.get(i);
@@ -63,14 +63,14 @@ public class PropreAlgorithm {
 					q0 = factory.createQuery(q0.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q0.runBaseline(session, K[i]);
+					q0.runBaseline(session, K);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
 					
 					
 					if (k > 0) {
-						resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery, 0);
+						resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
 						System.out.println("baseline - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
@@ -88,14 +88,14 @@ public class PropreAlgorithm {
 					q1 = factory.createQuery(q1.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q1.runBFS(session, K[i]);
+					q1.runBFS(session, K);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
 					
 					
 					if (k > 0) {
-						resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, 0);
+						resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery);
 						System.out.println("bfs - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
@@ -112,7 +112,7 @@ public class PropreAlgorithm {
 					q = factory.createQuery(q.toString());
 					session = ((JenaQueryFactory) factory).createSession();				
 					long time = System.currentTimeMillis();
-					q.runVarBased(session, K[i]);
+					q.runVarBased(session, K);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time)) ; // /1000f) ;
 					int nbExecutedQuery = session.getExecutedQueryCount();
@@ -120,7 +120,7 @@ public class PropreAlgorithm {
 					
 					
 					if (k > 0) {
-						resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, 0);
+						resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery);
 						System.out.println("variable based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 				}
@@ -138,15 +138,14 @@ public class PropreAlgorithm {
 					q2 = factory.createQuery(q2.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q2.runCardBased(session, K[i]);
+					q2.runCardBased(session, K);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time));
 					int nbExecutedQuery = session.getExecutedQueryCount();
 					
 					
-					
 					if (k > 0) {
-						resultsCard.addQueryResult(k - 1, q2, tps, nbExecutedQuery, 0);
+						resultsCard.addQueryResult(k - 1, q2, tps, nbExecutedQuery);
 						System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 				}

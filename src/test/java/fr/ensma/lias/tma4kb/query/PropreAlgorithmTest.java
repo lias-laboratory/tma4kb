@@ -1,6 +1,8 @@
 package fr.ensma.lias.tma4kb.query;
 
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.ensma.lias.tma4kb.execution.ExpRelaxResult;
 import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
 
 
@@ -25,7 +28,7 @@ public class PropreAlgorithmTest {
 	private QueryFactory factory;
 
 	private Session session;
-	private static final String FILE_QUERIES = "queriesWatDiv1.test";
+	private static final String FILE_QUERIES = "queriesDBpedia.test";
 	private static final int NB_EXEC = 5;
 	
 	@Before
@@ -41,12 +44,12 @@ public class PropreAlgorithmTest {
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsCard = new ExpRelaxResult(NB_EXEC);
-		 int K =200;
-			for (int i = 25; i<28/*newTestResultPairList.size()**/; i++) {
+		 int K[] = {2000,300,200000,5000,100,200000,5000,5000,150,1} ;
+			for (int i =0; i<1/*newTestResultPairList.size()**/; i++) {
 			// ***************   bfs Q ****************** 
 				QueryExplain qExplain = newTestResultPairList.get(i);
 				String description = qExplain.getDescription();
-				/**/
+				/**
 				// *********************** Baseline******************************
 				Query q0 = qExplain.getQuery();
 				description = qExplain.getDescription();
@@ -54,27 +57,27 @@ public class PropreAlgorithmTest {
 				System.out.println("Query (" + description + "): " + q0);
 				System.out.println("-----------------------------------------------------------");
 				
-				for (int k = 0; k <= NB_EXEC; k++) {
+				for (int k = 1; k <= NB_EXEC; k++) {
 					q0 = qExplain.getQuery();
 					q0 = factory.createQuery(q0.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q0.runBaseline(session, K);
+					q0.runBaseline(session, K[i]);
 					long end = System.currentTimeMillis();
 					/*for (Query mfis:q0.getAllMFIS())
 						System.out.println("MFIS : "+ mfis);
 					for (Query xss:q0.getAllXSS())
-						System.out.println("XSS : "+ xss);*/
+						System.out.println("XSS : "+ xss);*
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
 					
 					
 					if (k > 0) {
-						resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery, 0);
+						resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
 						System.out.println("baseline - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
-				}/**/
+				}/**
 				
 				// *********************** BFS******************************
 				Query q1 = qExplain.getQuery();
@@ -83,23 +86,23 @@ public class PropreAlgorithmTest {
 				System.out.println("Query (" + description + "): " + q1);
 				System.out.println("-----------------------------------------------------------");
 				
-				for (int k = 0; k <= NB_EXEC; k++) {
+				for (int k = 1; k <= NB_EXEC; k++) {
 					q1 = qExplain.getQuery();
 					q1 = factory.createQuery(q1.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q1.runBFS(session, K);
+					q1.runBFS(session, K[i]);
 					long end = System.currentTimeMillis();
 					/*for (Query mfis:q1.getAllMFIS())
 						System.out.println("MFIS : "+ mfis);
 					for (Query xss:q1.getAllXSS())
-						System.out.println("XSS : "+ xss);*/
+						System.out.println("XSS : "+ xss);*
 					float tps = ((float) (end - time)) ;// / 1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
 					
 					
 					if (k > 0) {
-						resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, 0);
+						resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery);
 						System.out.println("bfs - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
@@ -112,23 +115,23 @@ public class PropreAlgorithmTest {
 				System.out.println("Query (" + description + "): " + q);
 				System.out.println("-----------------------------------------------------------");
 
-				for (int k = 0; k <= NB_EXEC; k++) {
+				for (int k = 1; k <= NB_EXEC; k++) {
 					q = factory.createQuery(q.toString());
 					session = ((JenaQueryFactory) factory).createSession();				
 					long time = System.currentTimeMillis();
-					q.runVarBased(session, K);
+					q.runVarBased(session, K[i]);
 					long end = System.currentTimeMillis();
-					/*for (Query mfis:q.getAllMFIS())
+					for (Query mfis:q.getAllMFIS())
 						System.out.println("MFIS : "+ mfis);
 					for (Query xss:q.getAllXSS())
-						System.out.println("XSS : "+ xss);*/
+						System.out.println("XSS : "+ xss);
 					float tps = ((float) (end - time)) ; // /1000f) ;
 					int nbExecutedQuery = session.getExecutedQueryCount();
 					
 					
 					
 					if (k > 0) {
-						resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, 0);
+						resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery);
 						System.out.println("variable based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 				}
@@ -141,12 +144,12 @@ public class PropreAlgorithmTest {
 				System.out.println("Query (" + description + "): " + q2);
 				System.out.println("-----------------------------------------------------------");
 				
-				for (int k = 0; k <= NB_EXEC; k++) {
+				for (int k = 1; k <= NB_EXEC; k++) {
 					q2 = qExplain.getQuery();
 					q2 = factory.createQuery(q2.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q2.runCardBased(session, K);
+					q2.runCardBased(session, K[i]);
 					long end = System.currentTimeMillis();
 					for (Query mfis:q2.getAllMFIS())
 						System.out.println("MFIS : "+ mfis);
@@ -158,7 +161,7 @@ public class PropreAlgorithmTest {
 					
 					
 					if (k > 0) {
-						resultsCard.addQueryResult(k - 1, q2, tps, nbExecutedQuery, 0);
+						resultsCard.addQueryResult(k - 1, q2, tps, nbExecutedQuery);
 						System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 				}
@@ -178,12 +181,12 @@ public class PropreAlgorithmTest {
 				assertTrue(q1.getAllMFIS().containsAll((q0.getAllMFIS())));
 				assertTrue(q0.getAllXSS().containsAll((q1.getAllXSS())));
 				assertTrue(q1.getAllXSS().containsAll((q0.getAllXSS())));
-								
+					*/			
 				assertTrue(q.getAllMFIS().containsAll((q2.getAllMFIS())));
 				assertTrue(q2.getAllMFIS().containsAll((q.getAllMFIS())));
 				assertTrue(q.getAllXSS().containsAll((q2.getAllXSS())));
 				assertTrue(q2.getAllXSS().containsAll((q.getAllXSS())));
-				
+				/*
 				for (Query mfis:q.getAllMFIS()) {
 					System.out.println(mfis);
 				}*/
