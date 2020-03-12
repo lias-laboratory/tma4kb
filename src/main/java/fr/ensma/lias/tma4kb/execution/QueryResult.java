@@ -6,6 +6,9 @@ package fr.ensma.lias.tma4kb.execution;
  */
 public class QueryResult {
 
+	/**
+	 * execution time in ms
+	 */
 	private float time;
 
 	private int nbExecutedQuery;

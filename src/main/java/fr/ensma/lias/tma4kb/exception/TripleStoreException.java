@@ -22,7 +22,6 @@ package fr.ensma.lias.tma4kb.exception;
 /**
  * Encapsulate all the exception coming from the triple store.
  * 
- * @author Stephane Jean
  */
 public class TripleStoreException extends RuntimeException {
 

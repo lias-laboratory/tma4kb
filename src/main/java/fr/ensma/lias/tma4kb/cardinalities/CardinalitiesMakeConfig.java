@@ -10,14 +10,30 @@ import java.nio.file.Paths;
 
 public class CardinalitiesMakeConfig {
 	
-	public String root ;
+	/**
+	 * path to save the output cardinalities file
+	 */
+	public String output ;
+	/**
+	 * input cardinalities file
+	 */
 	public String input;
 	
-	public CardinalitiesMakeConfig(String rt, String inpt) {
-		root=rt;
-		input=inpt;
+	/**
+	 * 
+	 * @param rt path to store the cardinalities config file
+	 * @param inpt input of the cardinality calculation
+	 */
+	public CardinalitiesMakeConfig(String out, String in) {
+		output=out;
+		input=in;
 	}
 
+	/**
+	 * Removes the prefix from an URI
+	 * @param uri the URI to remove the prefix from
+	 * @return the URI without its prefix
+	 */
 	public String getNiceName(String uri) {
 		int indexOfSeparator = uri.indexOf('#');
 		
@@ -29,11 +45,14 @@ public class CardinalitiesMakeConfig {
 			return uri.substring(indexOfSlash + 1, uri.length());
 		}
 	}
-	
+	/**
+	 * Reads an input file containing cardinalities and writes the cardinalities in the format predicate.max=N in the output file
+	 * @throws IOException
+	 */
 	public void makeGlobalConfig() throws IOException {
-		File INPUT_FILE =  new File(root+"wd100card.config");
-		BufferedReader br = Files.newBufferedReader(Paths.get(input+"globalcardinalities/part-00000"));
-		FileWriter res = new FileWriter(INPUT_FILE);
+		File OUTPUT_FILE =  new File(output);
+		BufferedReader br = Files.newBufferedReader(Paths.get(input));
+		FileWriter res = new FileWriter(OUTPUT_FILE);
 		BufferedWriter bw = new BufferedWriter(res);
 		String line = null;
 		while ((line = br.readLine()) != null) {
