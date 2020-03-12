@@ -1,22 +1,3 @@
-/*********************************************************************************
-* This file is part of TMA4KB Project.
-* Copyright (C) 2019 LIAS - ENSMA
-*   Teleport 2 - 1 avenue Clement Ader
-*   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
-* 
-* QARS4UKB is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* QARS4UKB is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-* 
-* You should have received a copy of the GNU Lesser General Public License
-* along with TMA4KB.  If not, see <http://www.gnu.org/licenses/>.
-**********************************************************************************/
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.ArrayList;
@@ -25,7 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Stephane JEAN
+ * @author Stephane JEAN (jean@ensma.fr)
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
 public class TriplePattern {
 
@@ -58,30 +40,29 @@ public class TriplePattern {
 	 * indice of this triple pattern in a query
 	 */
 	private int indiceInQuery;
-	
+
 	/**
-	 * global maximum cardinality of the predicate 
+	 * global maximum cardinality of the predicate
 	 */
-	//private Integer cardMax;
-	
+	// private Integer cardMax;
+
 	/**
 	 * true if maximum cardinality of the predicate is 1 or 0, false otherwise
 	 */
 	private Boolean cardMax1;
-	
+
 	/**
 	 * Compares maximum cardinality of the predicate to 1
+	 * 
 	 * @return if maximum cardinality of the predicate is less or equal to 1
 	 */
 	public boolean getCardMax1() {
 		return cardMax1;
 	}
-	
+
 	public void setCardMax1(boolean card) {
-		cardMax1=card;
+		cardMax1 = card;
 	}
-
-
 
 	/**
 	 * Get the subject of this triple pattern

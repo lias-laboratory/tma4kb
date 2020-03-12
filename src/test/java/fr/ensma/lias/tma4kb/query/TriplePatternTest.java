@@ -1,22 +1,3 @@
-/*********************************************************************************
-* This file is part of TMA4KB Project.
-* Copyright (C) 2019 LIAS - ENSMA
-*   Teleport 2 - 1 avenue Clement Ader
-*   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
-* 
-* QARS4UKB is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* QARS4UKB is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-* 
-* You should have received a copy of the GNU Lesser General Public License
-* along with TMA4KB.  If not, see <http://www.gnu.org/licenses/>.
-**********************************************************************************/
 package fr.ensma.lias.tma4kb.query;
 
 import static org.junit.Assert.assertEquals;
@@ -26,6 +7,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
+ */
 public class TriplePatternTest {
 
 	/**
@@ -52,6 +36,7 @@ public class TriplePatternTest {
 
 	@Before
 	public void setUp() throws Exception {
+		// Given and When
 		t1 = new TriplePattern("?p <type> <p>", 1);
 		t2 = new TriplePattern("?p <advises> ?s", 1);
 		t3 = new TriplePattern("?s <age> '25'", 1);
@@ -61,7 +46,8 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testGetSuject() {
+	public void getSujectTest() {
+		// Then
 		assertEquals("?p", t1.getSubject());
 		assertEquals("?p", t2.getSubject());
 		assertEquals("?s", t3.getSubject());
@@ -70,7 +56,8 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testGetPredicate() {
+	public void getPredicateTest() {
+		// Then
 		assertEquals("type", t1.getPredicate());
 		assertEquals("advises", t2.getPredicate());
 		assertEquals("age", t3.getPredicate());
@@ -79,7 +66,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testGetObject() {
+	public void getObjectTest() {
 		assertEquals("p", t1.getObject());
 		assertEquals("?s", t2.getObject());
 		assertEquals("25", t3.getObject());
@@ -88,7 +75,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testToString() {
+	public void toStringTest() {
 		assertEquals("?p <type> <p>", t1.toString());
 		assertEquals("?p <advises> ?s", t2.toString());
 		assertEquals("?s <age> '25'", t3.toString());
@@ -98,7 +85,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testToSimpleString() {
+	public void toSimpleStringTest() {
 		assertEquals("t1", t1.toSimpleString());
 		assertEquals("t1", t2.toSimpleString());
 		assertEquals("t1", t3.toSimpleString());
@@ -107,7 +94,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testGetVariables() {
+	public void getVariablesTest() {
 		assertEquals(1, t1.getVariables().size());
 		assertEquals(2, t2.getVariables().size());
 		assertEquals(1, t3.getVariables().size());
@@ -116,7 +103,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testIsSubjectVariable() {
+	public void isSubjectVariableTest() {
 		assertTrue(t1.isSubjectVariable());
 		assertTrue(t2.isSubjectVariable());
 		assertTrue(t3.isSubjectVariable());
@@ -125,7 +112,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testIsPredicateVariable() {
+	public void isPredicateVariableTest() {
 		assertFalse(t1.isPredicateVariable());
 		assertFalse(t2.isPredicateVariable());
 		assertFalse(t3.isPredicateVariable());
@@ -134,7 +121,7 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testIsObjectVariable() {
+	public void isObjectVariabletest() {
 		assertFalse(t1.isObjectVariable());
 		assertTrue(t2.isObjectVariable());
 		assertFalse(t3.isObjectVariable());
@@ -143,12 +130,12 @@ public class TriplePatternTest {
 	}
 
 	@Test
-	public void testEquals() {
+	public void equalsTest() {
 		assertTrue(t1.equals(new TriplePattern("?p <type> <p>", 2)));
 	}
 
 	@Test
-	public void testToSQL() {
+	public void toSQLTest() {
 		String sqlT1 = "select s as p from t where p='type' and o='p'";
 		assertEquals(sqlT1, t1.toSQL());
 		String sqlT2 = "select s as p, o as s from t where p='advises'";

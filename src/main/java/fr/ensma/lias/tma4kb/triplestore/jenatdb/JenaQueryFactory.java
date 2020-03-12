@@ -7,19 +7,18 @@ import fr.ensma.lias.tma4kb.query.AbstractQueryFactory;
 import fr.ensma.lias.tma4kb.query.Session;
 
 /**
- * @author Stephane JEAN
+ * @author Stephane JEAN (jean@ensma.fr)
  */
 public class JenaQueryFactory extends AbstractQueryFactory {
 
-    @Override
-    public fr.ensma.lias.tma4kb.query.Query createQuery(String rdfQuery) {
-	return new JenaQuery(this, rdfQuery);
-    }
+	@Override
+	public fr.ensma.lias.tma4kb.query.Query createQuery(String rdfQuery) {
+		return new JenaQuery(this, rdfQuery);
+	}
 
-    @Override
-    public Session createSession() {
-    	Dataset dataset = TDBFactory
-    			.createDataset(this.getConfig().jenaRepository());
-    	return (Session) new JenaSession(dataset);
-    }
+	@Override
+	public Session createSession() {
+		Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
+		return (Session) new JenaSession(dataset);
+	}
 }

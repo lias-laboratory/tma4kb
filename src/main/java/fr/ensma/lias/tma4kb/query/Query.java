@@ -1,31 +1,11 @@
-/*********************************************************************************
-* This file is part of TMA4KB Project.
-* Copyright (C) 2019 LIAS - ENSMA
-*   Teleport 2 - 1 avenue Clement Ader
-*   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
-* 
-* QARS4UKB is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* QARS4UKB is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-* 
-* You should have received a copy of the GNU Lesser General Public License
-* along with TMA4KB.  If not, see <http://www.gnu.org/licenses/>.
-**********************************************************************************/
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.List;
 import java.util.Set;
 
-
-
 /**
- * @author Stephane JEAN
+ * @author Stephane JEAN (jean@ensma.fr)
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
 public interface Query {
 
@@ -36,122 +16,124 @@ public interface Query {
 	 * @param k the maximum number of answers
 	 * @return the number of answers
 	 */
-	int isFailing(Session session, int k);    
-    
+	int isFailing(Session session, int k);
+
 	/**
 	 * get the factory that created this query
 	 * 
 	 * @return the factory that created this query
 	 */
-	QueryFactory getFactory() ;
-	
+	QueryFactory getFactory();
+
 	/**
 	 * Returns the triple patterns of the query
 	 * 
 	 * @return the triple patterns of the query
 	 */
 	List<TriplePattern> getTriplePatterns();
-	
-    /**
-     * Add a triple pattern to this query
-     * 
-     * @param tp the added triple pattern
-     */
-    void addTriplePattern(TriplePattern tp);
-    
-    /**
-     * Remove the input triple pattern from this query
-     * 
-     * @param the triple pattern to remove
-     */
-    void removeTriplePattern(TriplePattern t);
-    
-    /**
-     * Get all the subqueries of this query
-     * @return the subqueries of this query
-     */
-    List<Query> getSubQueries();
-    
-    /**
-     * Get all the superqueries of this query
-     * @return the superqueries of this query
-     */
-    List<Query> getSuperQueries();
-        
-    /**
-     * Return true if this query is empty
-     * @return true if this query is empty
-     */
-    boolean isTheEmptyQuery();
-	
-    /**
-     * Return the current MFISs of this query
-     * 
-     * @return the MFISs of this query
-     */
-    Set<Query> getAllMFIS();
 
-    /**
-     * Return the current XSSs of this query
-     * 
-     * @return the XSSs of this query
-     */
-    Set<Query> getAllXSS();
-    
-    /**
-     * Return the variables of this query
-     * 
-     * @return the variables of this query
-     */
+	/**
+	 * Add a triple pattern to this query
+	 * 
+	 * @param tp the added triple pattern
+	 */
+	void addTriplePattern(TriplePattern tp);
+
+	/**
+	 * Remove the input triple pattern from this query
+	 * 
+	 * @param the triple pattern to remove
+	 */
+	void removeTriplePattern(TriplePattern t);
+
+	/**
+	 * Get all the subqueries of this query
+	 * 
+	 * @return the subqueries of this query
+	 */
+	List<Query> getSubQueries();
+
+	/**
+	 * Get all the superqueries of this query
+	 * 
+	 * @return the superqueries of this query
+	 */
+	List<Query> getSuperQueries();
+
+	/**
+	 * Return true if this query is empty
+	 * 
+	 * @return true if this query is empty
+	 */
+	boolean isTheEmptyQuery();
+
+	/**
+	 * Return the current MFISs of this query
+	 * 
+	 * @return the MFISs of this query
+	 */
+	Set<Query> getAllMFIS();
+
+	/**
+	 * Return the current XSSs of this query
+	 * 
+	 * @return the XSSs of this query
+	 */
+	Set<Query> getAllXSS();
+
+	/**
+	 * Return the variables of this query
+	 * 
+	 * @return the variables of this query
+	 */
 	Set<String> getVariables();
-    
-    /**
+
+	/**
 	 * Set the initial query on which algorithms was executed
 	 * 
 	 * @param query the initial query on which algorithms was executed
 	 */
 	public void setInitialQuery(Query query);
-    
-    /**
-     * Run the Baseline algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     */
-    void runBaseline(Session session, int k);
-    
-    /**
-     * Run the BFS algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     */
-    void runBFS(Session session, int k);
 
-    /**
-     * Run the variable-based algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     */
+	/**
+	 * Run the Baseline algorithm and fills allMFIS and allXSS
+	 * 
+	 * @param session connection to the KB
+	 * @param k       maximum number of results
+	 */
+	void runBaseline(Session session, int k);
+
+	/**
+	 * Run the BFS algorithm and fills allMFIS and allXSS
+	 * 
+	 * @param session connection to the KB
+	 * @param k       maximum number of results
+	 */
+	void runBFS(Session session, int k);
+
+	/**
+	 * Run the variable-based algorithm and fills allMFIS and allXSS
+	 * 
+	 * @param session connection to the KB
+	 * @param k       maximum number of results
+	 */
 	void runVarBased(Session session, int k) throws Exception;
-	
-    /**
-     * Run the cardinality-based algorithm and fills allMFIS and allXSS
-     * 
-     * @param session connection to the KB
-     * @param k maximum number of results
-     * @param card the file containing cardinalities
-     */
-    void runCardBased(Session session, int k, String card)throws Exception;
 
-    /**
-     * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase
-     * 
-     * @param session connection to the KB
-     * @throws Exception 
-     */
+	/**
+	 * Run the cardinality-based algorithm and fills allMFIS and allXSS
+	 * 
+	 * @param session connection to the KB
+	 * @param k       maximum number of results
+	 * @param card    the file containing cardinalities
+	 */
+	void runCardBased(Session session, int k, String card) throws Exception;
+
+	/**
+	 * Use global cardinalities to calculate Qbase starting point for the
+	 * cardinalities algorithm and fills Qbase
+	 * 
+	 * @param session connection to the KB
+	 * @throws Exception
+	 */
 	void findQbase(Session instance, String source) throws Exception;
-
-
 }

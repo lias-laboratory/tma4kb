@@ -1,22 +1,3 @@
-/*********************************************************************************
- * This file is part of TMA4KB Project.
-* Copyright (C) 2019 LIAS - ENSMA
-*   Teleport 2 - 1 avenue Clement Ader
-*   BP 40109 - 86961 Futuroscope Chasseneuil Cedex - FRANCE
-* 
-* ma4ukb is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ma4ukb is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-* 
-* You should have received a copy of the GNU Lesser General Public License
-* along with TMA4KB.  If not, see <http://www.gnu.org/licenses/>.
-**********************************************************************************/
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.ArrayList;
@@ -28,10 +9,10 @@ import java.util.Set;
 
 import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
 
-
 /**
- * @author Stéphane JEAN
- * @author Ibrahim DELLAL
+ * @author Stephane JEAN (jean@ensma.fr)
+ * @author Ibrahim DELLAL (ibrahim.dellal@ensma.fr)
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
 public abstract class AbstractQuery implements Query {
 
@@ -39,11 +20,6 @@ public abstract class AbstractQuery implements Query {
 	 * Factory to create other queries
 	 */
 	protected QueryFactory factory;
-
-	@Override
-	public QueryFactory getFactory() {
-		return factory;
-	}
 
 	/**
 	 * String of this query
@@ -75,24 +51,24 @@ public abstract class AbstractQuery implements Query {
 	 * initialQuery represents the query on which algorithms was executed
 	 */
 	private Query initialQuery;
-	
+
 	/**
-	 * baseQuery is the starting point for CardAlgo
-	 * This is the conjunction of triple patterns with predicates having maxCard = 1
+	 * baseQuery is the starting point for CardAlgo This is the conjunction of
+	 * triple patterns with predicates having maxCard = 1
 	 */
 	protected Query baseQuery;
-	
+
 	/**
-	 * decomposition of the query into sets of triples so that each variable appears in only one set
-	 * decomp is used to avoid executing cartesian products
+	 * decomposition of the query into sets of triples so that each variable appears
+	 * in only one set decomp is used to avoid executing cartesian products
 	 */
 	protected List<Set<TriplePattern>> decomp;
-	   
+
 	/**
 	 * Builds a query from its string and a reference to its factory
 	 * 
 	 * @param factory a factory to create some queries
-	 * @param query the string of this query
+	 * @param query   the string of this query
 	 */
 	public AbstractQuery(QueryFactory factory, String query) {
 		this.factory = factory;
@@ -101,7 +77,11 @@ public abstract class AbstractQuery implements Query {
 		this.decomposeQuery();
 		nbTriplePatterns = triplePatterns.size();
 	}
-	
+
+	@Override
+	public QueryFactory getFactory() {
+		return factory;
+	}
 
 	/**
 	 * Decompose a SPARQL Query into a set of triple patterns.
@@ -223,7 +203,7 @@ public abstract class AbstractQuery implements Query {
 			if (initialQuery != null) {
 				res += "t" + (initialQuery.getTriplePatterns().indexOf(temp) + 1);
 			}
-		
+
 		}
 		return res;
 	}
@@ -252,7 +232,7 @@ public abstract class AbstractQuery implements Query {
 		List<Query> res = new ArrayList<Query>();
 		for (TriplePattern tp : initialQuery.getTriplePatterns()) {
 			if (!includes(tp)) {
-				Query qNew = factory.createQuery(toString(),initialQuery);
+				Query qNew = factory.createQuery(toString(), initialQuery);
 				qNew.addTriplePattern(tp);
 				res.add(qNew);
 			}
@@ -273,23 +253,25 @@ public abstract class AbstractQuery implements Query {
 		nbTriplePatterns--;
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
-	
-	/*public void setCardMax(int triple, int cardMax) {
-		this.triplePatterns.get(triple).setCardMax(cardMax);
-	}*/
+
+	/*
+	 * public void setCardMax(int triple, int cardMax) {
+	 * this.triplePatterns.get(triple).setCardMax(cardMax); }
+	 */
 	/**
 	 * Sets the maximum cardinality of triple to true(max cardinality is 1) or false
-	 * @param triple the triple pattern
+	 * 
+	 * @param triple  the triple pattern
 	 * @param cardMax the cardinality boolean value
 	 */
 	public void setCardMax(int triple, boolean cardMax) {
 		this.triplePatterns.get(triple).setCardMax1(cardMax);
 	}
-	
+
 	@Override
-	public Set<String> getVariables(){
+	public Set<String> getVariables() {
 		Set<String> result = new HashSet<String>();
-		for (TriplePattern tp:this.getTriplePatterns())
+		for (TriplePattern tp : this.getTriplePatterns())
 			result.addAll(tp.getVariables());
 		return result;
 	}
@@ -315,68 +297,70 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 
-	
 	/**
-	 * Returns a boolean: true if the query fails (returns more than k results). 
-	 * Avoids executing Cartesian products by multiplying the number of results of the subqueries
+	 * Returns a boolean: true if the query fails (returns more than k results).
+	 * Avoids executing Cartesian products by multiplying the number of results of
+	 * the subqueries
 	 * 
-	 * @param executedQueries a cache of already executed queries associated with their nb of results
-	 * @param s connection to the KB
-	 * @param k the maximum number of results
+	 * @param executedQueries a cache of already executed queries associated with
+	 *                        their nb of results
+	 * @param s               connection to the KB
+	 * @param k               the maximum number of results
 	 * @return true iff this query is failing
 	 */
 	protected boolean isFailing(Map<Query, Integer> executedQueries, Session s, int k) {
-		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
-			executedQueries.put(this, true);
-			return true;
-		}*/
+		/*
+		 * if (this.equals(this.getInitialQuery())) { // No longer supposing the initial
+		 * query fails executedQueries.put(this, true); return true; }
+		 */
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
-				executedQueries.put(this, k+1);
+				executedQueries.put(this, k + 1);
 				return true;
 			}
 			decomposeCP();
-			if (decomp.size()==1) {
-				val=isFailing(s, k);
+			if (decomp.size() == 1) {
+				val = isFailing(s, k);
 				executedQueries.put(this, val);
-			}
-			else {
-				List<Query> subQ=new ArrayList<Query>();
-				for (Set<TriplePattern> set:decomp) {
+			} else {
+				List<Query> subQ = new ArrayList<Query>();
+				for (Set<TriplePattern> set : decomp) {
 					Query q = factory.createQuery("", initialQuery);
-					for (TriplePattern t :set) {
+					for (TriplePattern t : set) {
 						q.addTriplePattern(t);
 					}
 					subQ.add(q);
 				}
-				val=1;
+				val = 1;
 				Integer val2;
-				while (!subQ.isEmpty()&val<=k) {
+				while (!subQ.isEmpty() & val <= k) {
 					Query q = subQ.remove(0);
-					val2=executedQueries.get(q);
-					if (val2==null) {
-						val2=q.isFailing(s,k);
+					val2 = executedQueries.get(q);
+					if (val2 == null) {
+						val2 = q.isFailing(s, k);
 						executedQueries.put(q, val2);
 					}
-					val*=val2;
+					val *= val2;
 				}
 				executedQueries.put(this, val);
 			}
 		}
-		return val>k;
+		return val > k;
 	}
-	
+
 	/**
-	 * decompose Cartesian products and fill the decomp field with separate sets of triple patterns
+	 * decompose Cartesian products and fill the decomp field with separate sets of
+	 * triple patterns
+	 * 
 	 * @return
 	 */
-	public void decomposeCP(){
-		int i =0;
-		Query initQuery=factory.createQuery(rdfQuery);
-		List<TriplePattern> triples= new ArrayList<TriplePattern>();
-		List<String> vars= new ArrayList<String>();
-		List<String> oldVars= new ArrayList<String>();
+	public void decomposeCP() {
+		int i = 0;
+		Query initQuery = factory.createQuery(rdfQuery);
+		List<TriplePattern> triples = new ArrayList<TriplePattern>();
+		List<String> vars = new ArrayList<String>();
+		List<String> oldVars = new ArrayList<String>();
 		while (!initQuery.isTheEmptyQuery()) {
 			TriplePattern t = initQuery.getTriplePatterns().get(0);
 			decomp.add(new HashSet<TriplePattern>());
@@ -386,7 +370,7 @@ public abstract class AbstractQuery implements Query {
 				vars.add(v);
 			}
 			while (!vars.isEmpty()) {
-				String v2=vars.remove(0);
+				String v2 = vars.remove(0);
 				for (TriplePattern tp : initQuery.getTriplePatterns()) {
 					if (tp.getVariables().contains(v2)) {
 						triples.add(tp);
@@ -394,11 +378,11 @@ public abstract class AbstractQuery implements Query {
 				}
 				oldVars.add(v2);
 				while (!triples.isEmpty()) {
-					TriplePattern tp=triples.remove(0);
+					TriplePattern tp = triples.remove(0);
 					decomp.get(i).add(tp);
 					initQuery.removeTriplePattern(tp);
-					for (String v3:tp.getVariables()) {
-						if (!vars.contains(v3)&&!oldVars.contains(v3)) {
+					for (String v3 : tp.getVariables()) {
+						if (!vars.contains(v3) && !oldVars.contains(v3)) {
 							vars.add(v3);
 						}
 					}
@@ -407,7 +391,7 @@ public abstract class AbstractQuery implements Query {
 			i++;
 		}
 	}
-	
+
 	@Override
 	public void runBaseline(Session session, int k) {
 		allMFIS = new HashSet<Query>();
@@ -432,15 +416,15 @@ public abstract class AbstractQuery implements Query {
 						isAnFIS = false;
 					}
 				}
-                if (isAnFIS) {
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                }
+				if (isAnFIS) {
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+				}
 			} else { // Potential XSS
 
 				boolean isXSS = true;
@@ -458,10 +442,11 @@ public abstract class AbstractQuery implements Query {
 					markedQueries.put(subquery, true);
 					listQuery.add(subquery);
 				}
-			}	
-			
+			}
+
 		}
 	}
+
 	@Override
 	public void runBFS(Session session, int k) {
 		allMFIS = new HashSet<Query>();
@@ -483,33 +468,33 @@ public abstract class AbstractQuery implements Query {
 				if (!listFIS.containsKey(superquery)) {
 					parentsFIS = false;
 				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
 			if (parentsFIS) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                	List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
-    				for (Query subquery : subqueries) {
-    					if (!markedQueries.containsKey(subquery)) {
-    						markedQueries.put(subquery, true);
-    						listQuery.add(subquery);
-    					}
-    				}
-                }
-				else { // XSS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public void runVarBased(Session session, int k) throws Exception {
 		allMFIS = new HashSet<Query>();
@@ -531,41 +516,41 @@ public abstract class AbstractQuery implements Query {
 				if (!listFIS.containsKey(superquery)) {
 					parentsFIS = false;
 				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
 			if (parentsFIS) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                	List<Query> subqueries = new ArrayList<Query>(); 
-               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
-               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-                		qNew.removeTriplePattern(tp);
-                		subqueries.add(qNew);
-                		if (qNew.getVariables().size()==qTemp.getVariables().size()) { //variable property
-                			executedQueries.put(qNew, k+1);
-        				}
-                	}
-    				for (Query subquery : subqueries) {
-    					if (!markedQueries.containsKey(subquery)) {
-    						markedQueries.put(subquery, true);
-    						listQuery.add(subquery);
-    					}
-    				}
-                }
-				else { // XSS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = new ArrayList<Query>();
+					for (TriplePattern tp : qTemp.getTriplePatterns()) {
+						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+						qNew.removeTriplePattern(tp);
+						subqueries.add(qNew);
+						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
+							executedQueries.put(qNew, k + 1);
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public void runCardBased(Session session, int k, String card) throws Exception {
 		allMFIS = new HashSet<Query>();
@@ -576,7 +561,7 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session,card);
+		findQbase(session, card);
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -588,37 +573,38 @@ public abstract class AbstractQuery implements Query {
 				if (!listFIS.containsKey(superquery)) {
 					parentsFIS = false;
 				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
 			if (parentsFIS) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                	List<Query> subqueries = new ArrayList<Query>(); 
-               		for (TriplePattern tp : qTemp.getTriplePatterns()) {
-               			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-                		qNew.removeTriplePattern(tp);
-                		subqueries.add(qNew);
-                		if (baseQuery.getTriplePatterns().contains(tp)&& qNew.getVariables().contains(tp.getSubject())) { //cardinality property
-                			executedQueries.put(qNew, k+1);
-                		}
-        				if (qNew.getVariables().size()==qTemp.getVariables().size()) { //variable property
-                			executedQueries.put(qNew, k+1);
-        				}
-                	}
-    				for (Query subquery : subqueries) {
-    					if (!markedQueries.containsKey(subquery)) {
-    						markedQueries.put(subquery, true);
-    						listQuery.add(subquery);
-    					}
-    				}
-                }
-				else { // XSS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = new ArrayList<Query>();
+					for (TriplePattern tp : qTemp.getTriplePatterns()) {
+						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+						qNew.removeTriplePattern(tp);
+						subqueries.add(qNew);
+						if (baseQuery.getTriplePatterns().contains(tp)
+								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
+							executedQueries.put(qNew, k + 1);
+						}
+						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
+							executedQueries.put(qNew, k + 1);
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);
 				}
@@ -628,13 +614,12 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void findQbase(Session instance, String source) throws Exception {
-		ComputeCardinalitiesConfig c =new ComputeCardinalitiesConfig(source);
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(source);
 		c.computeMaxCardinalities(this);
-		baseQuery=(AbstractQuery) factory.createQuery(rdfQuery,initialQuery);
+		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery, initialQuery);
 		for (TriplePattern t : this.getTriplePatterns()) {
-			if (!t.isPredicateVariable() && !t.getCardMax1() )
+			if (!t.isPredicateVariable() && !t.getCardMax1())
 				baseQuery.removeTriplePattern(t);
 		}
 	}
-	
 }

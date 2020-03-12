@@ -11,9 +11,14 @@ import org.junit.Test;
 
 import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBQueryFactory;
 
+/**
+ * @author Louise PARKIN (louise.parkin@ensma.fr)
+ */
 public class CPTest {
+
 	@Test
-	public void testPCdecomp() throws Exception {
+	public void decomposeCP1Test() throws Exception {
+		// Given
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
 		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
 		TriplePattern t3 = new TriplePattern("<?d> <p> <?e>", 3);
@@ -22,8 +27,8 @@ public class CPTest {
 		TriplePattern t6 = new TriplePattern("<?a> <p> <?h>", 6);
 		TriplePattern t7 = new TriplePattern("<?i> <p> <?j>", 7);
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-		
-		Query q= currentQueryFactory.createQuery("");
+
+		Query q = currentQueryFactory.createQuery("");
 		q.addTriplePattern(t1);
 		q.addTriplePattern(t2);
 		q.addTriplePattern(t3);
@@ -31,7 +36,7 @@ public class CPTest {
 		q.addTriplePattern(t5);
 		q.addTriplePattern(t6);
 		q.addTriplePattern(t7);
-		
+
 		List<Set<TriplePattern>> rep = new ArrayList<Set<TriplePattern>>();
 		Set<TriplePattern> s1 = new HashSet<TriplePattern>();
 		s1.add(t1);
@@ -43,34 +48,36 @@ public class CPTest {
 		Set<TriplePattern> s3 = new HashSet<TriplePattern>();
 		s3.add(t4);
 		s3.add(t7);
-		
-		((AbstractQuery)q).decomposeCP();
-		rep=((AbstractQuery)q).decomp;
-				
-		assertTrue(rep.size()==3);
+
+		// When
+		((AbstractQuery) q).decomposeCP();
+		rep = ((AbstractQuery) q).decomp;
+
+		// Then
+		assertTrue(rep.size() == 3);
 		assertTrue(rep.get(0).containsAll(s1));
 		assertTrue(rep.get(1).containsAll(s2));
 		assertTrue(rep.get(2).containsAll(s3));
 		assertTrue(s1.containsAll(rep.get(0)));
 		assertTrue(s2.containsAll(rep.get(1)));
-		assertTrue(s3.containsAll(rep.get(2)));	
+		assertTrue(s3.containsAll(rep.get(2)));
 	}
-	
-	
+
 	@Test
-	public void testPCdecomp2() throws Exception {
+	public void decomposeCP2Test() throws Exception {
+		// Given
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
 		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
 		TriplePattern t5 = new TriplePattern("<?b> <p> <?g>", 5);
 		TriplePattern t6 = new TriplePattern("<?a> <p> <?h>", 6);
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-		
-		Query q= currentQueryFactory.createQuery("");
+
+		Query q = currentQueryFactory.createQuery("");
 		q.addTriplePattern(t1);
 		q.addTriplePattern(t2);
 		q.addTriplePattern(t5);
 		q.addTriplePattern(t6);
-		
+
 		List<Set<TriplePattern>> rep = new ArrayList<Set<TriplePattern>>();
 		Set<TriplePattern> s1 = new HashSet<TriplePattern>();
 		s1.add(t1);
@@ -78,16 +85,19 @@ public class CPTest {
 		s1.add(t5);
 		s1.add(t6);
 
-		((AbstractQuery)q).decomposeCP();
-		rep=((AbstractQuery)q).decomp;
-		
-		assertTrue(rep.size()==1);
+		// When
+		((AbstractQuery) q).decomposeCP();
+		rep = ((AbstractQuery) q).decomp;
+
+		// Then
+		assertTrue(rep.size() == 1);
 		assertTrue(rep.get(0).containsAll(s1));
 		assertTrue(s1.containsAll(rep.get(0)));
 	}
-	
+
 	@Test
-	public void testPCdecomp3() throws Exception {
+	public void decomposeCP3Test() throws Exception {
+		// Given
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
 		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
 		TriplePattern t4 = new TriplePattern("<?i> <p> <?f>", 4);
@@ -95,15 +105,15 @@ public class CPTest {
 		TriplePattern t6 = new TriplePattern("<?a> <p> <?h>", 6);
 		TriplePattern t7 = new TriplePattern("<?i> <p> <?j>", 7);
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-				
-		Query q2=currentQueryFactory.createQuery("");
+
+		Query q2 = currentQueryFactory.createQuery("");
 		q2.addTriplePattern(t1);
 		q2.addTriplePattern(t2);
 		q2.addTriplePattern(t4);
 		q2.addTriplePattern(t5);
 		q2.addTriplePattern(t6);
 		q2.addTriplePattern(t7);
-		
+
 		List<Set<TriplePattern>> rep = new ArrayList<Set<TriplePattern>>();
 		Set<TriplePattern> s1 = new HashSet<TriplePattern>();
 		s1.add(t1);
@@ -114,15 +124,15 @@ public class CPTest {
 		s3.add(t4);
 		s3.add(t7);
 
-		((AbstractQuery)q2).decomposeCP();
-		rep=((AbstractQuery)q2).decomp;
-		
-		System.out.println(rep);
-		
-		assertTrue(rep.size()==2);
+		// When
+		((AbstractQuery) q2).decomposeCP();
+		rep = ((AbstractQuery) q2).decomp;
+
+		// Then
+		assertTrue(rep.size() == 2);
 		assertTrue(rep.get(0).containsAll(s1));
 		assertTrue(rep.get(1).containsAll(s3));
 		assertTrue(s1.containsAll(rep.get(0)));
-		assertTrue(s3.containsAll(rep.get(1)));	
+		assertTrue(s3.containsAll(rep.get(1)));
 	}
 }
