@@ -70,13 +70,6 @@ public class TriplePattern {
 	private Boolean cardMax1;
 	
 	/**
-	 * domain of the predicate 
-	 */
-	private String domain="thing";
-	
-	
-	
-	/**
 	 * Compares maximum cardinality of the predicate to 1
 	 * @return if maximum cardinality of the predicate is less or equal to 1
 	 */
@@ -88,19 +81,6 @@ public class TriplePattern {
 		cardMax1=card;
 	}
 
-	/**
-	 * Computes domain of the predicate
-	 * @return domain of the predicate
-	 */
-	public String getDomain() {
-		return domain;
-	}
-	
-	public void setDomain(String dom) {
-		domain=dom;
-	}
-
-	
 
 
 	/**
@@ -195,7 +175,7 @@ public class TriplePattern {
 	}
 
 	/**
-	 * Remove the syntax (i.e, "<" ">" of the sujet, predicate and object of this
+	 * Remove the syntax (i.e, "<" ">" of the subject, predicate and object of this
 	 * triple pattern
 	 */
 	private void removeSyntax() {

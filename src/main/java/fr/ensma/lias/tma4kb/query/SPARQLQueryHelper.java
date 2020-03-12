@@ -15,10 +15,5 @@ public abstract class SPARQLQueryHelper implements QueryHelper {
 	public SPARQLQueryHelper(Query q) {
 		this.q = q;
 	}
-
-	@Override
-	public String toNativeQuery() {
-		return q.toString();
-	}
 	
 }

@@ -21,8 +21,6 @@ package fr.ensma.lias.tma4kb.query;
 
 import org.aeonbits.owner.ConfigFactory;
 
-
-
 /**
  * @author Stephane JEAN
  * @author Mickael BARON
@@ -45,6 +43,4 @@ public abstract class AbstractQueryFactory implements QueryFactory {
 		((AbstractQuery) createQuery).setInitialQuery(initialQuery);
 		return createQuery;
 	}
-
-
 }
