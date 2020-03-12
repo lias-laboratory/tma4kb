@@ -31,6 +31,7 @@ public abstract class AbstractSession implements Session {
 		return executedQueryNumber;
 	}
 
+	@Override
 	public void setExecutedQueryCount(int value) {
 		this.executedQueryNumber = value;
 	}

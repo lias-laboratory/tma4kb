@@ -74,7 +74,7 @@ public abstract class AbstractQuery implements Query {
 	 * Most queries will be created during the execution of algorithms the
 	 * initialQuery represents the query on which algorithms was executed
 	 */
-	protected Query initialQuery;
+	private Query initialQuery;
 	
 	/**
 	 * baseQuery is the starting point for CardAlgo
@@ -144,7 +144,7 @@ public abstract class AbstractQuery implements Query {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractQuery other = (AbstractQuery) obj;
-		if (other.nbTriplePatterns != this.nbTriplePatterns) // same
+		if (other.nbTriplePatterns != this.nbTriplePatterns) // same number of triple patterns
 			// size
 			return false;
 		if (!this.includesSimple(other)) // and one is included in the other
@@ -161,56 +161,10 @@ public abstract class AbstractQuery implements Query {
 	public Set<Query> getAllXSS() {
 		return this.allXSS;
 	}
-	
-	/**
-	 * Get the decomposition of cartesian products
-	 * 
-	 * @return
-	 */
-	public List<Set<TriplePattern>> getDecomp() {
-		if(decomp.size()==0) {
-			//decomposePC();
-			setDecomp();
-		}
-		return this.decomp;
-	}
 
-	/**
-	 * Get the initial query on which algorithms was executed
-	 * 
-	 * @return
-	 */
-	public Query getInitialQuery() {
-		return this.initialQuery;
-	}
-
-	/**
-	 * Set the initial query on which algorithms was executed
-	 * 
-	 * @param query the initial query on which algorithms was executed
-	 */
+	@Override
 	public void setInitialQuery(Query query) {
 		this.initialQuery = query;
-	}
-	/**
-	 * Set the decomposition of cartesian products
-	 */
-	private void setDecomp() {
-		if (initialQuery==null || initialQuery==this) {
-			decomposePC();
-		}
-		else {
-			for (Set<TriplePattern> s :((AbstractQuery)initialQuery).getDecomp()) {
-				Set<TriplePattern> newSet= new HashSet<TriplePattern>();
-				for (TriplePattern t :s) {
-					if (triplePatterns.contains(t)) {
-						newSet.add(t);
-					}
-				}
-				if(!newSet.isEmpty())
-					this.decomp.add(newSet);
-			}
-		}
 	}
 
 	@Override
@@ -228,38 +182,6 @@ public abstract class AbstractQuery implements Query {
 		return nbTriplePatterns == 0;
 	}
 
-	@Override
-	public boolean isFailing(Session session, int k) {
-		if (isTheEmptyQuery())
-			return true;
-		return isFailingAux(session, k);
-	}
-	
-	
-	public boolean isFailing2(Session session, int k) {
-		if (isTheEmptyQuery())
-			return true;
-		return (isFailingNb(session, k)>k);
-	}
-
-	/**
-	 * Checks whether this query has too many answers or not
-	 * 
-	 * @param s the connection to the triplestore
-	 * @param k the maximum number of answers
-	 * @return true is the result if this query has too many answers
-	 */
-	protected abstract boolean isFailingAux(Session session, int k);
-
-	/**
-	 * Counts number of answers of the query
-	 * 
-	 * @param s the connection to the triplestore
-	 * @param k the maximum number of answers
-	 * @return the number of answers
-	 */
-	protected abstract int isFailingNb(Session session,int k) ;
-	
 	/**
 	 * Check whether a query includes another one
 	 * 
@@ -320,24 +242,6 @@ public abstract class AbstractQuery implements Query {
 		}
 		return res;
 	}
-	
-	/**
-	 * Computes the direct subqueries of this query that are superqueries of the base query
-	 * 
-	 * @param the base query
-	 * @return the list of direct subqueries of this query that are superqueries of the base query
-	 */
-	public List<Query> getBaseSubQueries(Query base) {
-		List<Query> res = new ArrayList<Query>();
-		for (TriplePattern tp : getTriplePatterns()) {
-			if (!((AbstractQuery)base).includes(tp)) {
-				Query qNew = factory.createQuery(toString(), initialQuery);
-				qNew.removeTriplePattern(tp);
-				res.add(qNew);
-			}
-		}
-		return res;
-	}
 
 	/**
 	 * Computes the direct superqueries of this query
@@ -373,10 +277,16 @@ public abstract class AbstractQuery implements Query {
 	/*public void setCardMax(int triple, int cardMax) {
 		this.triplePatterns.get(triple).setCardMax(cardMax);
 	}*/
+	/**
+	 * Sets the maximum cardinality of triple to true(max cardinality is 1) or false
+	 * @param triple the triple pattern
+	 * @param cardMax the cardinality boolean value
+	 */
 	public void setCardMax(int triple, boolean cardMax) {
 		this.triplePatterns.get(triple).setCardMax1(cardMax);
 	}
 	
+	@Override
 	public Set<String> getVariables(){
 		Set<String> result = new HashSet<String>();
 		for (TriplePattern tp:this.getTriplePatterns())
@@ -405,36 +315,17 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 
-	/**
-	 * Returns a boolean : true if the query fails (returns more than k results)
-	 * 
-	 * @param executedQueries a cache of already executed queries
-	 * @param s connection to the KB
-	 * @param k the maximum number of results
-	 * @return true iff this query is failing
-	 */
-	private boolean isFailing(Map<Query, Boolean> executedQueries, Session s, int k) {
-		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
-			executedQueries.put(this, true);
-			return true;
-		}*/
-		Boolean val = executedQueries.get(this);
-		if (val == null) {
-			val = isFailing(s, k);
-			executedQueries.put(this, val);
-		}
-		return val;
-	}
 	
 	/**
-	 * Returns the number of results to a query. Avoids executing cartesian products by multiplying the number of results of the subqueries
+	 * Returns a boolean: true if the query fails (returns more than k results). 
+	 * Avoids executing Cartesian products by multiplying the number of results of the subqueries
 	 * 
 	 * @param executedQueries a cache of already executed queries associated with their nb of results
 	 * @param s connection to the KB
 	 * @param k the maximum number of results
 	 * @return true iff this query is failing
 	 */
-	protected boolean isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
+	protected boolean isFailing(Map<Query, Integer> executedQueries, Session s, int k) {
 		/*if (this.equals(this.getInitialQuery())) { // No longer supposing the initial query fails
 			executedQueries.put(this, true);
 			return true;
@@ -445,9 +336,9 @@ public abstract class AbstractQuery implements Query {
 				executedQueries.put(this, k+1);
 				return true;
 			}
-			decomposePC();
+			decomposeCP();
 			if (decomp.size()==1) {
-				val=isFailingNb(s, k);
+				val=isFailing(s, k);
 				executedQueries.put(this, val);
 			}
 			else {
@@ -465,7 +356,7 @@ public abstract class AbstractQuery implements Query {
 					Query q = subQ.remove(0);
 					val2=executedQueries.get(q);
 					if (val2==null) {
-						val2=((AbstractQuery)q).isFailingNb(s,k);
+						val2=q.isFailing(s,k);
 						executedQueries.put(q, val2);
 					}
 					val*=val2;
@@ -477,10 +368,10 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	/**
-	 * decompose cartesian products and fill the decomp field with disjoined sets of triple patterns
+	 * decompose Cartesian products and fill the decomp field with separate sets of triple patterns
 	 * @return
 	 */
-	public void decomposePC(){
+	public void decomposeCP(){
 		int i =0;
 		Query initQuery=factory.createQuery(rdfQuery);
 		List<TriplePattern> triples= new ArrayList<TriplePattern>();
@@ -517,62 +408,6 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 	
-
-	//@Override
-	public void runBaseline1(Session session, int k) {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
-		session.clearExecutedQueryCount();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Boolean> executedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-		markedQueries.put(this, true);
-		listQuery.add(this);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			List<Query> subqueries = qTemp.getSubQueries();
-			List<Query> superqueries = qTemp.getSuperQueries();
-			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-				boolean isAnFIS = true;
-				while (isAnFIS && !superqueries.isEmpty()) {
-					Query superquery = superqueries.remove(0);
-					if (!listFIS.containsKey(superquery)) {
-						isAnFIS = false;
-					}
-				}
-                if (isAnFIS) {
-                	for (Query fis : listFIS.keySet()) {
-                		if (((AbstractQuery)fis).includesSimple(qTemp)) {
-                			allMFIS.remove(fis);
-                		}
-                	}
-                	listFIS.put(qTemp, true);
-                	allMFIS.add(qTemp);
-                }
-			} else { // Potential XSS
-
-				boolean isXSS = true;
-				while (isXSS && !superqueries.isEmpty()) {
-					Query superquery = superqueries.remove(0);
-					if (!listFIS.containsKey(superquery)) {
-						isXSS = false;
-					}
-				}
-				if (isXSS && !qTemp.isTheEmptyQuery())
-					allXSS.add(qTemp);
-			}
-			for (Query subquery : subqueries) {
-				if (!markedQueries.containsKey(subquery)) {
-					markedQueries.put(subquery, true);
-					listQuery.add(subquery);
-				}
-			}	
-			
-		}
-	}
-	
 	@Override
 	public void runBaseline(Session session, int k) {
 		allMFIS = new HashSet<Query>();
@@ -589,7 +424,7 @@ public abstract class AbstractQuery implements Query {
 			Query qTemp = listQuery.remove(0);
 			List<Query> subqueries = qTemp.getSubQueries();
 			List<Query> superqueries = qTemp.getSuperQueries();
-			if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 				boolean isAnFIS = true;
 				while (isAnFIS && !superqueries.isEmpty()) {
 					Query superquery = superqueries.remove(0);
@@ -650,7 +485,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
@@ -698,7 +533,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
@@ -712,7 +547,7 @@ public abstract class AbstractQuery implements Query {
                			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
                 		qNew.removeTriplePattern(tp);
                 		subqueries.add(qNew);
-                		if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
+                		if (qNew.getVariables().size()==qTemp.getVariables().size()) { //variable property
                 			executedQueries.put(qNew, k+1);
         				}
                 	}
@@ -741,7 +576,7 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session,"/wdcard.config");
+    	findQbase(session,"/dbpcard.config");
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -755,7 +590,7 @@ public abstract class AbstractQuery implements Query {
 				}
 			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of qTemp are FISs
 			if (parentsFIS) {
-				if (((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k)) {
+				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
                 	for (Query fis : listFIS.keySet()) {
                 		if (((AbstractQuery)fis).includesSimple(qTemp)) {
@@ -769,10 +604,10 @@ public abstract class AbstractQuery implements Query {
                			Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
                 		qNew.removeTriplePattern(tp);
                 		subqueries.add(qNew);
-                		if (baseQuery.getTriplePatterns().contains(tp)&&((AbstractQuery) qNew).getVariables().contains(tp.getSubject())) { //cardinality property
+                		if (baseQuery.getTriplePatterns().contains(tp)&& qNew.getVariables().contains(tp.getSubject())) { //cardinality property
                 			executedQueries.put(qNew, k+1);
                 		}
-        				if (((AbstractQuery)qNew).getVariables().size()==((AbstractQuery)qTemp).getVariables().size()) { //variable property
+        				if (qNew.getVariables().size()==qTemp.getVariables().size()) { //variable property
                 			executedQueries.put(qNew, k+1);
         				}
                 	}

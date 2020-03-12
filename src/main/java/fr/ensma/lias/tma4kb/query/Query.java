@@ -30,13 +30,13 @@ import java.util.Set;
 public interface Query {
 
 	/**
-	 * Checks whether this query has too many answers or not
+	 * Counts number of answers of the query
 	 * 
 	 * @param s the connection to the triplestore
-	 * @param k the number maximum of answers
-	 * @return true is the result if this query has too many answers
+	 * @param k the maximum number of answers
+	 * @return the number of answers
 	 */
-	boolean isFailing(Session session, int k);    
+	int isFailing(Session session, int k);    
     
 	/**
 	 * get the factory that created this query
@@ -77,13 +77,7 @@ public interface Query {
      * @return the superqueries of this query
      */
     List<Query> getSuperQueries();
-    
-    /**
-     * Get all the subqueries of this query, which are superqueries of base
-     * @return the subqueries of this query, which are superqueries of base
-     */
-	List<Query> getBaseSubQueries(Query base);
-    
+        
     /**
      * Return true if this query is empty
      * @return true if this query is empty
@@ -103,6 +97,20 @@ public interface Query {
      * @return the XSSs of this query
      */
     Set<Query> getAllXSS();
+    
+    /**
+     * Return the variables of this query
+     * 
+     * @return the variables of this query
+     */
+	Set<String> getVariables();
+    
+    /**
+	 * Set the initial query on which algorithms was executed
+	 * 
+	 * @param query the initial query on which algorithms was executed
+	 */
+	public void setInitialQuery(Query query);
     
     /**
      * Run the Baseline algorithm and fills allMFIS and allXSS
@@ -143,7 +151,6 @@ public interface Query {
      * @throws Exception 
      */
 	void findQbase(Session instance, String source) throws Exception;
-
 
 
 }
