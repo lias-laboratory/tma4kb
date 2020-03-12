@@ -72,7 +72,7 @@ public class PropreAlgorithm {
 					
 					if (k > 0) {
 						resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
-						System.out.println("baseline - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
+						System.out.println("baseline - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
 				}/**/
@@ -97,7 +97,7 @@ public class PropreAlgorithm {
 					
 					if (k > 0) {
 						resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery);
-						System.out.println("bfs - Time = " + tps + "s, NbQueriesExecuted: " + nbExecutedQuery);
+						System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 					}
 					
 				}/**/
