@@ -24,22 +24,23 @@ public class PropreAlgorithm {
 
 	private QueryFactory factory;
 	private Session session;
-	private String FILE_QUERIES = "queriesWatDiv100.test";
-	private int NB_EXEC = 5;
+	private String FILE_QUERIES;
+	private String FILE_CARD ;
+	private int NB_EXEC;
 
 	public void setUp() {
 		factory = new JenaQueryFactory();
 	}
-	public PropreAlgorithm(int nb_exec, String queries) {
+	public PropreAlgorithm(int nb_exec, String queries,String card) {
 		setUp();
 		NB_EXEC=nb_exec;
 		FILE_QUERIES=queries;
+		FILE_CARD=card;
 	}
 		  
 
 	 public void testGenAlgorithms() throws Exception {
 		 List<QueryExplain>  newTestResultPairList = this.newTestResultPairList("/"+FILE_QUERIES);
-		 //try {	
 		 ExpRelaxResult resultsBaseline = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		 ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
@@ -65,7 +66,7 @@ public class PropreAlgorithm {
 					long time = System.currentTimeMillis();
 					q0.runBaseline(session, K);
 					long end = System.currentTimeMillis();
-					float tps = ((float) (end - time)) ;// / 1000f;
+					float tps = ((float) (end - time)) ;// /1000f;
 					int nbExecutedQuery = session.getExecutedQueryCount();				
 					
 					
@@ -138,7 +139,7 @@ public class PropreAlgorithm {
 					q2 = factory.createQuery(q2.toString());
 					session = ((JenaQueryFactory) factory).createSession();
 					long time = System.currentTimeMillis();
-					q2.runCardBased(session, K);
+					q2.runCardBased(session, K, FILE_CARD);
 					long end = System.currentTimeMillis();
 					float tps = ((float) (end - time));
 					int nbExecutedQuery = session.getExecutedQueryCount();
@@ -157,12 +158,10 @@ public class PropreAlgorithm {
 				System.out.println("------------------------------------");
 			}
 
-/**/
 			System.out.println("---------- BILAN Baseline------------------");
 			System.out.println(resultsBaseline.toString());
 			System.out.println("------------------------------------");
 			resultsBaseline.toFile("exp-jena-Baseline.csv");
-			/**/
 			
 			
 			System.out.println("---------- BILAN BFS------------------");
@@ -173,19 +172,12 @@ public class PropreAlgorithm {
 			System.out.println("---------- BILAN VAR ------------------");
 			System.out.println(resultsVar.toString());
 			System.out.println("------------------------------------");
-			
 			resultsVar.toFile("exp-jena-var.csv");
-			/**/
+
 			System.out.println("---------- BILAN CARD ------------------");
 			System.out.println(resultsCard.toString());
 			System.out.println("------------------------------------");
-
 			resultsCard.toFile("exp-jena-card.csv");
-
-			/*} catch (IOException e) {
-			System.out.println("Unable to read the queries in the file.");
-			e.printStackTrace();
-		}*/
 		 
 		 
 	 }	 

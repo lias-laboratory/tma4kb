@@ -26,7 +26,7 @@ public class HybridTest {
 		
 		Query q = currentQueryFactory.createQuery("SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
 
-		q.runCardBased(instance, 4);
+		q.runCardBased(instance, 4,"/cardinalities2.config");
 		
 		List<Query> expectedMFIS = new ArrayList<>();
 		List<Query> expectedXSS = new ArrayList<>();
@@ -44,13 +44,13 @@ public class HybridTest {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
 		}
 		
-		assertEquals(4, instance.getExecutedQueryCount()); //8 if not executing initial query, 9 if executing initial query
+		assertEquals(4, instance.getExecutedQueryCount()); 
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
 		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));
 		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
 		
-		q.runCardBased(instance, 3);
+		q.runCardBased(instance, 3,"/cardinalities2.config");
 		
 		expectedMFIS = new ArrayList<>();
 		expectedXSS = new ArrayList<>();
@@ -69,7 +69,7 @@ public class HybridTest {
 			System.out.println("XSS : " + ((AbstractQuery)xss).toSimpleString(q));
 		}
 		
-		assertEquals(6, instance.getExecutedQueryCount()); //8 if not executing initial query, 9 if executing initial query
+		assertEquals(6, instance.getExecutedQueryCount());
 		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
 		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));

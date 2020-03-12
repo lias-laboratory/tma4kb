@@ -141,8 +141,9 @@ public interface Query {
      * 
      * @param session connection to the KB
      * @param k maximum number of results
+     * @param card the file containing cardinalities
      */
-    void runCardBased(Session session, int k)throws Exception;
+    void runCardBased(Session session, int k, String card)throws Exception;
 
     /**
      * Use global cardinalities to calculate Qbase starting point for the cardinalities algorithm and fills Qbase

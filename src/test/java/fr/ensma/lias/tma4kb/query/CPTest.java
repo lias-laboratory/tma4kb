@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBQueryFactory;
 
-public class PCTest {
+public class CPTest {
 	@Test
 	public void testPCdecomp() throws Exception {
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
@@ -44,11 +44,9 @@ public class PCTest {
 		s3.add(t4);
 		s3.add(t7);
 		
-		((AbstractQuery)q).decomposePC();
-		rep=((AbstractQuery)q).getDecomp();
-		
-		System.out.println(rep);
-		
+		((AbstractQuery)q).decomposeCP();
+		rep=((AbstractQuery)q).decomp;
+				
 		assertTrue(rep.size()==3);
 		assertTrue(rep.get(0).containsAll(s1));
 		assertTrue(rep.get(1).containsAll(s2));
@@ -80,10 +78,8 @@ public class PCTest {
 		s1.add(t5);
 		s1.add(t6);
 
-		((AbstractQuery)q).decomposePC();
-		rep=((AbstractQuery)q).getDecomp();
-		
-		System.out.println(rep);
+		((AbstractQuery)q).decomposeCP();
+		rep=((AbstractQuery)q).decomp;
 		
 		assertTrue(rep.size()==1);
 		assertTrue(rep.get(0).containsAll(s1));
@@ -94,25 +90,13 @@ public class PCTest {
 	public void testPCdecomp3() throws Exception {
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
 		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
-		TriplePattern t3 = new TriplePattern("<?d> <p> <?e>", 3);
 		TriplePattern t4 = new TriplePattern("<?i> <p> <?f>", 4);
 		TriplePattern t5 = new TriplePattern("<?b> <p> <?g>", 5);
 		TriplePattern t6 = new TriplePattern("<?a> <p> <?h>", 6);
 		TriplePattern t7 = new TriplePattern("<?i> <p> <?j>", 7);
 		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-		
-		Query q= currentQueryFactory.createQuery("");
-		q.addTriplePattern(t1);
-		q.addTriplePattern(t2);
-		q.addTriplePattern(t3);
-		q.addTriplePattern(t4);
-		q.addTriplePattern(t5);
-		q.addTriplePattern(t6);
-		q.addTriplePattern(t7);
-		
-		((AbstractQuery)q).decomposePC();
-		
-		Query q2=currentQueryFactory.createQuery("", q);
+				
+		Query q2=currentQueryFactory.createQuery("");
 		q2.addTriplePattern(t1);
 		q2.addTriplePattern(t2);
 		q2.addTriplePattern(t4);
@@ -129,8 +113,9 @@ public class PCTest {
 		Set<TriplePattern> s3 = new HashSet<TriplePattern>();
 		s3.add(t4);
 		s3.add(t7);
-		
-		rep=((AbstractQuery)q2).getDecomp();
+
+		((AbstractQuery)q2).decomposeCP();
+		rep=((AbstractQuery)q2).decomp;
 		
 		System.out.println(rep);
 		

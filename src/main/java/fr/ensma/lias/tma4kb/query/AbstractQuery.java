@@ -567,7 +567,7 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override
-	public void runCardBased(Session session, int k) throws Exception {
+	public void runCardBased(Session session, int k, String card) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -576,7 +576,7 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-    	findQbase(session,"/dbpcard.config");
+    	findQbase(session,card);
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {

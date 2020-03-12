@@ -28,10 +28,13 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses(value = { 
-	QueryTest.class, 
-	TriplePatternTest.class,
-	BaselineTest.class,
-	BFSTest.class,
-	CardinalityTest.class})
+		BaselineTest.class,
+		BFSTest.class,
+		CardinalityTest.class,
+		CPTest.class,
+		HybridTest.class,
+		QueryTest.class, 
+		TriplePatternTest.class,
+		})
 public class AllQueryTests {
 }
