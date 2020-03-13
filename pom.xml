@@ -14,6 +14,7 @@
 		<hsqldb.version>2.3.2</hsqldb.version>
 		<owner.version>1.0.10</owner.version>
 		<picocli.version>4.0.4</picocli.version>
+		<maven.jar.version>2.3.1</maven.jar.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -54,11 +55,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>${project.artifactId}-fulljar</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
 					<archive>
 						<manifest>
-							<mainClass>fr.ensma.lias.tma4kb.execution.Test</mainClass>
+							<mainClass>fr.ensma.lias.tma4kb.execution.TMA4KBLauncher</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -74,7 +73,32 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>deployement</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>create-zip-package</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptors>
+										<descriptor>src/main/assembly/tma4kb_dist.xml</descriptor>
+									</descriptors>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
