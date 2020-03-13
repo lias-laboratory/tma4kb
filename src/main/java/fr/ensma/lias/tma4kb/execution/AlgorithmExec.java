@@ -38,12 +38,12 @@ public class AlgorithmExec {
 	public AlgorithmExec(int nb_exec, String queries, String card) {
 		setUp();
 		NB_EXEC = nb_exec;
-		FILE_QUERIES = queries;
-		FILE_CARD = card;
+		FILE_QUERIES = "src/main/samples/" +queries;
+		FILE_CARD = "src/main/samples/" +card;
 	}
 
 	public void testGenAlgorithms() throws Exception {
-		List<QueryExplain> newTestResultPairList = this.newTestResultPairList("/" + FILE_QUERIES);
+		List<QueryExplain> newTestResultPairList = this.newTestResultPairList( FILE_QUERIES);
 		ExpRelaxResult resultsBaseline = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
