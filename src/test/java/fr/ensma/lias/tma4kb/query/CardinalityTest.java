@@ -35,7 +35,7 @@ public class CardinalityTest {
 				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
 
 		// When
-		q.findQbase(instance, "/cardinalities.config");
+		q.findQbase(instance, "src/test/resources/cardinalities.config");
 
 		// Then
 		assertEquals(((AbstractQuery) q).baseQuery, t1t2t3);
@@ -63,7 +63,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runCardBased(instance, 3, "/cardinalities.config");
+		q.runCardBased(instance, 3, "src/test/resources/cardinalities.config");
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -98,7 +98,7 @@ public class CardinalityTest {
 		
 		//When
 
-		q.runCardBased(instance, 4, "/cardinalities2.config");
+		q.runCardBased(instance, 4, "src/test/resources/cardinalities2.config");
 
 		//Then
 
