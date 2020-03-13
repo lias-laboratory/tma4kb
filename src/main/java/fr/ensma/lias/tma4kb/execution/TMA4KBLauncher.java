@@ -19,10 +19,10 @@ public class TMA4KBLauncher implements Runnable {
 	String queriesFile;
 
 	@Option(names = { "-c",
-			"--cardinalities" }, required = true, description = "The file which contains the dataset cardinalities (global, local and Characteristic Set).")
+			"--cardinalities" }, required = true, description = "The file which contains the dataset cardinalities.")
 	String cardinalitiesFile;
 
-	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of execution.")
+	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
 
 	public static void main(String[] args) {
@@ -32,7 +32,7 @@ public class TMA4KBLauncher implements Runnable {
 	@Override
 	public void run() {
 		int NB_EXEC = Integer.valueOf(numberExecution);
-		PropreAlgorithm t = new PropreAlgorithm(NB_EXEC, queriesFile, cardinalitiesFile);
+		AlgorithmExec t = new AlgorithmExec(NB_EXEC, queriesFile, cardinalitiesFile);
 		try {
 			t.testGenAlgorithms();
 		} catch (Exception e) {

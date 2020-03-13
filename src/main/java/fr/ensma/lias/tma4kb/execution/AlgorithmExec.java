@@ -19,7 +19,7 @@ import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
  * @author Ibrahim DELLAL (ibrahim.dellal@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
  */
-public class PropreAlgorithm {
+public class AlgorithmExec {
 
 	private QueryFactory factory;
 	
@@ -35,7 +35,7 @@ public class PropreAlgorithm {
 		factory = new JenaQueryFactory();
 	}
 
-	public PropreAlgorithm(int nb_exec, String queries, String card) {
+	public AlgorithmExec(int nb_exec, String queries, String card) {
 		setUp();
 		NB_EXEC = nb_exec;
 		FILE_QUERIES = queries;
@@ -239,7 +239,7 @@ public class PropreAlgorithm {
 
 	protected List<QueryExplain> newTestResultPairList(final String filename) throws IOException {
 		final List<QueryExplain> queries = new ArrayList<QueryExplain>();
-		final InputStream fileUrl = PropreAlgorithm.class.getResourceAsStream(filename);
+		final InputStream fileUrl = AlgorithmExec.class.getResourceAsStream(filename);
 		final InputStreamReader file = new InputStreamReader(fileUrl);
 		BufferedReader in = null;
 		try {

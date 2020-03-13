@@ -72,4 +72,40 @@ public class CardinalityTest {
 		assertTrue(q.getAllXSS().containsAll(expectedXSS));
 		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
 	}
+	
+	@Test
+	public void runCardBasedCompositeQueryTest() throws Exception{
+		//Given
+		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
+		final Session instance = currentQueryFactory.createSession();
+		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
+		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing_composite.sql");
+		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
+
+		Query q = currentQueryFactory.createQuery(
+				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
+
+
+		List<Query> expectedMFIS = new ArrayList<>();
+		List<Query> expectedXSS = new ArrayList<>();
+
+		Query t1t2t4t5 = currentQueryFactory.createQuery(
+				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?e <type> <Student> . ?e <nationality> ?g }");
+		Query t3 = currentQueryFactory.createQuery("SELECT * WHERE { ?a <teacherOf> ?c }");
+
+		expectedMFIS.add(t3);
+		expectedXSS.add(t1t2t4t5);
+		
+		//When
+
+		q.runCardBased(instance, 4, "/cardinalities2.config");
+
+		//Then
+
+		assertEquals(4, instance.getExecutedQueryCount());
+		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
+		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
+		assertTrue(q.getAllXSS().containsAll(expectedXSS));
+		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
+	}
 }

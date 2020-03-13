@@ -13,7 +13,7 @@ import org.junit.runners.Suite.SuiteClasses;
 		BFSTest.class,
 		CardinalityTest.class,
 		CPTest.class,
-		HybridTest.class,
+		VariableTest.class,
 		QueryTest.class, 
 		TriplePatternTest.class,
 		})

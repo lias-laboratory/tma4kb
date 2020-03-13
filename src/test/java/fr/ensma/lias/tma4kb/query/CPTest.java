@@ -64,7 +64,7 @@ public class CPTest {
 	}
 
 	@Test
-	public void decomposeCP2Test() throws Exception {
+	public void decomposeCPnoCartesianProductTest() throws Exception {
 		// Given
 		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
 		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
@@ -93,46 +93,5 @@ public class CPTest {
 		assertTrue(rep.size() == 1);
 		assertTrue(rep.get(0).containsAll(s1));
 		assertTrue(s1.containsAll(rep.get(0)));
-	}
-
-	@Test
-	public void decomposeCP3Test() throws Exception {
-		// Given
-		TriplePattern t1 = new TriplePattern("<?a> <p> <?b>", 1);
-		TriplePattern t2 = new TriplePattern("<?a> <p> <?c>", 2);
-		TriplePattern t4 = new TriplePattern("<?i> <p> <?f>", 4);
-		TriplePattern t5 = new TriplePattern("<?b> <p> <?g>", 5);
-		TriplePattern t6 = new TriplePattern("<?a> <p> <?h>", 6);
-		TriplePattern t7 = new TriplePattern("<?i> <p> <?j>", 7);
-		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
-
-		Query q2 = currentQueryFactory.createQuery("");
-		q2.addTriplePattern(t1);
-		q2.addTriplePattern(t2);
-		q2.addTriplePattern(t4);
-		q2.addTriplePattern(t5);
-		q2.addTriplePattern(t6);
-		q2.addTriplePattern(t7);
-
-		List<Set<TriplePattern>> rep = new ArrayList<Set<TriplePattern>>();
-		Set<TriplePattern> s1 = new HashSet<TriplePattern>();
-		s1.add(t1);
-		s1.add(t2);
-		s1.add(t5);
-		s1.add(t6);
-		Set<TriplePattern> s3 = new HashSet<TriplePattern>();
-		s3.add(t4);
-		s3.add(t7);
-
-		// When
-		((AbstractQuery) q2).decomposeCP();
-		rep = ((AbstractQuery) q2).decomp;
-
-		// Then
-		assertTrue(rep.size() == 2);
-		assertTrue(rep.get(0).containsAll(s1));
-		assertTrue(rep.get(1).containsAll(s3));
-		assertTrue(s1.containsAll(rep.get(0)));
-		assertTrue(s3.containsAll(rep.get(1)));
 	}
 }

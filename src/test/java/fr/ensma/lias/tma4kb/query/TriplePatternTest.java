@@ -67,6 +67,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void getObjectTest() {
+		// Then
 		assertEquals("p", t1.getObject());
 		assertEquals("?s", t2.getObject());
 		assertEquals("25", t3.getObject());
@@ -76,6 +77,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void toStringTest() {
+		// Then
 		assertEquals("?p <type> <p>", t1.toString());
 		assertEquals("?p <advises> ?s", t2.toString());
 		assertEquals("?s <age> '25'", t3.toString());
@@ -86,6 +88,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void toSimpleStringTest() {
+		// Then
 		assertEquals("t1", t1.toSimpleString());
 		assertEquals("t1", t2.toSimpleString());
 		assertEquals("t1", t3.toSimpleString());
@@ -95,6 +98,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void getVariablesTest() {
+		// Then
 		assertEquals(1, t1.getVariables().size());
 		assertEquals(2, t2.getVariables().size());
 		assertEquals(1, t3.getVariables().size());
@@ -104,6 +108,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void isSubjectVariableTest() {
+		// Then
 		assertTrue(t1.isSubjectVariable());
 		assertTrue(t2.isSubjectVariable());
 		assertTrue(t3.isSubjectVariable());
@@ -113,6 +118,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void isPredicateVariableTest() {
+		// Then
 		assertFalse(t1.isPredicateVariable());
 		assertFalse(t2.isPredicateVariable());
 		assertFalse(t3.isPredicateVariable());
@@ -122,6 +128,7 @@ public class TriplePatternTest {
 
 	@Test
 	public void isObjectVariabletest() {
+		// Then
 		assertFalse(t1.isObjectVariable());
 		assertTrue(t2.isObjectVariable());
 		assertFalse(t3.isObjectVariable());
@@ -131,11 +138,13 @@ public class TriplePatternTest {
 
 	@Test
 	public void equalsTest() {
+		// Then
 		assertTrue(t1.equals(new TriplePattern("?p <type> <p>", 2)));
 	}
 
 	@Test
 	public void toSQLTest() {
+		// Then
 		String sqlT1 = "select s as p from t where p='type' and o='p'";
 		assertEquals(sqlT1, t1.toSQL());
 		String sqlT2 = "select s as p, o as s from t where p='advises'";
