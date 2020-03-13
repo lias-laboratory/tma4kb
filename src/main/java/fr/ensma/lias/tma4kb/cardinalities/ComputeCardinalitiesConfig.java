@@ -1,5 +1,7 @@
 package fr.ensma.lias.tma4kb.cardinalities;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ public class ComputeCardinalitiesConfig {
 	 * @throws IOException
 	 */
 	public ComputeCardinalitiesConfig(String source) throws IOException {
-		InputStream input = ComputeCardinalitiesConfig.class.getResourceAsStream(source);
+		InputStream input = new FileInputStream(new File(source));
 		properties.load(input);
 		input.close();
 	}
