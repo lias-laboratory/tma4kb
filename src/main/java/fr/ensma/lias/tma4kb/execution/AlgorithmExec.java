@@ -1,6 +1,8 @@
 package fr.ensma.lias.tma4kb.execution;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,8 +40,8 @@ public class AlgorithmExec {
 	public AlgorithmExec(int nb_exec, String queries, String card) {
 		setUp();
 		NB_EXEC = nb_exec;
-		FILE_QUERIES = "src/main/samples/" +queries;
-		FILE_CARD = "src/main/samples/" +card;
+		FILE_QUERIES = queries;
+		FILE_CARD = card;
 	}
 
 	public void testGenAlgorithms() throws Exception {
@@ -239,7 +241,7 @@ public class AlgorithmExec {
 
 	protected List<QueryExplain> newTestResultPairList(final String filename) throws IOException {
 		final List<QueryExplain> queries = new ArrayList<QueryExplain>();
-		final InputStream fileUrl = AlgorithmExec.class.getResourceAsStream(filename);
+		final InputStream fileUrl = new FileInputStream(new File(filename));
 		final InputStreamReader file = new InputStreamReader(fileUrl);
 		BufferedReader in = null;
 		try {
