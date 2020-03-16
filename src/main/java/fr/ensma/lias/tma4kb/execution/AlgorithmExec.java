@@ -56,7 +56,7 @@ public class AlgorithmExec {
 			// *************** bfs Q ******************
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
-			/**/
+			/**
 			// *********************** Baseline******************************
 			Query q0 = qExplain.getQuery();
 			description = qExplain.getDescription();
@@ -79,7 +79,7 @@ public class AlgorithmExec {
 					System.out.println("baseline - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 				}
 
-			} /**/
+			} /**
 
 			// *********************** BFS******************************
 			Query q1 = qExplain.getQuery();
@@ -103,7 +103,7 @@ public class AlgorithmExec {
 					System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 				}
 
-			} /**/
+			} /**
 
 			// ******************* variable-based ********************
 
