@@ -33,15 +33,16 @@ public class ComputeCardinalitiesConfig {
 	 * Removes the prefix from an URI
 	 * 
 	 * @param uri the URI to remove the prefix from
-	 * @return the URI without its "http:" 
+	 * @return the URI without its prefix
 	 */
 	public String getNiceName(String uri) {
-		int indexOfSeparator = uri.lastIndexOf(":");
+		int indexOfSeparator = uri.indexOf('#');
 
 		if (indexOfSeparator != -1) {
 			return uri.substring(indexOfSeparator + 1, uri.length());
 		} else {
-			return uri;
+			int indexOfSlash = uri.lastIndexOf("/");
+			return uri.substring(indexOfSlash + 1, uri.length());
 		}
 	}
 
@@ -65,8 +66,7 @@ public class ComputeCardinalitiesConfig {
 
 		int i = 0;
 		for (String p : predicates) {
-			System.out.println(getNiceName(p));
-			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p)).toString());
+			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p) + ".max").toString());
 			if (cardMax <= 1)
 				((AbstractQuery) query).setCardMax(i, true);
 			else
