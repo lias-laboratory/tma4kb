@@ -40,7 +40,7 @@ public class VariableTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runVarBased(instance, 3);
+		q.runVar(instance, 3);
 
 		// Then
 		assertEquals(5, instance.getExecutedQueryCount());
@@ -75,7 +75,7 @@ public class VariableTest {
 
 		//When
 
-		q.runVarBased(instance, 4);
+		q.runVar(instance, 4);
 		
 		//Then
 		

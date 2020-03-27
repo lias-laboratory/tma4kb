@@ -63,7 +63,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runCardBased(instance, 3, "src/test/resources/cardinalities.config");
+		q.runFull(instance, 3, "src/test/resources/cardinalities.config");
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -98,7 +98,7 @@ public class CardinalityTest {
 		
 		//When
 
-		q.runCardBased(instance, 4, "src/test/resources/cardinalities2.config");
+		q.runFull(instance, 4, "src/test/resources/cardinalities2.config");
 
 		//Then
 

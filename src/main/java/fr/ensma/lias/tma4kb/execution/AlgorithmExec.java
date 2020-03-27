@@ -46,18 +46,17 @@ public class AlgorithmExec {
 
 	public void testGenAlgorithms() throws Exception {
 		List<QueryExplain> newTestResultPairList = this.newTestResultPairList( FILE_QUERIES);
-		ExpRelaxResult resultsBaseline = new ExpRelaxResult(NB_EXEC);
+		ExpRelaxResult resultsBase = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
-		ExpRelaxResult resultsCard = new ExpRelaxResult(NB_EXEC);
+		ExpRelaxResult resultsFull = new ExpRelaxResult(NB_EXEC);
 		int K = 100;
 		// int K[] = {2000,300,200000,5000,100,200000,5000,5000,150} ;
 		for (int i = 0; i < newTestResultPairList.size(); i++) {
-			// *************** bfs Q ******************
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
 			/**/
-			// *********************** Baseline******************************
+			// *********************** Base******************************
 			Query q0 = qExplain.getQuery();
 			description = qExplain.getDescription();
 			System.out.println("-----------------------------------------------------------");
@@ -69,14 +68,14 @@ public class AlgorithmExec {
 				q0 = factory.createQuery(q0.toString());
 				session = ((JenaQueryFactory) factory).createSession();
 				long time = System.currentTimeMillis();
-				q0.runBaseline(session, K);
+				q0.runBase(session, K);
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time));// /1000f;
 				int nbExecutedQuery = session.getExecutedQueryCount();
 
 				if (k > 0) {
-					resultsBaseline.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
-					System.out.println("baseline - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
+					System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 				}
 
 			} /**/
@@ -105,7 +104,7 @@ public class AlgorithmExec {
 
 			} /**/
 
-			// ******************* variable-based ********************
+			// ******************* var ********************
 
 			Query q = qExplain.getQuery();
 			System.out.println("-----------------------------------------------------------");
@@ -116,18 +115,18 @@ public class AlgorithmExec {
 				q = factory.createQuery(q.toString());
 				session = ((JenaQueryFactory) factory).createSession();
 				long time = System.currentTimeMillis();
-				q.runVarBased(session, K);
+				q.runVar(session, K);
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time)); // /1000f) ;
 				int nbExecutedQuery = session.getExecutedQueryCount();
 
 				if (k > 0) {
 					resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery);
-					System.out.println("variable based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 				}
 			}
 			/**/
-			// ******************* card localClass ********************
+			// ******************* full ********************
 
 			Query q2 = qExplain.getQuery();
 			description = qExplain.getDescription();
@@ -140,29 +139,29 @@ public class AlgorithmExec {
 				q2 = factory.createQuery(q2.toString());
 				session = ((JenaQueryFactory) factory).createSession();
 				long time = System.currentTimeMillis();
-				q2.runCardBased(session, K, FILE_CARD);
+				q2.runFull(session, K, FILE_CARD);
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time));
 				int nbExecutedQuery = session.getExecutedQueryCount();
 
 				if (k > 0) {
-					resultsCard.addQueryResult(k - 1, q2, tps, nbExecutedQuery);
+					resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery);
 					System.out
 							.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
 				}
 			}
 			System.out.println("------------------------------------");
-			System.out.print(resultsBaseline.toString());
+			System.out.print(resultsBase.toString());
 			System.out.print(resultsBFS.toString());
 			System.out.print(resultsVar.toString());
-			System.out.print(resultsCard.toString());
+			System.out.print(resultsFull.toString());
 			System.out.println("------------------------------------");
 		}
 
-		System.out.println("---------- BILAN Baseline------------------");
-		System.out.println(resultsBaseline.toString());
+		System.out.println("---------- BILAN BASE------------------");
+		System.out.println(resultsBase.toString());
 		System.out.println("------------------------------------");
-		resultsBaseline.toFile("exp-jena-Baseline.csv");
+		resultsBase.toFile("exp-jena-base.csv");
 
 		System.out.println("---------- BILAN BFS------------------");
 		System.out.println(resultsBFS.toString());
@@ -174,10 +173,10 @@ public class AlgorithmExec {
 		System.out.println("------------------------------------");
 		resultsVar.toFile("exp-jena-var.csv");
 
-		System.out.println("---------- BILAN CARD ------------------");
-		System.out.println(resultsCard.toString());
+		System.out.println("---------- BILAN FULL ------------------");
+		System.out.println(resultsFull.toString());
 		System.out.println("------------------------------------");
-		resultsCard.toFile("exp-jena-card.csv");
+		resultsFull.toFile("exp-jena-full.csv");
 
 	}
 

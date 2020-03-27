@@ -393,7 +393,7 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runBaseline(Session session, int k) {
+	public void runBase(Session session, int k) {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -496,7 +496,7 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runVarBased(Session session, int k) throws Exception {
+	public void runVar(Session session, int k) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
@@ -552,7 +552,7 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runCardBased(Session session, int k, String card) throws Exception {
+	public void runFull(Session session, int k, String card) throws Exception {
 		allMFIS = new HashSet<Query>();
 		allXSS = new HashSet<Query>();
 		session.clearExecutedQueryCount();
