@@ -73,7 +73,7 @@ public abstract class AbstractQuery implements Query {
 	public AbstractQuery(QueryFactory factory, String query) {
 		this.factory = factory;
 		this.rdfQuery = query;
-		this.decomp = new ArrayList<Set<TriplePattern>>();
+		this.decomp = new ArrayList<>();
 		this.decomposeQuery();
 		nbTriplePatterns = triplePatterns.size();
 	}
@@ -214,7 +214,7 @@ public abstract class AbstractQuery implements Query {
 	 * @return the list of direct subqueries of the query
 	 */
 	public List<Query> getSubQueries() {
-		List<Query> res = new ArrayList<Query>();
+		List<Query> res = new ArrayList<>();
 		for (TriplePattern tp : getTriplePatterns()) {
 			Query qNew = factory.createQuery(toString(), initialQuery);
 			qNew.removeTriplePattern(tp);
@@ -229,7 +229,7 @@ public abstract class AbstractQuery implements Query {
 	 * @return the list of direct superqueries of the query
 	 */
 	public List<Query> getSuperQueries() {
-		List<Query> res = new ArrayList<Query>();
+		List<Query> res = new ArrayList<>();
 		for (TriplePattern tp : initialQuery.getTriplePatterns()) {
 			if (!includes(tp)) {
 				Query qNew = factory.createQuery(toString(), initialQuery);
@@ -268,7 +268,7 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public Set<String> getVariables() {
-		Set<String> result = new HashSet<String>();
+		Set<String> result = new HashSet<>();
 		for (TriplePattern tp : this.getTriplePatterns())
 			result.addAll(tp.getVariables());
 		return result;
@@ -307,10 +307,6 @@ public abstract class AbstractQuery implements Query {
 	 * @return true iff this query is failing
 	 */
 	protected boolean isFailing(Map<Query, Integer> executedQueries, Session s, int k) {
-		/*
-		 * if (this.equals(this.getInitialQuery())) { // No longer supposing the initial
-		 * query fails executedQueries.put(this, true); return true; }
-		 */
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
@@ -322,7 +318,7 @@ public abstract class AbstractQuery implements Query {
 				val = isFailing(s, k);
 				executedQueries.put(this, val);
 			} else {
-				List<Query> subQ = new ArrayList<Query>();
+				List<Query> subQ = new ArrayList<>();
 				for (Set<TriplePattern> set : decomp) {
 					Query q = factory.createQuery("", initialQuery);
 					for (TriplePattern t : set) {
@@ -348,10 +344,6 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
-		/*
-		 * if (this.equals(this.getInitialQuery())) { // No longer supposing the initial
-		 * query fails executedQueries.put(this, true); return true; }
-		 */
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
@@ -397,12 +389,12 @@ public abstract class AbstractQuery implements Query {
 	public void decomposeCP() {
 		int i = 0;
 		Query initQuery = factory.createQuery(rdfQuery);
-		List<TriplePattern> triples = new ArrayList<TriplePattern>();
-		List<String> vars = new ArrayList<String>();
-		List<String> oldVars = new ArrayList<String>();
+		List<TriplePattern> triples = new ArrayList<>();
+		List<String> vars = new ArrayList<>();
+		List<String> oldVars = new ArrayList<>();
 		while (!initQuery.isTheEmptyQuery()) {
 			TriplePattern t = initQuery.getTriplePatterns().get(0);
-			decomp.add(new HashSet<TriplePattern>());
+			decomp.add(new HashSet<>());
 			decomp.get(i).add(t);
 			initQuery.removeTriplePattern(t);
 			for (String v : t.getVariables()) {
@@ -433,14 +425,14 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runBase(Session session, int k) {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -488,14 +480,14 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runBFS(Session session, int k) {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -536,14 +528,14 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runVar(Session session, int k) throws Exception {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
@@ -592,14 +584,14 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runFull(Session session, int k, String card) throws Exception {
-		allMFIS = new HashSet<Query>();
-		allXSS = new HashSet<Query>();
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
 		initialQuery = this;
-		List<Query> listQuery = new ArrayList<Query>();
-		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
-		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
-		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
 		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
 		markedQueries.put(this, true);
 		listQuery.add(this);
@@ -625,7 +617,7 @@ public abstract class AbstractQuery implements Query {
 					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
-					List<Query> subqueries = new ArrayList<Query>();
+					List<Query> subqueries = new ArrayList<>();
 					for (TriplePattern tp : qTemp.getTriplePatterns()) {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
@@ -688,7 +680,71 @@ public abstract class AbstractQuery implements Query {
 					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
-					List<Query> subqueries = new ArrayList<Query>();
+					List<Query> subqueries = new ArrayList<>();
+					for (TriplePattern tp : qTemp.getTriplePatterns()) {
+						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+						qNew.removeTriplePattern(tp);
+						subqueries.add(qNew);
+						if (!tp.isPredicateVariable() && Nb / tp.getCardMax() > k
+								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
+							executedQueries.put(qNew, Nb / tp.getCardMax());
+						}
+						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
+							executedQueries.put(qNew, Nb);
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void runFull_Local(Session session, int k, String card) throws Exception {
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			c.computeDomains(qTemp);
+			c.computeMaxLocalCardinalities(qTemp);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
+			if (parentsFIS) {
+				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
+				if (Nb > k) {
+					// FIS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = new ArrayList<>();
 					for (TriplePattern tp : qTemp.getTriplePatterns()) {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);

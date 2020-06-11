@@ -136,5 +136,14 @@ public interface Query {
 	 * @param card    the file containing cardinalities
 	 */
 	void runFull_AnyCard(Session session, int k, String card) throws Exception;
+	
+	/**
+	 * Run the cardinality-based algorithm with local cardinalities and fills allMFIS and allXSS
+	 * 
+	 * @param session connection to the KB
+	 * @param k       maximum number of results
+	 * @param card    the file containing cardinalities
+	 */
+	void runFull_Local(Session session, int k, String card) throws Exception;
 
 }

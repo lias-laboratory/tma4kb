@@ -44,12 +44,12 @@ public class TriplePattern {
 	/**
 	 * global maximum cardinality of the predicate
 	 */
-	 private Integer cardMax;
+	private Integer cardMax;
 
 	/**
-	 * true if maximum cardinality of the predicate is 1 or 0, false otherwise
+	 * domain of the predicate
 	 */
-	//private Boolean cardMax1;
+	private String domain = "thing";
 
 	/**
 	 * Compares maximum cardinality of the predicate to 1
@@ -62,6 +62,18 @@ public class TriplePattern {
 
 	public void setCardMax(Integer card) {
 		cardMax = card;
+	}
+	
+	/**
+	 * Computes domain of the predicate
+	 * @return domain of the predicate
+	 */
+	public String getDomain() {
+		return domain;
+	}
+	
+	public void setDomain(String dom) {
+		domain=dom;
 	}
 
 	/**

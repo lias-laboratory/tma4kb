@@ -71,4 +71,69 @@ public class ComputeCardinalitiesConfig {
 			i++;
 		}
 	}
+	
+	public void computeMaxLocalCardinalities(Query query) throws Exception {
+
+		List<TriplePattern> triples = ((AbstractQuery) query).getTriplePatterns();
+		List<String> domains = new ArrayList<>();
+		for (TriplePattern tp : triples) {
+			String p = tp.getPredicate();
+			for (TriplePattern t : triples) {
+				if (t.getSubject().equals(tp.getSubject())) {
+					String domain = t.getDomain();
+					int i = 0;
+					int j = domain.indexOf(',');
+					while (j > -1) {
+						if (!domains.contains(domain.substring(i, j))) {
+							domains.add(domain.substring(i, j));
+						}
+						i = j + 1;
+						j = domain.indexOf(',', i);
+					}
+					if (!domains.contains(domain.substring(i))) {
+						domains.add(domain.substring(i));
+					}
+				}
+			}
+
+			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p) + ".max").toString()); // commencer par la
+																									// cardinalité
+																									// globale
+			int k = 0;
+			while (cardMax > 1 && k < domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale
+														// max est aussi 1
+				String classe = domains.get(k);
+				if (!classe.equals("thing")) {
+					Integer newCard = Integer.parseInt(properties.get(classe + getNiceName(p) + ".max").toString());
+					if (newCard < cardMax)
+						cardMax = newCard;
+				}
+				k++;
+			}
+			tp.setCardMax(cardMax);
+		}
+	}
+
+	public void computeDomains(Query query) throws Exception {
+
+		List<TriplePattern> triples = ((AbstractQuery) query).getTriplePatterns();
+		List<String> predicates = new ArrayList<>();
+		for (TriplePattern t : triples) {
+			predicates.add(t.getPredicate());
+		}
+
+		for (TriplePattern t : triples) {
+			String predicate = t.getPredicate();
+			String domain;
+			if (predicate.equals("type") && !t.isObjectVariable()) {
+				domain = t.getObject();
+				t.setDomain(domain);
+			} else {
+				domain = properties.getProperty(getNiceName(predicate) + ".domain");
+				t.setDomain(domain);
+				if (domain == null)
+					t.setDomain("");
+			}
+		}
+	}
 }

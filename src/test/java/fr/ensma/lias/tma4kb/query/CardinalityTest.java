@@ -73,7 +73,39 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		((AbstractQuery) q).runFull_AnyCard(instance, 3, "src/test/resources/cardinalities11.config");
+		((AbstractQuery) q).runFull_AnyCard(instance, 3, "src/test/resources/cardinalities1.config");
+
+		// Then
+		assertEquals(2, instance.getExecutedQueryCount());
+		assertTrue(q.getAllMFIS().containsAll(expectedMFIS));
+		assertTrue(expectedMFIS.containsAll(q.getAllMFIS()));
+		assertTrue(q.getAllXSS().containsAll(expectedXSS));
+		assertTrue(expectedXSS.containsAll(q.getAllXSS()));
+	}
+	
+	@Test
+	public void runLocalTest() throws Exception {
+		// Given
+		QueryFactory currentQueryFactory = new HSQLDBQueryFactory();
+		final Session instance = currentQueryFactory.createSession();
+		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
+		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");
+		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
+
+		List<Query> expectedMFIS = new ArrayList<>();
+		List<Query> expectedXSS = new ArrayList<>();
+
+		Query q = currentQueryFactory.createQuery(
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+		Query t1t2t3 = currentQueryFactory
+				.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }");
+		Query t4 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <teacherOf> ?c }");
+
+		expectedMFIS.add(t4);
+		expectedXSS.add(t1t2t3);
+
+		// When
+		((AbstractQuery) q).runFull_Local(instance, 3, "src/test/resources/cardinalities1.config");
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
