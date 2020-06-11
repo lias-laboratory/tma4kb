@@ -32,16 +32,19 @@ public class AlgorithmExec {
 	private String FILE_CARD;
 	
 	private int NB_EXEC;
+	
+	private int K;
 
 	public void setUp() {
 		factory = new JenaQueryFactory();
 	}
 
-	public AlgorithmExec(int nb_exec, String queries, String card) {
+	public AlgorithmExec(int nb_exec, String queries, String card, int k ) {
 		setUp();
 		NB_EXEC = nb_exec;
 		FILE_QUERIES = queries;
 		FILE_CARD = card;
+		K=k;
 	}
 
 	public void testGenAlgorithms() throws Exception {
@@ -50,8 +53,6 @@ public class AlgorithmExec {
 		ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsFull = new ExpRelaxResult(NB_EXEC);
-		int K = 100;
-		// int K[] = {2000,300,200000,5000,100,200000,5000,5000,150} ;
 		for (int i = 0; i < newTestResultPairList.size(); i++) {
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();

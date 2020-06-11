@@ -24,6 +24,9 @@ public class TMA4KBLauncher implements Runnable {
 
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
+	
+	@Option(names = { "-k", "--threshold" }, defaultValue = "100", description = "The number of executions.")
+	int k;
 
 	public static void main(String[] args) {
 		new CommandLine(new TMA4KBLauncher()).execute(args);
@@ -31,8 +34,7 @@ public class TMA4KBLauncher implements Runnable {
 
 	@Override
 	public void run() {
-		int NB_EXEC = Integer.valueOf(numberExecution);
-		AlgorithmExec t = new AlgorithmExec(NB_EXEC, queriesFile, cardinalitiesFile);
+		AlgorithmExec t = new AlgorithmExec(numberExecution, queriesFile, cardinalitiesFile, k);
 		try {
 			t.testGenAlgorithms();
 		} catch (Exception e) {
