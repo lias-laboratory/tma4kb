@@ -53,12 +53,6 @@ public abstract class AbstractQuery implements Query {
 	private Query initialQuery;
 
 	/**
-	 * baseQuery is the starting point for CardAlgo This is the conjunction of
-	 * triple patterns with predicates having maxCard = 1
-	 */
-	protected Query baseQuery;
-
-	/**
 	 * decomposition of the query into sets of triples so that each variable appears
 	 * in only one set decomp is used to avoid executing cartesian products
 	 */
@@ -622,7 +616,7 @@ public abstract class AbstractQuery implements Query {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
 						subqueries.add(qNew);
-						if (baseQuery.getTriplePatterns().contains(tp)
+						if (!tp.isPredicateVariable() && tp.getCardMax() <=1
 								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
 							executedQueries.put(qNew, k + 1);
 						}
