@@ -47,7 +47,7 @@ pipeline {
             emailext (
                 subject: "Success Jenkins pipeline - ${env.JOB_NAME}",
                 body: "${env.BUILD_URL}",
-                to: "$ADMIN_EMAIL",
+                to: "$ADMIN_EMAIL,louise.parkin@ensma.fr",
                 from: "$ADMIN_EMAIL"
             )
         }
@@ -55,7 +55,7 @@ pipeline {
             emailext (
                 subject: "Failure Jenkins pipeline - ${env.JOB_NAME}",
                 body: "${env.BUILD_URL}",
-                to: "$ADMIN_EMAIL",
+                to: "$ADMIN_EMAIL,louise.parkin@ensma.fr",
                 from: "$ADMIN_EMAIL"
             )
         }
