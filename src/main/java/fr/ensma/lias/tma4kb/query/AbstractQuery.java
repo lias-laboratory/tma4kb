@@ -254,19 +254,17 @@ public abstract class AbstractQuery implements Query {
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
 
-	/*
-	 * public void setCardMax(int triple, int cardMax) {
-	 * this.triplePatterns.get(triple).setCardMax(cardMax); }
-	 */
+
 	/**
-	 * Sets the maximum cardinality of triple to true(max cardinality is 1) or false
+	 * Sets the maximum cardinality of triple 
 	 * 
 	 * @param triple  the triple pattern
-	 * @param cardMax the cardinality boolean value
-	 */
-	public void setCardMax(int triple, boolean cardMax) {
-		this.triplePatterns.get(triple).setCardMax1(cardMax);
+	 * @param cardMax the cardinality value
+	 */	
+	public void setCardMax(int triple, int cardMax) {
+		 this.triplePatterns.get(triple).setCardMax(cardMax); 
 	}
+	 
 
 	@Override
 	public Set<String> getVariables() {
@@ -347,6 +345,47 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 		return val > k;
+	}
+	
+	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
+		/*
+		 * if (this.equals(this.getInitialQuery())) { // No longer supposing the initial
+		 * query fails executedQueries.put(this, true); return true; }
+		 */
+		Integer val = executedQueries.get(this);
+		if (val == null) {
+			if (this.isTheEmptyQuery()) {
+				executedQueries.put(this, k + 1);
+				return k + 1;
+			}
+			decomposeCP();
+			if (decomp.size() == 1) {
+				val = isFailing(s, k);
+				executedQueries.put(this, val);
+			} else {
+				List<Query> subQ = new ArrayList<>();
+				for (Set<TriplePattern> set : decomp) {
+					Query q = factory.createQuery("", initialQuery);
+					for (TriplePattern t : set) {
+						q.addTriplePattern(t);
+					}
+					subQ.add(q);
+				}
+				val = 1;
+				Integer val2;
+				while (!subQ.isEmpty() && val <= k) {
+					Query q = subQ.remove(0);
+					val2 = executedQueries.get(q);
+					if (val2 == null) {
+						val2 = q.isFailing(s, k);
+						executedQueries.put(q, val2);
+					}
+					val *= val2;
+				}
+				executedQueries.put(this, val);
+			}
+		}
+		return val;
 	}
 
 	/**
@@ -561,11 +600,12 @@ public abstract class AbstractQuery implements Query {
 		Map<Query, Integer> executedQueries = new HashMap<Query, Integer>();
 		Map<Query, Boolean> markedQueries = new HashMap<Query, Boolean>();
 		Map<Query, Boolean> listFIS = new HashMap<Query, Boolean>();
-		findQbase(session, card);
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
 		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
+			c.computeMaxCardinalities(qTemp);
 			List<Query> superqueries = qTemp.getSuperQueries();
 			boolean parentsFIS = true;
 			while (parentsFIS && !superqueries.isEmpty()) {
@@ -611,15 +651,67 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 	}
-
+	
 	@Override
-	public void findQbase(Session instance, String source) throws Exception {
-		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(source);
-		c.computeMaxCardinalities(this);
-		baseQuery = (AbstractQuery) factory.createQuery(rdfQuery, initialQuery);
-		for (TriplePattern t : this.getTriplePatterns()) {
-			if (!t.isPredicateVariable() && !t.getCardMax1())
-				baseQuery.removeTriplePattern(t);
+	public void runFull_AnyCard(Session session, int k, String card) throws Exception {
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
+		session.clearExecutedQueryCount();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			c.computeMaxCardinalities(qTemp);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
+			if (parentsFIS) {
+				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
+				if (Nb > k) {
+					// FIS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = new ArrayList<Query>();
+					for (TriplePattern tp : qTemp.getTriplePatterns()) {
+						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+						qNew.removeTriplePattern(tp);
+						subqueries.add(qNew);
+						if (!tp.isPredicateVariable() && Nb / tp.getCardMax() > k
+								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
+							executedQueries.put(qNew, Nb / tp.getCardMax());
+						}
+						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
+							executedQueries.put(qNew, Nb);
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
+				}
+			}
 		}
 	}
 }

@@ -67,10 +67,7 @@ public class ComputeCardinalitiesConfig {
 		int i = 0;
 		for (String p : predicates) {
 			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p) + ".max").toString());
-			if (cardMax <= 1)
-				((AbstractQuery) query).setCardMax(i, true);
-			else
-				((AbstractQuery) query).setCardMax(i, false);
+			((AbstractQuery) query).setCardMax(i, cardMax);
 			i++;
 		}
 	}

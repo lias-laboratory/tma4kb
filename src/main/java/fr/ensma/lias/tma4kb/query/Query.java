@@ -127,13 +127,14 @@ public interface Query {
 	 * @param card    the file containing cardinalities
 	 */
 	void runFull(Session session, int k, String card) throws Exception;
-
+	
 	/**
-	 * Use global cardinalities to calculate Qbase starting point for the
-	 * cardinalities algorithm and fills Qbase
+	 * Run the cardinality-based algorithm for any cardinality and fills allMFIS and allXSS
 	 * 
 	 * @param session connection to the KB
-	 * @throws Exception
+	 * @param k       maximum number of results
+	 * @param card    the file containing cardinalities
 	 */
-	void findQbase(Session instance, String source) throws Exception;
+	void runFull_AnyCard(Session session, int k, String card) throws Exception;
+
 }
