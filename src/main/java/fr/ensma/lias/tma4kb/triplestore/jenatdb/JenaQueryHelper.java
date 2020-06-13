@@ -21,33 +21,38 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 		this.method = method;
 	}
 	
-	private final int COUNT_ALL = 0;
-	private final int COUNT_K = 1;
+	private final int SELECT_ALL = 0;
+	private final int SELECT_K = 1;
 	private int method;
 
 	@Override
 	public int executeQuery(Session session, int k) {
 		int i = 0;
 		String sparqlQueryString = q.toString();
+		long time = System.currentTimeMillis();
 		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
 		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
 
 		ResultSet results = qexec.execSelect();
 
 		(session).setExecutedQueryCount((session).getExecutedQueryCount() + 1);
-		if (method==COUNT_ALL) {
+		if (method==SELECT_ALL) {
 
 			while (results.hasNext()) {
 				i++;
 				results.next();
 			}
-		}else if (method==COUNT_K){
+		}else if (method==SELECT_K){
 			while (results.hasNext() && i<=k+1) {
 				i++;
 				results.next();
 			}
-		}
+		}/** TO DO methods count and limit
+		**/
 		qexec.close();
+		long end = System.currentTimeMillis();
+		float tps = ((float) (end - time));
+		session.setCountQueryTime(session.getCountQueryTime() + tps);
 
 		return i;
 	}

@@ -14,11 +14,14 @@ public class QueryResult {
 	private float time;
 
 	private int nbExecutedQuery;
+	
+	private float queryCountTime;
 
-	public QueryResult(float time, int nbExecutedQuery) {
+	public QueryResult(float time, int nbExecutedQuery,  float countTime) {
 		super();
 		this.time = time;
 		this.nbExecutedQuery = nbExecutedQuery;
+		this.queryCountTime=countTime;
 	}
 
 	public float getTime() {
@@ -27,6 +30,10 @@ public class QueryResult {
 
 	public int getNbExecutedQuery() {
 		return nbExecutedQuery;
+	}
+
+	public float getCountTime() {
+		return queryCountTime;
 	}
 
 }

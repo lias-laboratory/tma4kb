@@ -76,10 +76,11 @@ public class AlgorithmExec {
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time));// /1000f;
 				int nbExecutedQuery = session.getExecutedQueryCount();
+				float queryCountTime = session.getCountQueryTime();
 
 				if (k > 0) {
-					resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery);
-					System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime);
+					System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
 				}
 
 			} /**/
@@ -100,10 +101,11 @@ public class AlgorithmExec {
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time));// / 1000f;
 				int nbExecutedQuery = session.getExecutedQueryCount();
+				float queryCountTime = session.getCountQueryTime();
 
 				if (k > 0) {
-					resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery);
-					System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime);
+					System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
 				}
 
 			} /**/
@@ -123,10 +125,11 @@ public class AlgorithmExec {
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time)); // /1000f) ;
 				int nbExecutedQuery = session.getExecutedQueryCount();
+				float queryCountTime = session.getCountQueryTime();
 
 				if (k > 0) {
-					resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery);
-					System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime);
+					System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
 				}
 			}
 			/**/
@@ -147,11 +150,11 @@ public class AlgorithmExec {
 				long end = System.currentTimeMillis();
 				float tps = ((float) (end - time));
 				int nbExecutedQuery = session.getExecutedQueryCount();
+				float queryCountTime = session.getCountQueryTime();
 
 				if (k > 0) {
-					resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery);
-					System.out
-							.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+					resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime);
+					System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
 				}
 			}
 			System.out.println("------------------------------------");

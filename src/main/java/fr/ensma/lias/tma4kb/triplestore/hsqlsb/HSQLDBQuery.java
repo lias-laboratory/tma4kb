@@ -23,9 +23,13 @@ public class HSQLDBQuery extends AbstractQuery {
 	public int isFailing(Session session, int k) {
 		try {
 			Statement stmt = ((HSQLDBSession) session).getConnection().createStatement();
+			long time = System.currentTimeMillis();
 			ResultSet rset = stmt.executeQuery(toNativeQuery());
+			long end = System.currentTimeMillis();
+			float tps = ((float) (end - time));
 			int i = 0;
 			session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
+			session.setCountQueryTime(session.getCountQueryTime()+tps);
 			// This code is probably not efficient
 			// since it's only used for test issue, it's fine
 			while (rset.next()) { // Stop once more than k answers are found : && i<=k) { the result is inaccurate

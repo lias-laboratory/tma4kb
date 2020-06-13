@@ -31,6 +31,8 @@ public class ExpRelaxResult {
 	private static int ID_TIME = 1;
 
 	private static int ID_NB_EXECUTED_QUERY = 2;
+	
+	private static int ID_COUNT_QUERY_TIME = 3;
 
 	/**
 	 * Number of execution of each algorithm
@@ -49,14 +51,14 @@ public class ExpRelaxResult {
 		this.resultsByQuery = new HashMap<Query, QueryResult[]>();
 	}
 
-	public void addQueryResult(int i, Query q, float time, int nbExecutedQuery) {
+	public void addQueryResult(int i, Query q, float time, int nbExecutedQuery, float queryCountTime) {
 
 		QueryResult[] queryResults = resultsByQuery.get(q);
 		if (queryResults == null) {
 			queryResults = new QueryResult[nbExecutions];
 			listOfQueries.add(q);
 		}
-		queryResults[i] = new QueryResult(time, nbExecutedQuery);
+		queryResults[i] = new QueryResult(time, nbExecutedQuery, queryCountTime);
 		resultsByQuery.put(q, queryResults);
 	}
 
@@ -83,6 +85,16 @@ public class ExpRelaxResult {
 	public float getAvgNbExecutedQuery(Query q) {
 		return getAvgMetric(q, ID_NB_EXECUTED_QUERY);
 	}
+	
+	/**
+	 * Get the average of the counting time
+	 * 
+	 * @param q the query
+	 * @return the average of the computing time
+	 */
+	public float getAvgCountTime(Query q) {
+		return getAvgMetric(q, ID_COUNT_QUERY_TIME);
+	}
 
 	/**
 	 * Computes the average of a given metrics
@@ -100,6 +112,8 @@ public class ExpRelaxResult {
 					res += results[j].getTime();
 				else if (idMetric == ID_NB_EXECUTED_QUERY)
 					res += results[j].getNbExecutedQuery();
+				else if (idMetric == ID_COUNT_QUERY_TIME)
+					res += results[j].getCountTime();
 			}
 		}
 		return res / nbExecutions;
@@ -128,9 +142,9 @@ public class ExpRelaxResult {
 			Float valTime = round(getAvgTime(q), 2);
 			res.append(valTime.toString().replace('.', ',') + "\t");
 			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
-			res.append(nbExecutedQuery + "\n");
-			// int nbCacheHits = Math.round(getAvgCacheHits(q));
-			// res.append(nbCacheHits + "\n");
+			res.append(nbExecutedQuery + "\t");
+			Float countTime = round(getAvgCountTime(q),2);
+			res.append(countTime.toString().replace('.', ',') + "\n");
 		}
 		return res.toString();
 	}
