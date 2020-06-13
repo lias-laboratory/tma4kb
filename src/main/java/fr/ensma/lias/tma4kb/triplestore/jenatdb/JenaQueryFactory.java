@@ -10,10 +10,17 @@ import fr.ensma.lias.tma4kb.query.Session;
  * @author Stephane JEAN (jean@ensma.fr)
  */
 public class JenaQueryFactory extends AbstractQueryFactory {
+	
+	private int method;
+	
+	public JenaQueryFactory(int method) {
+		super();
+		this.method=method;
+	}
 
 	@Override
 	public fr.ensma.lias.tma4kb.query.Query createQuery(String rdfQuery) {
-		return new JenaQuery(this, rdfQuery);
+		return new JenaQuery(this, rdfQuery, method);
 	}
 
 	@Override

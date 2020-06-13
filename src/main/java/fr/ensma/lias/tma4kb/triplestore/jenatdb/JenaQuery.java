@@ -21,9 +21,9 @@ public class JenaQuery extends AbstractQuery {
 	 * @param factory
 	 * @param query
 	 */
-	public JenaQuery(QueryFactory factory, String query) {
+	public JenaQuery(QueryFactory factory, String query, int method) {
 		super(factory, query);
-		helper = new JenaQueryHelper(this);
+		helper = new JenaQueryHelper(this, method);
 	}
 
 	@Override

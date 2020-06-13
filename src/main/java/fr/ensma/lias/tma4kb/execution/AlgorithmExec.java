@@ -34,17 +34,20 @@ public class AlgorithmExec {
 	private int NB_EXEC;
 	
 	private int K;
+	
+	private int METHOD;
 
 	public void setUp() {
-		factory = new JenaQueryFactory();
+		factory = new JenaQueryFactory(METHOD);
 	}
 
-	public AlgorithmExec(int nb_exec, String queries, String card, int k ) {
-		setUp();
+	public AlgorithmExec(int nb_exec, String queries, String card, int k, int method) {
 		NB_EXEC = nb_exec;
 		FILE_QUERIES = queries;
 		FILE_CARD = card;
 		K=k;
+		METHOD=method;
+		setUp();
 	}
 
 	public void testGenAlgorithms() throws Exception {

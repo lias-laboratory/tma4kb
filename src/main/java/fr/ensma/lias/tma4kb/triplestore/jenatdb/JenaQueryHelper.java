@@ -16,9 +16,14 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 	 * 
 	 * @param q the query that this helper uses
 	 */
-	public JenaQueryHelper(fr.ensma.lias.tma4kb.query.Query q) {
+	public JenaQueryHelper(fr.ensma.lias.tma4kb.query.Query q, int method) {
 		super(q);
+		this.method = method;
 	}
+	
+	private final int COUNT_ALL = 0;
+	private final int COUNT_K = 1;
+	private int method;
 
 	@Override
 	public int executeQuery(Session session, int k) {
@@ -30,9 +35,17 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 		ResultSet results = qexec.execSelect();
 
 		(session).setExecutedQueryCount((session).getExecutedQueryCount() + 1);
-		while (results.hasNext()) {
-			i++;
-			results.next();
+		if (method==COUNT_ALL) {
+
+			while (results.hasNext()) {
+				i++;
+				results.next();
+			}
+		}else if (method==COUNT_K){
+			while (results.hasNext() && i<=k+1) {
+				i++;
+				results.next();
+			}
 		}
 		qexec.close();
 
