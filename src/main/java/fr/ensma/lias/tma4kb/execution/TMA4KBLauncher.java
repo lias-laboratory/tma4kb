@@ -28,7 +28,7 @@ public class TMA4KBLauncher implements Runnable {
 	@Option(names = { "-k", "--threshold" }, defaultValue = "100", description = "The threshold for overabundant answers.")
 	int k;
 	
-	@Option(names = { "-m", "--method"}, defaultValue = "0", description = "The evaluation method in Jena. 0: SELECT_ALL, 1: SELECT_K")
+	@Option(names = { "-m", "--method"}, defaultValue = "0", description = "The evaluation method in Jena. 0: SELECT_ALL, 1: SELECT_K, 2: COUNT, 3: LIMIT, 4: COUNT&LIMIT")
 	int method;
 
 	public static void main(String[] args) {
