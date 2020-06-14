@@ -422,6 +422,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
@@ -477,6 +478,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
@@ -525,6 +527,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
@@ -581,6 +584,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
@@ -644,6 +648,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
@@ -707,6 +712,7 @@ public abstract class AbstractQuery implements Query {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();

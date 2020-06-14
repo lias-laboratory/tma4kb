@@ -26,6 +26,6 @@ public class JenaQueryFactory extends AbstractQueryFactory {
 	@Override
 	public Session createSession() {
 		Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
-		return (Session) new JenaSession(dataset);
+		return new JenaSession(dataset);
 	}
 }

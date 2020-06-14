@@ -52,9 +52,9 @@ public class TriplePattern {
 	private String domain = "thing";
 
 	/**
-	 * Compares maximum cardinality of the predicate to 1
+	 * Computes maximum cardinality of the predicate
 	 * 
-	 * @return if maximum cardinality of the predicate is less or equal to 1
+	 * @return the maximum cardinality of the predicate 
 	 */
 	public Integer getCardMax() {
 		return cardMax;

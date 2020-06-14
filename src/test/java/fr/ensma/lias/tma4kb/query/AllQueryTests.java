@@ -13,9 +13,9 @@ import org.junit.runners.Suite.SuiteClasses;
 		BFSTest.class,
 		CardinalityTest.class,
 		CPTest.class,
-		VariableTest.class,
 		QueryTest.class, 
 		TriplePatternTest.class,
+		VariableTest.class,
 		})
 public class AllQueryTests {
 }
