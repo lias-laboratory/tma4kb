@@ -30,6 +30,9 @@ public class TMA4KBLauncher implements Runnable {
 	
 	@Option(names = { "-m", "--method"}, defaultValue = "0", description = "The evaluation method in Jena. 0: SELECT_ALL, 1: SELECT_K, 2: COUNT, 3: LIMIT, 4: COUNT&LIMIT")
 	int method;
+	
+	@Option(names = { "-a", "--algorithm"}, defaultValue = "1234", description = "The algorithm to run. 1: SELECT_BASE, 2: SELECT_BFS, 3: SELECT_VAR, 4: SELECT_FULL, 1234: SELECT_ALL")
+	String algorithm;
 
 	public static void main(String[] args) {
 		new CommandLine(new TMA4KBLauncher()).execute(args);
@@ -37,7 +40,7 @@ public class TMA4KBLauncher implements Runnable {
 
 	@Override
 	public void run() {
-		AlgorithmExec t = new AlgorithmExec(numberExecution, queriesFile, cardinalitiesFile, k, method);
+		AlgorithmExec t = new AlgorithmExec(numberExecution, queriesFile, cardinalitiesFile, k, method, algorithm);
 		try {
 			t.testGenAlgorithms();
 		} catch (Exception e) {

@@ -24,34 +24,37 @@ import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
 public class AlgorithmExec {
 
 	private QueryFactory factory;
-	
+
 	private Session session;
-	
+
 	private String FILE_QUERIES;
-	
+
 	private String FILE_CARD;
-	
+
 	private int NB_EXEC;
-	
+
 	private int K;
-	
+
 	private int METHOD;
+
+	private String ALGO;
 
 	public void setUp() {
 		factory = new JenaQueryFactory(METHOD);
 	}
 
-	public AlgorithmExec(int nb_exec, String queries, String card, int k, int method) {
+	public AlgorithmExec(int nb_exec, String queries, String card, int k, int method, String algo) {
 		NB_EXEC = nb_exec;
 		FILE_QUERIES = queries;
 		FILE_CARD = card;
-		K=k;
-		METHOD=method;
+		K = k;
+		METHOD = method;
+		ALGO = algo;
 		setUp();
 	}
 
 	public void testGenAlgorithms() throws Exception {
-		List<QueryExplain> newTestResultPairList = this.newTestResultPairList( FILE_QUERIES);
+		List<QueryExplain> newTestResultPairList = this.newTestResultPairList(FILE_QUERIES);
 		ExpRelaxResult resultsBase = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
 		ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
@@ -59,131 +62,162 @@ public class AlgorithmExec {
 		for (int i = 0; i < newTestResultPairList.size(); i++) {
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
-			/**/
-			// *********************** Base******************************
-			Query q0 = qExplain.getQuery();
-			description = qExplain.getDescription();
-			System.out.println("-----------------------------------------------------------");
-			System.out.println("Query (" + description + "): " + q0);
-			System.out.println("-----------------------------------------------------------");
+			for (int j = 0; j < ALGO.length(); j++) {
+				if (ALGO.charAt(j) == '1') {
+					/**/
+					// *********************** Base******************************
+					Query q0 = qExplain.getQuery();
+					description = qExplain.getDescription();
+					System.out.println("-----------------------------------------------------------");
+					System.out.println("Query (" + description + "): " + q0);
+					System.out.println("-----------------------------------------------------------");
 
-			for (int k = 0; k <= NB_EXEC; k++) {
-				q0 = qExplain.getQuery();
-				q0 = factory.createQuery(q0.toString());
-				session = ((JenaQueryFactory) factory).createSession();
-				long time = System.currentTimeMillis();
-				q0.runBase(session, K);
-				long end = System.currentTimeMillis();
-				float tps = ((float) (end - time));// /1000f;
-				int nbExecutedQuery = session.getExecutedQueryCount();
-				float queryCountTime = session.getCountQueryTime();
+					for (int k = 0; k <= NB_EXEC; k++) {
+						q0 = qExplain.getQuery();
+						q0 = factory.createQuery(q0.toString());
+						session = ((JenaQueryFactory) factory).createSession();
+						long time = System.currentTimeMillis();
+						q0.runBase(session, K);
+						long end = System.currentTimeMillis();
+						float tps = ((float) (end - time));// /1000f;
+						int nbExecutedQuery = session.getExecutedQueryCount();
+						float queryCountTime = session.getCountQueryTime();
 
-				if (k > 0) {
-					resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime);
-					System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
+						if (k > 0) {
+							resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime);
+							System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
+									+ " queryCountTime: " + queryCountTime);
+						}
+
+					}
 				}
 
-			} /**/
+				if (ALGO.charAt(j) == '2') {/**/
 
-			// *********************** BFS******************************
-			Query q1 = qExplain.getQuery();
-			description = qExplain.getDescription();
-			System.out.println("-----------------------------------------------------------");
-			System.out.println("Query (" + description + "): " + q1);
-			System.out.println("-----------------------------------------------------------");
+					// *********************** BFS******************************
+					Query q1 = qExplain.getQuery();
+					description = qExplain.getDescription();
+					System.out.println("-----------------------------------------------------------");
+					System.out.println("Query (" + description + "): " + q1);
+					System.out.println("-----------------------------------------------------------");
 
-			for (int k = 0; k <= NB_EXEC; k++) {
-				q1 = qExplain.getQuery();
-				q1 = factory.createQuery(q1.toString());
-				session = ((JenaQueryFactory) factory).createSession();
-				long time = System.currentTimeMillis();
-				q1.runBFS(session, K);
-				long end = System.currentTimeMillis();
-				float tps = ((float) (end - time));// / 1000f;
-				int nbExecutedQuery = session.getExecutedQueryCount();
-				float queryCountTime = session.getCountQueryTime();
+					for (int k = 0; k <= NB_EXEC; k++) {
+						q1 = qExplain.getQuery();
+						q1 = factory.createQuery(q1.toString());
+						session = ((JenaQueryFactory) factory).createSession();
+						long time = System.currentTimeMillis();
+						q1.runBFS(session, K);
+						long end = System.currentTimeMillis();
+						float tps = ((float) (end - time));// / 1000f;
+						int nbExecutedQuery = session.getExecutedQueryCount();
+						float queryCountTime = session.getCountQueryTime();
 
-				if (k > 0) {
-					resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime);
-					System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
+						if (k > 0) {
+							resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime);
+							System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
+									+ " queryCountTime: " + queryCountTime);
+						}
+
+					}
 				}
 
-			} /**/
+				if (ALGO.charAt(j) == '3') {/**/
 
-			// ******************* var ********************
+					// ******************* var ********************
 
-			Query q = qExplain.getQuery();
-			System.out.println("-----------------------------------------------------------");
-			System.out.println("Query (" + description + "): " + q);
-			System.out.println("-----------------------------------------------------------");
+					Query q = qExplain.getQuery();
+					System.out.println("-----------------------------------------------------------");
+					System.out.println("Query (" + description + "): " + q);
+					System.out.println("-----------------------------------------------------------");
 
-			for (int k = 0; k <= NB_EXEC; k++) {
-				q = factory.createQuery(q.toString());
-				session = ((JenaQueryFactory) factory).createSession();
-				long time = System.currentTimeMillis();
-				q.runVar(session, K);
-				long end = System.currentTimeMillis();
-				float tps = ((float) (end - time)); // /1000f) ;
-				int nbExecutedQuery = session.getExecutedQueryCount();
-				float queryCountTime = session.getCountQueryTime();
+					for (int k = 0; k <= NB_EXEC; k++) {
+						q = factory.createQuery(q.toString());
+						session = ((JenaQueryFactory) factory).createSession();
+						long time = System.currentTimeMillis();
+						q.runVar(session, K);
+						long end = System.currentTimeMillis();
+						float tps = ((float) (end - time)); // /1000f) ;
+						int nbExecutedQuery = session.getExecutedQueryCount();
+						float queryCountTime = session.getCountQueryTime();
 
-				if (k > 0) {
-					resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime);
-					System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
+						if (k > 0) {
+							resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime);
+							System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
+									+ " queryCountTime: " + queryCountTime);
+						}
+					}
 				}
-			}
-			/**/
-			// ******************* full ********************
+				if (ALGO.charAt(j) == '4') {
+					/**/
 
-			Query q2 = qExplain.getQuery();
-			description = qExplain.getDescription();
-			System.out.println("-----------------------------------------------------------");
-			System.out.println("Query (" + description + "): " + q2);
-			System.out.println("-----------------------------------------------------------");
+					// ******************* full ********************
 
-			for (int k = 0; k <= NB_EXEC; k++) {
-				q2 = qExplain.getQuery();
-				q2 = factory.createQuery(q2.toString());
-				session = ((JenaQueryFactory) factory).createSession();
-				long time = System.currentTimeMillis();
-				q2.runFull(session, K, FILE_CARD);
-				long end = System.currentTimeMillis();
-				float tps = ((float) (end - time));
-				int nbExecutedQuery = session.getExecutedQueryCount();
-				float queryCountTime = session.getCountQueryTime();
+					Query q2 = qExplain.getQuery();
+					description = qExplain.getDescription();
+					System.out.println("-----------------------------------------------------------");
+					System.out.println("Query (" + description + "): " + q2);
+					System.out.println("-----------------------------------------------------------");
 
-				if (k > 0) {
-					resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime);
-					System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery+ " queryCountTime: "+queryCountTime);
+					for (int k = 0; k <= NB_EXEC; k++) {
+						q2 = qExplain.getQuery();
+						q2 = factory.createQuery(q2.toString());
+						session = ((JenaQueryFactory) factory).createSession();
+						long time = System.currentTimeMillis();
+						q2.runFull(session, K, FILE_CARD);
+						long end = System.currentTimeMillis();
+						float tps = ((float) (end - time));
+						int nbExecutedQuery = session.getExecutedQueryCount();
+						float queryCountTime = session.getCountQueryTime();
+
+						if (k > 0) {
+							resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime);
+							System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: "
+									+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
+						}
+					}
 				}
 			}
 			System.out.println("------------------------------------");
-			System.out.print(resultsBase.toString());
-			System.out.print(resultsBFS.toString());
-			System.out.print(resultsVar.toString());
-			System.out.print(resultsFull.toString());
+			for (int l = 0; l < ALGO.length(); l++) {
+				if (ALGO.charAt(l) == '1') {
+					System.out.print(resultsBase.toString());
+				} else if (ALGO.charAt(l) == '2') {
+					System.out.print(resultsBFS.toString());
+				} else if (ALGO.charAt(l) == '3') {
+					System.out.print(resultsVar.toString());
+				} else if (ALGO.charAt(l) == '4') {
+					System.out.print(resultsFull.toString());
+				}
+			}
 			System.out.println("------------------------------------");
+
+			for (int k = 0; k < ALGO.length(); k++) {
+				if (ALGO.charAt(k) == '1') {
+					System.out.println("---------- BILAN BASE------------------");
+					System.out.println(resultsBase.toString());
+					System.out.println("------------------------------------");
+					resultsBase.toFile("exp-jena-base.csv");
+				}
+				if (ALGO.charAt(k) == '2') {
+					System.out.println("---------- BILAN BFS------------------");
+					System.out.println(resultsBFS.toString());
+					System.out.println("------------------------------------");
+					resultsBFS.toFile("exp-jena-BFS.csv");
+				}
+				if (ALGO.charAt(k) == '3') {
+					System.out.println("---------- BILAN VAR ------------------");
+					System.out.println(resultsVar.toString());
+					System.out.println("------------------------------------");
+					resultsVar.toFile("exp-jena-var.csv");
+				}
+				if (ALGO.charAt(k) == '4') {
+					System.out.println("---------- BILAN FULL ------------------");
+					System.out.println(resultsFull.toString());
+					System.out.println("------------------------------------");
+					resultsFull.toFile("exp-jena-full.csv");
+				}
+			}
 		}
-
-		System.out.println("---------- BILAN BASE------------------");
-		System.out.println(resultsBase.toString());
-		System.out.println("------------------------------------");
-		resultsBase.toFile("exp-jena-base.csv");
-
-		System.out.println("---------- BILAN BFS------------------");
-		System.out.println(resultsBFS.toString());
-		System.out.println("------------------------------------");
-		resultsBFS.toFile("exp-jena-BFS.csv");
-
-		System.out.println("---------- BILAN VAR ------------------");
-		System.out.println(resultsVar.toString());
-		System.out.println("------------------------------------");
-		resultsVar.toFile("exp-jena-var.csv");
-
-		System.out.println("---------- BILAN FULL ------------------");
-		System.out.println(resultsFull.toString());
-		System.out.println("------------------------------------");
-		resultsFull.toFile("exp-jena-full.csv");
 
 	}
 
