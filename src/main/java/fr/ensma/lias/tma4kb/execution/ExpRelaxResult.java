@@ -140,11 +140,11 @@ public class ExpRelaxResult {
 			Query q = listOfQueries.get(i);
 			res.append("Q" + (i + 1) + "\t");
 			Float valTime = round(getAvgTime(q), 2);
-			res.append(valTime.toString().replace('.', ',') + "\t");
+			res.append(valTime.toString() + "\t");
 			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
 			res.append(nbExecutedQuery + "\t");
 			Float countTime = round(getAvgCountTime(q),2);
-			res.append(countTime.toString().replace('.', ',') + "\n");
+			res.append(countTime.toString() + "\n");
 		}
 		return res.toString();
 	}
