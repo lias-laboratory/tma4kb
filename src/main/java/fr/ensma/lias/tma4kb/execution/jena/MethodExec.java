@@ -54,10 +54,10 @@ public class MethodExec {
 				int nbExecutedQuery = session.getExecutedQueryCount();
 				float queryCountTime = session.getCountQueryTime();
 				System.out.println("-----------------------------------------------------------");
-				System.out.println("Query (" + description + "): " + q);
-				System.out.println("-----------------------------------------------------------");
 				System.out.println("\n Method " + name[j] + " - NbQueriesExecuted: " + nbExecutedQuery
 						+ " queryCountTime: " + queryCountTime + " Nbanswers: " + nbAnswers);
+				System.out.println("-----------------------------------------------------------");
+				
 		}
 			
 	}}
