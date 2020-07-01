@@ -50,7 +50,7 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
 			
 			ResultSet results = qexec.execSelect();
-			while (results.hasNext() && i <= k + 1) {
+			while (results.hasNext() && i < k + 1) {
 				i++;
 				results.next();
 			}
@@ -68,7 +68,6 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 		} else if (method == LIMIT) {
 			int limit = k + 1;
 			sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit);
-			System.out.println(sparqlQueryString);
 			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
 			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
 
