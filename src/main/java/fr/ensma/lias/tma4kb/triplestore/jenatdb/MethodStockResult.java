@@ -12,40 +12,47 @@ import java.util.Map;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+/**
+ * 
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
+ *
+ */
 public class MethodStockResult {
-	/**
-	 * Constants for the metrics
-	 */
+	// Constants for the metrics
 	private static int ID_ANSWERS = 1;
 
 	private static int ID_COUNT_QUERY_TIME = 2;
 
 	private Logger logger = Logger.getLogger(MethodStockResult.class);
 
-	protected int nbExecution;
+	protected int nbExec;
+
+	protected int nbK;
 
 	protected List<String> listOfMethods;
 
 	protected List<Integer> listOfK;
 
-	protected Map<String, MethodResult[]> resultsForMethods;
+	protected Map<String, MethodResult[][]> resultsForMethods;
 
 	/**
-	 * Constructeur
+	 * Constructor
 	 * 
 	 * @param nbExecution
 	 */
-	public MethodStockResult(int nbExecution) {
+	public MethodStockResult(int nbExecution, int nbThreshold) {
 		super();
 		logger.setLevel(Level.DEBUG);
-		this.nbExecution = nbExecution;
+		this.nbExec = nbExecution;
+		this.nbK = nbThreshold;
 		listOfMethods = new ArrayList<String>();
 		listOfK = new ArrayList<Integer>();
-		this.resultsForMethods = new HashMap<String, MethodResult[]>();
+		this.resultsForMethods = new HashMap<String, MethodResult[][]>();
 	}
 
 	/**
-	 * Ajout des résultats ici nombre de réponses, temps passé à compter
+	 * Adding of results, here number of answers, counting time for given query and
+	 * threshold
 	 * 
 	 * @param i
 	 * @param q
@@ -53,16 +60,24 @@ public class MethodStockResult {
 	 * @param queryCountTime
 	 * @param K
 	 */
-	public void addResult(int i, String m, int nbAnswers, float queryCountTime, int k) {
+	public void addResult(int i, int j, String m, int nbAnswers, float queryCountTime, int k) {
 
-		MethodResult[] queryResults = resultsForMethods.get(m);
+		MethodResult[][] queryResults = resultsForMethods.get(m);
 		if (queryResults == null) {
-			queryResults = new MethodResult[nbExecution];
+			queryResults = new MethodResult[nbExec][];
 			listOfMethods.add(m);
-		} else if (!listOfK.contains(k)) {
+			for (int r = 0; r < nbExec; r++) {
+				if (m == "ALL" || m == "COUNT") {
+					queryResults[r] = new MethodResult[1];
+				}
+				queryResults[r] = new MethodResult[nbK];
+			}
+		}
+		if (!listOfK.contains(k)) {
 			listOfK.add(k);
 		}
-		queryResults[i] = new MethodResult(nbAnswers, queryCountTime, k);
+
+		queryResults[i][j] = new MethodResult(nbAnswers, queryCountTime, k);
 		resultsForMethods.put(m, queryResults);
 	}
 
@@ -72,26 +87,26 @@ public class MethodStockResult {
 	 * @param m the query
 	 * @return the average of time and answers
 	 */
-	public float getAvgCountTime(String m, int k) {
-		return getAvg(m, ID_COUNT_QUERY_TIME, k);
+	public float getAvgCountTime(String m, int indexK) {
+		return getAvg(m, ID_COUNT_QUERY_TIME, indexK);
 	}
 
-	public float getAnswers(String m, int k) {
-		return getAvg(m, ID_ANSWERS, k);
+	public float getAnswers(String m, int indexK) {
+		return getAvg(m, ID_ANSWERS, indexK);
 	}
 
-	public float getAvg(String m, int idMetric, int k) {
+	public float getAvg(String m, int idMetric, int j) {
 		float res = 0;
-		MethodResult[] methodResults = resultsForMethods.get(m);
+		MethodResult[][] methodResults = resultsForMethods.get(m);
 		if (methodResults != null) {
-			for (int j = 0; j < methodResults.length; j++) {
-				if (idMetric == ID_ANSWERS && methodResults[j].getK() == k)
-					res += methodResults[j].getNbAnswers();
-				else if (idMetric == ID_COUNT_QUERY_TIME && methodResults[j].getK() == k)
-					res += methodResults[j].getCountTime();
+			for (int i = 0; i < nbExec; i++) {
+				if (idMetric == ID_ANSWERS)
+					res += methodResults[i][j].getNbAnswers();
+				else if (idMetric == ID_COUNT_QUERY_TIME)
+					res += methodResults[i][j].getCountTime();
 			}
 		}
-		return res / nbExecution;
+		return res / nbExec;
 	}
 
 	/***************************************************
@@ -109,9 +124,9 @@ public class MethodStockResult {
 				res.append(m + "\t");
 				int nombre = listOfK.get(j);
 				res.append(nombre + "\t");
-				Float val = round(getAnswers(m, nombre), 2);
+				Float val = round(getAnswers(m, j), 2);
 				res.append(val.toString() + "\t");
-				Float countTime = round(getAvgCountTime(m, nombre), 2);
+				Float countTime = round(getAvgCountTime(m, j), 2);
 				res.append(countTime.toString() + "\n");
 			}
 		}

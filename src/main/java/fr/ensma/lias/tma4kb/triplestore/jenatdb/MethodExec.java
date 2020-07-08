@@ -15,88 +15,94 @@ import java.util.regex.Pattern;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
 import fr.ensma.lias.tma4kb.query.Session;
+import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
+import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryHelper;
 
+/**
+ * 
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
+ *
+ */
 public class MethodExec {
-	private QueryFactory[] factory = new QueryFactory[5];
+	private QueryFactory[] factory = new QueryFactory[NAME.length];
 
 	private QueryFactory factoryTemp;
 
 	private Session session;
 
-	private String FILE_QUERIES;
+	private String file;
 
-	private int NB_EXEC;
+	private int nbExec;
 
-	private int[] K;
+	private int nbK;
 
-	private String[] name = { "ALL", "STOP K", "COUNT", "LIMIT", "COUNT+LIMIT" };
+	private int[] threshold;
 
-	public void setUp() {
-		for (int i = 0; i < 5; i++) {
+	private static final String[] NAME = { "ALL", "STOP K", "COUNT", "LIMIT", "COUNT+LIMIT" };
+
+	/**
+	 * Constructor
+	 * 
+	 * @param queries
+	 * @param k
+	 * @param execution
+	 */
+	public MethodExec(String queries, int[] k, int execution) {
+		for (int i = 0; i < NAME.length; i++) {
 			factory[i] = new JenaQueryFactory(i);
 		}
-	}
-
-	public MethodExec(String queries, int[] k, int execution) {
-		FILE_QUERIES = queries;
-		K = k;
-		NB_EXEC = execution;
-		setUp();
+		file = queries;
+		threshold = k;
+		nbExec = execution;
+		nbK = threshold.length;
 	}
 
 	public void methodRun() throws Exception {
 
-		MethodStockResult resultsForMethods = new MethodStockResult(NB_EXEC);
+		MethodStockResult resultsForMethods = new MethodStockResult(nbExec, nbK);
 		for (int j = 0; j < 5; j++) {
 			System.out.println("-----------------------------------------------------------");
-			System.out.println("                   METHOD " + name[j] + "                  ");
+			System.out.println("                   METHOD " + NAME[j] + "                  ");
 			System.out.println("-----------------------------------------------------------");
-
 			factoryTemp = factory[j];
-			List<QueryExplain> newQueryList = this.newQueryList(FILE_QUERIES);
+			List<QueryExplain> newQueryList = this.newQueryList(file);
 
 			for (int i = 0; i < newQueryList.size(); i++) {
 
 				if (j == 0 || j == 2) {
 
-					for (int k = 0; k <= NB_EXEC; k++) {
-						// Récupération de la requete à exécuter
+					for (int k = 0; k <= nbExec; k++) {
+						// Getting query to execute
 						QueryExplain qExplain = newQueryList.get(i);
 						Query q = qExplain.getQuery();
 						q = factoryTemp.createQuery(q.toString());
-						// Création du lien avec le repository
+						// Creation of link with the repository
 						session = ((JenaQueryFactory) factoryTemp).createSession();
 						JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-						// Execution de la requete
-						int nbAnswers = jenaq.executeQuery(session, K[K.length - 1]);
-						int nbExecutedQuery = session.getExecutedQueryCount();
+						// Execution of query and get number of answers and query count time
+						int nbAnswers = jenaq.executeQuery(session, threshold[0]);
 						float queryCountTime = session.getCountQueryTime();
-						// Affichage des résultats intermédiaires
+						// Printing intermediate results and adding them to the rest
 						if (k > 0) {
-							resultsForMethods.addResult(k - 1, name[j], nbAnswers, queryCountTime, K[K.length - 1]);
-							System.out.println("Method " + name[j] + " K = " + K[K.length - 1] + " queryCountTime: "
+							resultsForMethods.addResult(k - 1,0, NAME[j], nbAnswers, queryCountTime, threshold[0]);
+							System.out.println("Method " + NAME[j] + " K = " + threshold[0] + " queryCountTime: "
 									+ queryCountTime + " Nbanswers: " + nbAnswers);
 						}
 					}
 				} else {
-					for (int l = 0; l < K.length; l++) {
+					for (int l = 0; l < nbK; l++) {
 
-						for (int k = 0; k <= NB_EXEC; k++) {
-							// Récupération de la requete à exécuter
+						for (int k = 0; k <= nbExec; k++) {
 							QueryExplain qExplain = newQueryList.get(i);
 							Query q = qExplain.getQuery();
 							q = factoryTemp.createQuery(q.toString());
-							// Création du lien avec le repository
 							session = ((JenaQueryFactory) factoryTemp).createSession();
 							JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-							// Execution de la requete
-							int nbAnswers = jenaq.executeQuery(session, K[l]);
-							int nbExecutedQuery = session.getExecutedQueryCount();
+							int nbAnswers = jenaq.executeQuery(session, threshold[l]);
 							float queryCountTime = session.getCountQueryTime();
-							// Affichage des résultats intermédiaires
 							if (k > 0) {
-								resultsForMethods.addResult(k - 1, name[j], nbAnswers, queryCountTime, K[l]);
-								System.out.println("Method " + name[j] + " K = " + K[l] + " queryCountTime: "
+								resultsForMethods.addResult(k - 1,l, NAME[j], nbAnswers, queryCountTime, threshold[l]);
+								System.out.println("Method " + NAME[j] + " K = " + threshold[l] + " queryCountTime: "
 										+ queryCountTime + " Nbanswers: " + nbAnswers);
 							}
 						}
@@ -106,14 +112,14 @@ public class MethodExec {
 		}
 		System.out.println("-----------------------------------------------------------");
 		System.out.println("                        BILAN METHOD                       ");
-		System.out.println("Name \t K \t Nb Answers \t Query Count Time");
+		System.out.println("Name \t K \t Nb Answers \t Query Count Time (ms)");
 		System.out.println("-----------------------------------------------------------");
 		System.out.println(resultsForMethods.toString());
 		resultsForMethods.toFile("exp-allMethod-jena.csv");
 
 	}
 
-// Donne la description d'une requete
+	// Description of query
 	class QueryExplain {
 
 		protected int index;
