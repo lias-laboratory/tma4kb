@@ -33,7 +33,7 @@ public class MethodStockResult {
 
 	protected List<Integer> listOfK;
 
-	protected Map<String, MethodResult[][]> resultsForMethods;
+	protected Map<String, List<List<MethodResult>>> resultsForMethods;
 
 	/**
 	 * Constructor
@@ -47,7 +47,7 @@ public class MethodStockResult {
 		this.nbK = nbThreshold;
 		listOfMethods = new ArrayList<String>();
 		listOfK = new ArrayList<Integer>();
-		this.resultsForMethods = new HashMap<String, MethodResult[][]>();
+		this.resultsForMethods = new HashMap<String, List<List<MethodResult>>>();
 	}
 
 	/**
@@ -62,22 +62,18 @@ public class MethodStockResult {
 	 */
 	public void addResult(int i, int j, String m, int nbAnswers, float queryCountTime, int k) {
 
-		MethodResult[][] queryResults = resultsForMethods.get(m);
+		List<List<MethodResult>> queryResults = resultsForMethods.get(m);
 		if (queryResults == null) {
-			queryResults = new MethodResult[nbExec][];
+			queryResults = new ArrayList<>(nbExec);
 			listOfMethods.add(m);
 			for (int r = 0; r < nbExec; r++) {
-				if (m == "ALL" || m == "COUNT") {
-					queryResults[r] = new MethodResult[1];
-				}
-				queryResults[r] = new MethodResult[nbK];
+				queryResults.add(new ArrayList<>());
 			}
 		}
 		if (!listOfK.contains(k)) {
 			listOfK.add(k);
 		}
-
-		queryResults[i][j] = new MethodResult(nbAnswers, queryCountTime, k);
+		queryResults.get(i).add(new MethodResult(nbAnswers, queryCountTime, k));
 		resultsForMethods.put(m, queryResults);
 	}
 
@@ -97,13 +93,13 @@ public class MethodStockResult {
 
 	public float getAvg(String m, int idMetric, int j) {
 		float res = 0;
-		MethodResult[][] methodResults = resultsForMethods.get(m);
+		List<List<MethodResult>> methodResults = resultsForMethods.get(m);
 		if (methodResults != null) {
 			for (int i = 0; i < nbExec; i++) {
 				if (idMetric == ID_ANSWERS)
-					res += methodResults[i][j].getNbAnswers();
+					res += methodResults.get(i).get(j).getNbAnswers();
 				else if (idMetric == ID_COUNT_QUERY_TIME)
-					res += methodResults[i][j].getCountTime();
+					res += methodResults.get(i).get(j).getCountTime();
 			}
 		}
 		return res / nbExec;
@@ -116,11 +112,10 @@ public class MethodStockResult {
 	@Override
 	public String toString() {
 		StringBuffer res = new StringBuffer("");
-		System.out.println(listOfK);
-		System.out.println(listOfMethods);
 		for (int i = 0; i < listOfMethods.size(); i++) {
-			for (int j = 0; j < listOfK.size(); j++) {
-				String m = listOfMethods.get(i);
+			String m = listOfMethods.get(i);
+			List<List<MethodResult>> methodResults = resultsForMethods.get(m);
+			for (int j = 0; j < methodResults.get(i).size(); j++) {
 				res.append(m + "\t");
 				int nombre = listOfK.get(j);
 				res.append(nombre + "\t");
