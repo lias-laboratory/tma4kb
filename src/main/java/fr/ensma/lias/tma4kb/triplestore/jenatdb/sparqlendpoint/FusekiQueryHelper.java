@@ -19,6 +19,7 @@ import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaSession;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  */
 public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelper {
 
@@ -39,6 +40,16 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 	private final int LIMITCOUNT = 4;
 	private int method;
 
+	/**
+	 * Execute each query and count the number of answers
+	 * 
+	 * @param session
+	 * @param k
+	 * @return i nbOfAnswers
+	 * @throws MalformedURLException
+	 * @throws ProtocolException
+	 * @throws IOException
+	 */
 	public int executeFuseki(Session session, int k) throws MalformedURLException, ProtocolException, IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
@@ -88,7 +99,7 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 
 			int pos = query.indexOf("\n");
 			int pos2 = query.indexOf("\n", pos + 1);
-			String nbAns = query.substring(pos + 1, pos2 - 1);
+			String nbAns = query.substring(pos + 1, query.length());
 			if (nbAns.length() == 1) {
 				i = Character.getNumericValue(nbAns.charAt(0));
 			} else {

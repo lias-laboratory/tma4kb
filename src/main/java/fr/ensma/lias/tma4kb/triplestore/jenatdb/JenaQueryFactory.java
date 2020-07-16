@@ -11,6 +11,7 @@ import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.SPARQLEndpointSes
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  */
 public class JenaQueryFactory extends AbstractQueryFactory {
 
@@ -28,9 +29,11 @@ public class JenaQueryFactory extends AbstractQueryFactory {
 
 	public Session createSession(int rep) {
 		if (rep == 0) {
+			//creates a link to the downloaded repository
 			Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
 			return new JenaSession(dataset);
 		} else if (rep == 1) {
+			//creates a link to the online knowledge base
 			SPARQLEndpointClient fuseki = new SPARQLEndpointClient.Builder().url("http://localhost:3030/jenatdb")
 					.defaultGraphURI(this.getConfig().sparqlendpointDefaultGraphURI())
 					.outputFormat(OutputFormat.TAB_SEPARATED).build();
