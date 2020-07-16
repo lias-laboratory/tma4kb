@@ -116,11 +116,15 @@ public class MethodStockResult {
 			String m = listOfMethods.get(i);
 			List<List<MethodResult>> methodResults = resultsForMethods.get(m);
 			for (int j = 0; j < methodResults.get(i).size(); j++) {
-				res.append(m + "\t");
+				if (i == listOfMethods.size() - 1) {
+					res.append(m + "\t");
+				} else {
+					res.append(m + "\t \t");
+				}
 				int nombre = listOfK.get(j);
 				res.append(nombre + "\t");
 				Float val = round(getAnswers(m, j), 2);
-				res.append(val.toString() + "\t");
+				res.append(val.toString() + "\t \t");
 				Float countTime = round(getAvgCountTime(m, j), 2);
 				res.append(countTime.toString() + "\n");
 			}

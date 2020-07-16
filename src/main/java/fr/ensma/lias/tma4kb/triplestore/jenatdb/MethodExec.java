@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -15,8 +17,7 @@ import java.util.regex.Pattern;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
 import fr.ensma.lias.tma4kb.query.Session;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryHelper;
+import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.FusekiQueryHelper;
 
 /**
  * 
@@ -36,6 +37,12 @@ public class MethodExec {
 
 	private int nbK;
 
+	private int rep;
+
+	private float queryCountTime;
+
+	private int nbAnswers;
+
 	private int[] threshold;
 
 	private static final String[] NAME = { "ALL", "STOP K", "COUNT", "LIMIT", "COUNT+LIMIT" };
@@ -47,7 +54,7 @@ public class MethodExec {
 	 * @param k
 	 * @param execution
 	 */
-	public MethodExec(String queries, int[] k, int execution) {
+	public MethodExec(String queries, int[] k, int execution, int repository) {
 		for (int i = 0; i < NAME.length; i++) {
 			factory[i] = new JenaQueryFactory(i);
 		}
@@ -55,6 +62,7 @@ public class MethodExec {
 		threshold = k;
 		nbExec = execution;
 		nbK = threshold.length;
+		rep = repository;
 	}
 
 	public void methodRun() throws Exception {
@@ -76,18 +84,27 @@ public class MethodExec {
 						QueryExplain qExplain = newQueryList.get(i);
 						Query q = qExplain.getQuery();
 						q = factoryTemp.createQuery(q.toString());
-						// Creation of link with the repository
-						session = ((JenaQueryFactory) factoryTemp).createSession();
-						JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-						// Execution of query and get number of answers and query count time
-						int nbAnswers = jenaq.executeQuery(session, threshold[0]);
-						float queryCountTime = session.getCountQueryTime();
+						if (rep == 0) {
+							// Creation of link with the repository
+							session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+							JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
+							// Execution of query and get number of answers and query count time
+							nbAnswers = jenaq.executeQuery(session, threshold[0]);
+							queryCountTime = session.getCountQueryTime();
+						}
+						if (rep == 1) {
+							session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+							FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
+							nbAnswers = fusekiq.executeFuseki(session, threshold[0]);
+							queryCountTime = session.getCountQueryTime();
+						}
 						// Printing intermediate results and adding them to the rest
 						if (k > 0) {
-							resultsForMethods.addResult(k - 1,0, NAME[j], nbAnswers, queryCountTime, threshold[0]);
+							resultsForMethods.addResult(k - 1, 0, NAME[j], nbAnswers, queryCountTime, threshold[0]);
 							System.out.println("Method " + NAME[j] + " K = " + threshold[0] + " queryCountTime: "
 									+ queryCountTime + " Nbanswers: " + nbAnswers);
 						}
+
 					}
 				} else {
 					for (int l = 0; l < nbK; l++) {
@@ -96,12 +113,20 @@ public class MethodExec {
 							QueryExplain qExplain = newQueryList.get(i);
 							Query q = qExplain.getQuery();
 							q = factoryTemp.createQuery(q.toString());
-							session = ((JenaQueryFactory) factoryTemp).createSession();
-							JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-							int nbAnswers = jenaq.executeQuery(session, threshold[l]);
-							float queryCountTime = session.getCountQueryTime();
+							if (rep == 0) {
+								JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
+								session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+								nbAnswers = jenaq.executeQuery(session, threshold[l]);
+								queryCountTime = session.getCountQueryTime();
+							}
+							if (rep == 1) {
+								session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+								FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
+								nbAnswers = fusekiq.executeFuseki(session, threshold[l]);
+								queryCountTime = session.getCountQueryTime();
+							}
 							if (k > 0) {
-								resultsForMethods.addResult(k - 1,l, NAME[j], nbAnswers, queryCountTime, threshold[l]);
+								resultsForMethods.addResult(k - 1, l, NAME[j], nbAnswers, queryCountTime, threshold[l]);
 								System.out.println("Method " + NAME[j] + " K = " + threshold[l] + " queryCountTime: "
 										+ queryCountTime + " Nbanswers: " + nbAnswers);
 							}
@@ -110,9 +135,10 @@ public class MethodExec {
 				}
 			}
 		}
+
 		System.out.println("-----------------------------------------------------------");
 		System.out.println("                        BILAN METHOD                       ");
-		System.out.println("Name \t K \t Nb Answers \t Query Count Time (ms)");
+		System.out.println("Name \t \t K \t Nb Answers \t Query Count Time (ms)");
 		System.out.println("-----------------------------------------------------------");
 		System.out.println(resultsForMethods.toString());
 		resultsForMethods.toFile("exp-allMethod-jena.csv");
@@ -289,4 +315,5 @@ public class MethodExec {
 
 		queries.add(currentQuery);
 	}
+
 }

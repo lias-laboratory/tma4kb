@@ -29,24 +29,25 @@ public interface Session {
 	 * Clear the number of executed queries
 	 */
 	void clearExecutedQueryCount();
-	
+
 	/**
 	 * Set query execution time
 	 * 
 	 * @param queryCount the number of queries executed
 	 */
 	void setCountQueryTime(float queryCount);
-	
+
 	/**
 	 * Gives the query execution time to compute the MFS/XSS.
 	 * 
 	 * @return
 	 */
 	float getCountQueryTime();
-	
 
 	/**
 	 * Clear the executed query time
 	 */
 	void clearCountQueryTime();
+
+
 }

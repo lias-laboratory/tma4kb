@@ -27,13 +27,16 @@ public class MethodLauncher implements Runnable {
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
 
+	@Option(names = { "-r", "--repository" },  defaultValue = "0",description = "To use Jena native (0) or Jena Fuseki (1).")
+	int repository;
+
 	public static void main(String[] args) {
 		new CommandLine(new MethodLauncher()).execute(args);
 	}
 
 	@Override
 	public void run() {
-		MethodExec t = new MethodExec(queriesFile, k, numberExecution);
+		MethodExec t = new MethodExec(queriesFile, k, numberExecution, repository);
 		try {
 			t.methodRun();
 		} catch (Exception e) {
