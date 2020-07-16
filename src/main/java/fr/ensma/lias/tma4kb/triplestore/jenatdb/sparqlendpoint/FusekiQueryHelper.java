@@ -89,7 +89,7 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 			int pos = query.indexOf("\n");
 			int pos2 = query.indexOf("\n", pos + 1);
 			String nbAns = query.substring(pos + 1, pos2 - 1);
-			if (nbAns.length() < 2) {
+			if (nbAns.length() == 1) {
 				i = Character.getNumericValue(nbAns.charAt(0));
 			} else {
 				i = Integer.parseInt(nbAns);
