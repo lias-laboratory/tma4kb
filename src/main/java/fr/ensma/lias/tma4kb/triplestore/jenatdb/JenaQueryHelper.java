@@ -18,84 +18,87 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 	 * @param q the query that this helper uses
 	 */
 	public JenaQueryHelper(fr.ensma.lias.tma4kb.query.Query q, int method) {
-		super(q);
-		this.method = method;
+		super(q,method);
 	}
-
-	private final int SELECT_ALL = 0;
-	private final int SELECT_K = 1;
-	private final int COUNT = 2;
-	private final int LIMIT = 3;
-	private final int LIMITCOUNT = 4;
-	private int method;
 
 	@Override
-	public int executeQuery(Session session, int k) {
-		int i = 0;
-		String sparqlQueryString = q.toString();
-		long time = System.currentTimeMillis();
-
-		if (method == SELECT_ALL) {
-			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
-			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
-			
-			ResultSet results = qexec.execSelect();
-			while (results.hasNext()) {
-				i++;
-				results.next();
-			}
-			qexec.close();
-		} else if (method == SELECT_K) {
-			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
-			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
-			
-			ResultSet results = qexec.execSelect();
-			while (results.hasNext() && i < k + 1) {
-				i++;
-				results.next();
-			}
-			qexec.close();
-		} else if (method == COUNT) {
-			sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) ");
-			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
-			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
-			
-			ResultSet results = qexec.execSelect();
-			QuerySolution sol = results.next();
-			i = (int) sol.get("count").asLiteral().getValue();
-			
-			qexec.close();
-		} else if (method == LIMIT) {
-			int limit = k + 1;
-			sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit);
-			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
-			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
-
-			ResultSet results = qexec.execSelect();
-			while (results.hasNext()) {
-				i++;
-				results.next();
-			}
-
-			qexec.close();
-		} else if (method == LIMITCOUNT) {
-			int limit = k + 1;
-			sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) WHERE {SELECT * ");
-			sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit +" }");
-			org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
-			QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
-
-			ResultSet results = qexec.execSelect();
-			QuerySolution sol = results.next();
-			i = (int) sol.get("count").asLiteral().getValue();
-			
-			qexec.close();
+	public int execute_ALL(Session session, int k) {
+		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(q.toString());
+		int i=0;
+		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
+		
+		ResultSet results = qexec.execSelect();
+		while (results.hasNext()) {
+			i++;
+			results.next();
 		}
-		long end = System.currentTimeMillis();
-		float tps = ((float) (end - time));
-		session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
-		session.setCountQueryTime(session.getCountQueryTime() + tps);
-
+		qexec.close();
 		return i;
 	}
+	@Override
+	public int execute_STOPK(Session session, int k){
+		int i=0;
+		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(q.toString());
+		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
+		
+		ResultSet results = qexec.execSelect();
+		while (results.hasNext() && i < k + 1) {
+			i++;
+			results.next();
+		}
+		qexec.close();
+		return i;
+	}
+	@Override
+	public int execute_COUNT(Session session, int k){
+		int i=0;
+		String sparqlQueryString = q.toString();
+		sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) ");
+		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
+		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
+		
+		ResultSet results = qexec.execSelect();
+		QuerySolution sol = results.next();
+		i = (int) sol.get("count").asLiteral().getValue();
+		
+		qexec.close();
+		return i;
+	}
+	@Override
+	public int execute_LIMIT(Session session, int k){
+		int i=0;
+		String sparqlQueryString = q.toString();
+		int limit = k + 1;
+		sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit);
+		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
+		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
+
+		ResultSet results = qexec.execSelect();
+		while (results.hasNext()) {
+			i++;
+			results.next();
+		}
+
+		qexec.close();
+		return i;
+	}
+	@Override
+	public int execute_COUNTLIMIT(Session session, int k){
+
+		int i=0;
+		String sparqlQueryString = q.toString();
+		int limit = k + 1;
+		sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) WHERE {SELECT * ");
+		sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit +" }");
+		org.apache.jena.query.Query query = org.apache.jena.query.QueryFactory.create(sparqlQueryString);
+		QueryExecution qexec = QueryExecutionFactory.create(query, ((JenaSession) session).getDataset());
+
+		ResultSet results = qexec.execSelect();
+		QuerySolution sol = results.next();
+		i = (int) sol.get("count").asLiteral().getValue();
+		
+		qexec.close();
+		return i;
+	}
+
 }

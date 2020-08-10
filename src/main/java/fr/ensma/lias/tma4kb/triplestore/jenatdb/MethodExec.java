@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -95,7 +93,7 @@ public class MethodExec {
 						if (rep == 1) {
 							session = ((JenaQueryFactory) factoryTemp).createSession(rep);
 							FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
-							nbAnswers = fusekiq.executeFuseki(session, threshold[0]);
+							nbAnswers = fusekiq.executeQuery(session, threshold[0]);
 							queryCountTime = session.getCountQueryTime();
 						}
 						// Printing intermediate results and adding them to the rest
@@ -122,7 +120,7 @@ public class MethodExec {
 							if (rep == 1) {
 								session = ((JenaQueryFactory) factoryTemp).createSession(rep);
 								FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
-								nbAnswers = fusekiq.executeFuseki(session, threshold[l]);
+								nbAnswers = fusekiq.executeQuery(session, threshold[l]);
 								queryCountTime = session.getCountQueryTime();
 							}
 							if (k > 0) {
