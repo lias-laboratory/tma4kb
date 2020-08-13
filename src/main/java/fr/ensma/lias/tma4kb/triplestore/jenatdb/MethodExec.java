@@ -43,6 +43,8 @@ public class MethodExec {
 
 	private int[] threshold;
 
+	private String page;
+
 	private static final String[] NAME = { "ALL", "STOP K", "COUNT", "LIMIT", "COUNT+LIMIT" };
 
 	/**
@@ -52,7 +54,7 @@ public class MethodExec {
 	 * @param k
 	 * @param execution
 	 */
-	public MethodExec(String queries, int[] k, int execution, int repository) {
+	public MethodExec(String queries, int[] k, int execution, int repository, String pagename) {
 		for (int i = 0; i < NAME.length; i++) {
 			factory[i] = new JenaQueryFactory(i);
 		}
@@ -61,6 +63,7 @@ public class MethodExec {
 		nbExec = execution;
 		nbK = threshold.length;
 		rep = repository;
+		page = pagename;
 	}
 
 	public void methodRun() throws Exception {
@@ -84,14 +87,14 @@ public class MethodExec {
 						q = factoryTemp.createQuery(q.toString());
 						if (rep == 0) {
 							// Creation of link with the repository
-							session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
 							JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
 							// Execution of query and get number of answers and query count time
 							nbAnswers = jenaq.executeQuery(session, threshold[0]);
 							queryCountTime = session.getCountQueryTime();
 						}
 						if (rep == 1) {
-							session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
 							FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
 							nbAnswers = fusekiq.executeQuery(session, threshold[0]);
 							queryCountTime = session.getCountQueryTime();
@@ -113,12 +116,12 @@ public class MethodExec {
 							q = factoryTemp.createQuery(q.toString());
 							if (rep == 0) {
 								JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-								session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
 								nbAnswers = jenaq.executeQuery(session, threshold[l]);
 								queryCountTime = session.getCountQueryTime();
 							}
 							if (rep == 1) {
-								session = ((JenaQueryFactory) factoryTemp).createSession(rep);
+								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
 								FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
 								nbAnswers = fusekiq.executeQuery(session, threshold[l]);
 								queryCountTime = session.getCountQueryTime();

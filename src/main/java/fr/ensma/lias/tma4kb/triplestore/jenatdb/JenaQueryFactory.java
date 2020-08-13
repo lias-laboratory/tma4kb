@@ -27,20 +27,19 @@ public class JenaQueryFactory extends AbstractQueryFactory {
 		return new JenaQuery(this, rdfQuery, method);
 	}
 
-	public Session createSession(int rep) {
+	public Session createSession(int rep, String page) {
 		if (rep == 0) {
-			//creates a link to the downloaded repository
+			// creates a link to the downloaded repository
 			Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
 			return new JenaSession(dataset);
 		} else if (rep == 1) {
-			//creates a link to the online knowledge base
-			SPARQLEndpointClient fuseki = new SPARQLEndpointClient.Builder().url("http://localhost:3030/jenatdb")
+			// creates a link to the online knowledge base
+			SPARQLEndpointClient fuseki = new SPARQLEndpointClient.Builder().url("http://localhost:3030/" + page)
 					.defaultGraphURI(this.getConfig().sparqlendpointDefaultGraphURI())
 					.outputFormat(OutputFormat.TAB_SEPARATED).build();
 
 			return new SPARQLEndpointSession(fuseki);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}

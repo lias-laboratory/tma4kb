@@ -6,13 +6,12 @@ import picocli.CommandLine.Option;
 
 /**
  * 
- * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)  
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  * 
  */
 
-
 public class MethodLauncher implements Runnable {
-	//Parameters of command line
+	// Parameters of command line
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Print usage help and exit.")
 	boolean usageHelpRequested;
 
@@ -21,14 +20,18 @@ public class MethodLauncher implements Runnable {
 	String queriesFile;
 
 	@Option(names = { "-k",
-			"--threshold" }, split=",",defaultValue = "100", description = "The threshold for overabundant answers. List is possible with comma between different threshold.")
+			"--threshold" }, split = ",", defaultValue = "100", description = "The threshold for overabundant answers. List is possible with comma between different threshold.")
 	int[] k;
-	
+
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
 
-	@Option(names = { "-r", "--repository" },  defaultValue = "0",description = "To use Jena native (0) or Jena Fuseki (1).")
+	@Option(names = { "-r",
+			"--repository" }, defaultValue = "0", description = "To use Jena native (0) or Jena Fuseki (1).")
 	int repository;
+
+	@Option(names = { "-p", "--pagename" }, description = "The name given to fuseki instance.")
+	String pagename;
 
 	public static void main(String[] args) {
 		new CommandLine(new MethodLauncher()).execute(args);
@@ -36,7 +39,7 @@ public class MethodLauncher implements Runnable {
 
 	@Override
 	public void run() {
-		MethodExec t = new MethodExec(queriesFile, k, numberExecution, repository);
+		MethodExec t = new MethodExec(queriesFile, k, numberExecution, repository, pagename);
 		try {
 			t.methodRun();
 		} catch (Exception e) {
@@ -44,4 +47,3 @@ public class MethodLauncher implements Runnable {
 		}
 	}
 }
-

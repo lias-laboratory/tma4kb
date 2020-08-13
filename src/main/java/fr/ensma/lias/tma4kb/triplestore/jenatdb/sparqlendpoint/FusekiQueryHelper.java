@@ -18,9 +18,9 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 	 * @param q the query that this helper uses
 	 */
 	public FusekiQueryHelper(fr.ensma.lias.tma4kb.query.Query q, int method) {
-		super(q,method);
+		super(q, method);
 	}
-	
+
 	@Override
 	public int execute_ALL(Session session, int k) throws IOException {
 
@@ -33,8 +33,9 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		i = split.length - 1;
 		return i;
 	}
+
 	@Override
-	public int execute_STOPK(Session session, int k) throws IOException{
+	public int execute_STOPK(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
 		SPARQLEndpointClient fusekiSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
@@ -46,8 +47,9 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		}
 		return i;
 	}
+
 	@Override
-	public int execute_COUNT(Session session, int k) throws IOException{
+	public int execute_COUNT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
 		SPARQLEndpointClient fusekiSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
@@ -55,8 +57,15 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		String query = fusekiSession.query(sparqlQueryString);
 
 		int pos = query.indexOf("\n");
-		int pos2 = query.indexOf("\n", pos + 1);
-		String nbAns = query.substring(pos + 1, pos2 - 1);
+		int pos2 = 0;
+		for (int r = pos + 1; r < query.length(); r++) {
+			char t = query.charAt(r);
+			if (t == '1' || t == '2' || t == '3' || t == '4' || t == '5' || t == '6' || t == '7' || t == '8'
+					|| t == '9') {
+				pos2 = r + 1;
+			}
+		}
+		String nbAns = query.substring(pos + 1, pos2);
 		if (nbAns.length() == 1) {
 			i = Character.getNumericValue(nbAns.charAt(0));
 		} else {
@@ -64,8 +73,9 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		}
 		return i;
 	}
+
 	@Override
-	public int execute_LIMIT(Session session, int k) throws IOException{
+	public int execute_LIMIT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
 		SPARQLEndpointClient fusekiSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
@@ -77,8 +87,9 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		i = split.length - 1;
 		return i;
 	}
+
 	@Override
-	public int execute_COUNTLIMIT(Session session, int k) throws IOException{
+	public int execute_COUNTLIMIT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
 		SPARQLEndpointClient fusekiSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
@@ -88,8 +99,15 @@ public class FusekiQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHel
 		String query = fusekiSession.query(sparqlQueryString);
 
 		int pos = query.indexOf("\n");
-		int pos2 = query.indexOf("\n", pos + 1);
-		String nbAns = query.substring(pos + 1, query.length()-1);
+		int pos2 = 0;
+		for (int r = pos + 1; r < query.length(); r++) {
+			char t = query.charAt(r);
+			if (t == '1' || t == '2' || t == '3' || t == '4' || t == '5' || t == '6' || t == '7' || t == '8'
+					|| t == '9') {
+				pos2 = r + 1;
+			}
+		}
+		String nbAns = query.substring(pos + 1, pos2);
 		if (nbAns.length() == 1) {
 			i = Character.getNumericValue(nbAns.charAt(0));
 		} else {
