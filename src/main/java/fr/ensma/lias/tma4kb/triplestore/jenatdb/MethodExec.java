@@ -15,7 +15,8 @@ import java.util.regex.Pattern;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
 import fr.ensma.lias.tma4kb.query.Session;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.FusekiQueryHelper;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.FusekiQueryHelper;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.VirtuosoQueryHelper;
 
 /**
  * 
@@ -99,6 +100,12 @@ public class MethodExec {
 							nbAnswers = fusekiq.executeQuery(session, threshold[0]);
 							queryCountTime = session.getCountQueryTime();
 						}
+						if (rep == 2) {
+							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
+							VirtuosoQueryHelper virtuosoq = new VirtuosoQueryHelper(q, j);
+							nbAnswers = virtuosoq.executeQuery(session, threshold[0]);
+							queryCountTime = session.getCountQueryTime();
+						}
 						// Printing intermediate results and adding them to the rest
 						if (k > 0) {
 							resultsForMethods.addResult(k - 1, 0, NAME[j], nbAnswers, queryCountTime, threshold[0]);
@@ -124,6 +131,12 @@ public class MethodExec {
 								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
 								FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
 								nbAnswers = fusekiq.executeQuery(session, threshold[l]);
+								queryCountTime = session.getCountQueryTime();
+							}
+							if (rep == 2) {
+								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
+								VirtuosoQueryHelper virtuosoq = new VirtuosoQueryHelper(q, j);
+								nbAnswers = virtuosoq.executeQuery(session, threshold[l]);
 								queryCountTime = session.getCountQueryTime();
 							}
 							if (k > 0) {

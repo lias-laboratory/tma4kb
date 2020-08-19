@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint;
+package fr.ensma.lias.tma4kb.triplestore.sparqlendpoint;
 
 import fr.ensma.lias.tma4kb.query.AbstractSession;
 

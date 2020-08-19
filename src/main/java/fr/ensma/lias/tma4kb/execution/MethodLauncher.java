@@ -20,14 +20,14 @@ public class MethodLauncher implements Runnable {
 	String queriesFile;
 
 	@Option(names = { "-k",
-			"--threshold" }, split = ",", defaultValue = "100", description = "The threshold for overabundant answers. List is possible with comma between different threshold.")
+			"--threshold" }, split = ",", defaultValue = "100", description = "The threshold for overabundant answers. To enter a list is possible with comma between different threshold.")
 	int[] k;
 
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
 
 	@Option(names = { "-r",
-			"--repository" }, defaultValue = "0", description = "To use Jena native (0) or Jena Fuseki (1).")
+			"--repository" }, defaultValue = "0", description = "To use Jena native (0) or Jena Fuseki (1) or Virtuoso (2).")
 	int repository;
 
 	@Option(names = { "-p", "--pagename" }, description = "The name given to fuseki instance.")

@@ -5,9 +5,9 @@ import org.apache.jena.tdb.TDBFactory;
 
 import fr.ensma.lias.tma4kb.query.AbstractQueryFactory;
 import fr.ensma.lias.tma4kb.query.Session;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.OutputFormat;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.SPARQLEndpointClient;
-import fr.ensma.lias.tma4kb.triplestore.jenatdb.sparqlendpoint.SPARQLEndpointSession;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.OutputFormat;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.SPARQLEndpointClient;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.SPARQLEndpointSession;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
@@ -35,10 +35,16 @@ public class JenaQueryFactory extends AbstractQueryFactory {
 		} else if (rep == 1) {
 			// creates a link to the online knowledge base
 			SPARQLEndpointClient fuseki = new SPARQLEndpointClient.Builder().url("http://localhost:3030/" + page)
+					.defaultGraphURI("").outputFormat(OutputFormat.TAB_SEPARATED).build();
+
+			return new SPARQLEndpointSession(fuseki);
+		} else if (rep == 2) {
+			// creates a link to the online knowledge base
+			SPARQLEndpointClient virtuoso = new SPARQLEndpointClient.Builder().url("http://193.55.163.213:8890/sparql")
 					.defaultGraphURI(this.getConfig().sparqlendpointDefaultGraphURI())
 					.outputFormat(OutputFormat.TAB_SEPARATED).build();
 
-			return new SPARQLEndpointSession(fuseki);
+			return new SPARQLEndpointSession(virtuoso);
 		} else {
 			return null;
 		}

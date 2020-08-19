@@ -34,7 +34,7 @@ public interface TMA4KBConfig extends Config {
 	@Key("sparqlendpoint.url")
 	String sparqlendpointUrl();
 
-	@Key("sparqlendpoint.defaultgraphuri")
+	@Key("sparqlendpoint_defaultgraphuri")
 	String sparqlendpointDefaultGraphURI();
 
 }
