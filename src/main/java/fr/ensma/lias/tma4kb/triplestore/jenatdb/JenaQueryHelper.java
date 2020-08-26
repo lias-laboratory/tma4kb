@@ -17,7 +17,7 @@ public class JenaQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelpe
 	 * 
 	 * @param q the query that this helper uses
 	 */
-	public JenaQueryHelper(fr.ensma.lias.tma4kb.query.Query q, int method) {
+	public JenaQueryHelper(fr.ensma.lias.tma4kb.query.Query q, QueryMethod method) {
 		super(q, method);
 	}
 

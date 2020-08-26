@@ -1,8 +1,6 @@
 package fr.ensma.lias.tma4kb.triplestore.sparqlendpoint;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 
 import fr.ensma.lias.tma4kb.query.Session;
 
@@ -10,24 +8,23 @@ import fr.ensma.lias.tma4kb.query.Session;
  * @author Stephane JEAN (jean@ensma.fr)
  * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  */
+public class ClientQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelper {
 
-public class VirtuosoQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryHelper {
 	/**
-	 * Creates a FusekiQueryHelper for query q
+	 * Creates a ClientQueryHelper for query q
 	 * 
 	 * @param q the query that this helper uses
 	 */
-	public VirtuosoQueryHelper(fr.ensma.lias.tma4kb.query.Query q, int method) {
+	public ClientQueryHelper(fr.ensma.lias.tma4kb.query.Query q, QueryMethod method) {
 		super(q, method);
 	}
 
 	@Override
 	public int execute_ALL(Session session, int k) throws IOException {
-
 		int i = 0;
 		String sparqlQueryString = q.toString();
-		SPARQLEndpointClient virtuosoSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
-		String query = virtuosoSession.query(sparqlQueryString);
+		SPARQLEndpointClient clientsession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
+		String query = clientsession.query(sparqlQueryString);
 
 		String[] split = query.split("\n");
 		i = split.length - 1;
@@ -38,8 +35,8 @@ public class VirtuosoQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryH
 	public int execute_STOPK(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
-		SPARQLEndpointClient virtuosoSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
-		String query = virtuosoSession.query(sparqlQueryString);
+		SPARQLEndpointClient clientsession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
+		String query = clientsession.query(sparqlQueryString);
 
 		String[] split = query.split("\n");
 		while (i + 1 < split.length && i < k + 1) {
@@ -52,9 +49,9 @@ public class VirtuosoQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryH
 	public int execute_COUNT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
-		SPARQLEndpointClient virtuosoSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
+		SPARQLEndpointClient clientsession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
 		sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) ");
-		String query = virtuosoSession.query(sparqlQueryString);
+		String query = clientsession.query(sparqlQueryString);
 
 		int pos = query.indexOf("\n");
 		int pos2 = 0;
@@ -78,10 +75,10 @@ public class VirtuosoQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryH
 	public int execute_LIMIT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
-		SPARQLEndpointClient virtuosoSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
+		SPARQLEndpointClient clientsession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
 		int limit = k + 1;
 		sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit);
-		String query = virtuosoSession.query(sparqlQueryString);
+		String query = clientsession.query(sparqlQueryString);
 
 		String[] split = query.split("\n");
 		i = split.length - 1;
@@ -92,11 +89,11 @@ public class VirtuosoQueryHelper extends fr.ensma.lias.tma4kb.query.SPARQLQueryH
 	public int execute_COUNTLIMIT(Session session, int k) throws IOException {
 		int i = 0;
 		String sparqlQueryString = q.toString();
-		SPARQLEndpointClient virtuosoSession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
+		SPARQLEndpointClient clientsession = ((SPARQLEndpointSession) session).getSPARQLEndpointClient();
 		int limit = k + 1;
 		sparqlQueryString = sparqlQueryString.replace("SELECT * ", "SELECT (COUNT(*) as ?count) WHERE { {SELECT * ");
 		sparqlQueryString = sparqlQueryString.replace("}", "} LIMIT " + limit + " } }");
-		String query = virtuosoSession.query(sparqlQueryString);
+		String query = clientsession.query(sparqlQueryString);
 
 		int pos = query.indexOf("\n");
 		int pos2 = 0;

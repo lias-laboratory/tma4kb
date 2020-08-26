@@ -12,14 +12,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
+import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import fr.ensma.lias.tma4kb.query.Session;
 import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.ClientQueryFactory;
 
 /**
  * @author Ibrahim DELLAL (ibrahim.dellal@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
+ * @author Célia BORIES-GARCIA (celiabories-garcia@etu.isae-ensma.fr)
  */
 public class AlgorithmExec {
 
@@ -27,44 +31,75 @@ public class AlgorithmExec {
 
 	private Session session;
 
-	private String FILE_QUERIES;
+	private String file_queries;
 
-	private String FILE_CARD;
+	private String file_card;
 
-	private int NB_EXEC;
+	private int nb_exec;
 
-	private int K;
+	private int kValue;
 
-	private int METHOD;
+	private ChoiceOfTpst tripsto;
 
-	private String ALGO;
+	private QueryMethod qMethod;
 
-	public void setUp() {
-		factory = new JenaQueryFactory(METHOD);
+	private AlgoChoice[] algoName;
+
+	public enum AlgoChoice {
+		base, bfs, var, full;
 	}
 
-	public AlgorithmExec(int nb_exec, String queries, String card, int k, int method, String algo) {
-		NB_EXEC = nb_exec;
-		FILE_QUERIES = queries;
-		FILE_CARD = card;
-		K = k;
-		METHOD = method;
-		ALGO = algo;
+	public void setUp() {
+		switch (tripsto) {
+		case jena:
+			factory = new JenaQueryFactory(qMethod);
+			break;
+		case fuseki:
+		case virtuoso:
+			factory = new ClientQueryFactory(qMethod);
+			break;
+
+		}
+	}
+
+	public AlgorithmExec(int nb_ex, String queries, String card, int k, QueryMethod method, AlgoChoice[] algo,
+			ChoiceOfTpst triplestore) {
+		nb_exec = nb_ex;
+		file_queries = queries;
+		file_card = card;
+		kValue = k;
+		qMethod = method;
+		algoName = algo;
+		tripsto = triplestore;
 		setUp();
 	}
 
+	public void createSessionHere(QueryFactory factory) {
+		switch (tripsto) {
+		case jena:
+			session = ((JenaQueryFactory) factory).createSession();
+			break;
+		case fuseki:
+		case virtuoso:
+			session = ((ClientQueryFactory) factory).createSession(tripsto);
+			break;
+		}
+	}
+
 	public void testGenAlgorithms() throws Exception {
-		List<QueryExplain> newTestResultPairList = this.newTestResultPairList(FILE_QUERIES);
-		ExpRelaxResult resultsBase = new ExpRelaxResult(NB_EXEC);
-		ExpRelaxResult resultsBFS = new ExpRelaxResult(NB_EXEC);
-		ExpRelaxResult resultsVar = new ExpRelaxResult(NB_EXEC);
-		ExpRelaxResult resultsFull = new ExpRelaxResult(NB_EXEC);
+		List<QueryExplain> newTestResultPairList = this.newTestResultPairList(file_queries);
+		ExpRelaxResult resultsBase = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsBFS = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsVar = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsFull = new ExpRelaxResult(nb_exec);
 		for (int i = 0; i < newTestResultPairList.size(); i++) {
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
-			for (int j = 0; j < ALGO.length(); j++) {
-				if (ALGO.charAt(j) == '1') {
+			for (int j = 0; j < algoName.length; j++) {
+				switch (algoName[j]) {
+				case base:
 					/**/
+
 					// *********************** Base******************************
 					Query q0 = qExplain.getQuery();
 					description = qExplain.getDescription();
@@ -72,12 +107,12 @@ public class AlgorithmExec {
 					System.out.println("Query (" + description + "): " + q0);
 					System.out.println("-----------------------------------------------------------");
 
-					for (int k = 0; k <= NB_EXEC; k++) {
+					for (int k = 0; k <= nb_exec; k++) {
 						q0 = qExplain.getQuery();
 						q0 = factory.createQuery(q0.toString());
-						session = ((JenaQueryFactory) factory).createSession();
+						createSessionHere(factory);
 						long time = System.currentTimeMillis();
-						q0.runBase(session, K);
+						q0.runBase(session, kValue);
 						long end = System.currentTimeMillis();
 						float tps = ((float) (end - time));// /1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -90,9 +125,10 @@ public class AlgorithmExec {
 						}
 
 					}
-				}
+					break;
 
-				if (ALGO.charAt(j) == '2') {/**/
+				case bfs:
+					/**/
 
 					// *********************** BFS******************************
 					Query q1 = qExplain.getQuery();
@@ -101,12 +137,12 @@ public class AlgorithmExec {
 					System.out.println("Query (" + description + "): " + q1);
 					System.out.println("-----------------------------------------------------------");
 
-					for (int k = 0; k <= NB_EXEC; k++) {
+					for (int k = 0; k <= nb_exec; k++) {
 						q1 = qExplain.getQuery();
 						q1 = factory.createQuery(q1.toString());
-						session = ((JenaQueryFactory) factory).createSession();
+						createSessionHere(factory);
 						long time = System.currentTimeMillis();
-						q1.runBFS(session, K);
+						q1.runBFS(session, kValue);
 						long end = System.currentTimeMillis();
 						float tps = ((float) (end - time));// / 1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -119,9 +155,10 @@ public class AlgorithmExec {
 						}
 
 					}
-				}
+					break;
 
-				if (ALGO.charAt(j) == '3') {/**/
+				case var:
+					/**/
 
 					// ******************* var ********************
 
@@ -130,11 +167,11 @@ public class AlgorithmExec {
 					System.out.println("Query (" + description + "): " + q);
 					System.out.println("-----------------------------------------------------------");
 
-					for (int k = 0; k <= NB_EXEC; k++) {
+					for (int k = 0; k <= nb_exec; k++) {
 						q = factory.createQuery(q.toString());
-						session = ((JenaQueryFactory) factory).createSession();
+						createSessionHere(factory);
 						long time = System.currentTimeMillis();
-						q.runVar(session, K);
+						q.runVar(session, kValue);
 						long end = System.currentTimeMillis();
 						float tps = ((float) (end - time)); // /1000f) ;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -146,8 +183,9 @@ public class AlgorithmExec {
 									+ " queryCountTime: " + queryCountTime);
 						}
 					}
-				}
-				if (ALGO.charAt(j) == '4') {
+					break;
+
+				case full:
 					/**/
 
 					// ******************* full ********************
@@ -158,12 +196,12 @@ public class AlgorithmExec {
 					System.out.println("Query (" + description + "): " + q2);
 					System.out.println("-----------------------------------------------------------");
 
-					for (int k = 0; k <= NB_EXEC; k++) {
+					for (int k = 0; k <= nb_exec; k++) {
 						q2 = qExplain.getQuery();
 						q2 = factory.createQuery(q2.toString());
-						session = ((JenaQueryFactory) factory).createSession();
+						createSessionHere(factory);
 						long time = System.currentTimeMillis();
-						q2.runFull(session, K, FILE_CARD);
+						q2.runFull(session, kValue, file_card);
 						long end = System.currentTimeMillis();
 						float tps = ((float) (end - time));
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -175,50 +213,58 @@ public class AlgorithmExec {
 									+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
 						}
 					}
+					break;
 				}
 			}
-			System.out.println("------------------------------------");
-			for (int l = 0; l < ALGO.length(); l++) {
-				if (ALGO.charAt(l) == '1') {
-					System.out.print(resultsBase.toString());
-				} else if (ALGO.charAt(l) == '2') {
-					System.out.print(resultsBFS.toString());
-				} else if (ALGO.charAt(l) == '3') {
-					System.out.print(resultsVar.toString());
-				} else if (ALGO.charAt(l) == '4') {
-					System.out.print(resultsFull.toString());
-				}
-			}
-			System.out.println("------------------------------------");
 
-			for (int k = 0; k < ALGO.length(); k++) {
-				if (ALGO.charAt(k) == '1') {
-					System.out.println("---------- BILAN BASE------------------");
-					System.out.println(resultsBase.toString());
-					System.out.println("------------------------------------");
-					resultsBase.toFile("exp-jena-base.csv");
-				}
-				if (ALGO.charAt(k) == '2') {
-					System.out.println("---------- BILAN BFS------------------");
-					System.out.println(resultsBFS.toString());
-					System.out.println("------------------------------------");
-					resultsBFS.toFile("exp-jena-BFS.csv");
-				}
-				if (ALGO.charAt(k) == '3') {
-					System.out.println("---------- BILAN VAR ------------------");
-					System.out.println(resultsVar.toString());
-					System.out.println("------------------------------------");
-					resultsVar.toFile("exp-jena-var.csv");
-				}
-				if (ALGO.charAt(k) == '4') {
-					System.out.println("---------- BILAN FULL ------------------");
-					System.out.println(resultsFull.toString());
-					System.out.println("------------------------------------");
-					resultsFull.toFile("exp-jena-full.csv");
+			System.out.println("------------------------------------");
+			for (int l = 0; l < algoName.length; l++) {
+				switch (algoName[l]) {
+				case base:
+					System.out.print(resultsBase.toString());
+					break;
+				case bfs:
+					System.out.print(resultsBFS.toString());
+					break;
+				case var:
+					System.out.print(resultsVar.toString());
+					break;
+				case full:
+					System.out.print(resultsFull.toString());
+					break;
 				}
 			}
 		}
+		System.out.println("------------------------------------");
 
+		for (int k = 0; k < algoName.length; k++) {
+			switch (algoName[k]) {
+			case base:
+				System.out.println("---------- BILAN BASE------------------");
+				System.out.println(resultsBase.toString());
+				System.out.println("------------------------------------");
+				resultsBase.toFile("exp-jena-base-" + tripsto.toString() + ".csv");
+				break;
+			case bfs:
+				System.out.println("---------- BILAN BFS------------------");
+				System.out.println(resultsBFS.toString());
+				System.out.println("------------------------------------");
+				resultsBFS.toFile("exp-jena-BFS-" + tripsto.toString() + ".csv");
+				break;
+			case var:
+				System.out.println("---------- BILAN VAR ------------------");
+				System.out.println(resultsVar.toString());
+				System.out.println("------------------------------------");
+				resultsVar.toFile("exp-jena-var-" + tripsto.toString() + ".csv");
+				break;
+			case full:
+				System.out.println("---------- BILAN FULL ------------------");
+				System.out.println(resultsFull.toString());
+				System.out.println("------------------------------------");
+				resultsFull.toFile("exp-jena-full-" + tripsto.toString() + ".csv");
+				break;
+			}
+		}
 	}
 
 	class QueryExplain {

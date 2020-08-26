@@ -9,8 +9,8 @@ import java.io.InputStreamReader;
 import org.junit.Test;
 
 import fr.ensma.lias.tma4kb.query.util.ScriptRunner;
-import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBQueryFactory;
-import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBSession;
+import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
+import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBSession;
 
 /**
  * @author Louise PARKIN (louise.parkin@ensma.fr)

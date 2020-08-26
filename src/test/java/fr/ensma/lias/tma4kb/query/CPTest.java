@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import fr.ensma.lias.tma4kb.triplestore.hsqlsb.HSQLDBQueryFactory;
+import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
 
 /**
  * @author Louise PARKIN (louise.parkin@ensma.fr)

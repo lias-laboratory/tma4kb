@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.triplestore.hsqlsb;
+package fr.ensma.lias.tma4kb.triplestore.hsqldb;
 
 import java.sql.Connection;
 

@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.triplestore.jenatdb;
+package fr.ensma.lias.tma4kb.triplestore.sparqlendpoint;
 
 import fr.ensma.lias.tma4kb.query.AbstractQuery;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
@@ -6,26 +6,29 @@ import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import fr.ensma.lias.tma4kb.query.Session;
 
 /**
- * @author Stephane JEAN (jean@ensma.fr)
+ * 
+ * 
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
+ *
  */
-public class JenaQuery extends AbstractQuery {
+
+public class ClientQuery extends AbstractQuery {
 
 	/**
 	 * The helper that will execute the queries
 	 */
-	private JenaQueryHelper helper;
+	private ClientQueryHelper helper;
 
 	/**
-	 * Builds a JenaQuery, using the constructor of AbstractQuery, and initialises
+	 * Builds a ClientQuery, using the constructor of AbstractQuery, and initialises
 	 * the helper
 	 * 
 	 * @param factory
 	 * @param query
-	 * @param method
 	 */
-	public JenaQuery(QueryFactory factory, String query, QueryMethod method) {
+	public ClientQuery(QueryFactory factory, String query, QueryMethod method) {
 		super(factory, query);
-		helper = new JenaQueryHelper(this, method);
+		helper = new ClientQueryHelper(this, method);
 
 	}
 
@@ -34,5 +37,4 @@ public class JenaQuery extends AbstractQuery {
 		return helper.executeQuery(session, k);
 
 	}
-
 }

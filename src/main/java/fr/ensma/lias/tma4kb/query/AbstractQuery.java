@@ -248,17 +248,15 @@ public abstract class AbstractQuery implements Query {
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
 
-
 	/**
-	 * Sets the maximum cardinality of triple 
+	 * Sets the maximum cardinality of triple
 	 * 
 	 * @param triple  the triple pattern
 	 * @param cardMax the cardinality value
-	 */	
+	 */
 	public void setCardMax(int triple, int cardMax) {
-		 this.triplePatterns.get(triple).setCardMax(cardMax); 
+		this.triplePatterns.get(triple).setCardMax(cardMax);
 	}
-	 
 
 	@Override
 	public Set<String> getVariables() {
@@ -336,7 +334,7 @@ public abstract class AbstractQuery implements Query {
 		}
 		return val > k;
 	}
-	
+
 	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
 		Integer val = executedQueries.get(this);
 		if (val == null) {
@@ -620,7 +618,7 @@ public abstract class AbstractQuery implements Query {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
 						subqueries.add(qNew);
-						if (!tp.isPredicateVariable() && tp.getCardMax() <=1
+						if (!tp.isPredicateVariable() && tp.getCardMax() <= 1
 								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
 							executedQueries.put(qNew, k + 1);
 						}
@@ -641,7 +639,7 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 	}
-	
+
 	@Override
 	public void runFull_AnyCard(Session session, int k, String card) throws Exception {
 		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
@@ -705,7 +703,7 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 	}
-	
+
 	@Override
 	public void runFull_Local(Session session, int k, String card) throws Exception {
 		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);

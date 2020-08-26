@@ -31,7 +31,7 @@ public interface TMA4KBConfig extends Config {
 	@Key("jdbc.password")
 	String jdbcPassword();
 
-	@Key("sparqlendpoint.url")
+	@Key("sparqlendpoint_url")
 	String sparqlendpointUrl();
 
 	@Key("sparqlendpoint_defaultgraphuri")

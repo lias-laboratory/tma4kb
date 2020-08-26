@@ -8,15 +8,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
+import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import fr.ensma.lias.tma4kb.query.Session;
-import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.FusekiQueryHelper;
-import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.VirtuosoQueryHelper;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.ClientQueryFactory;
+import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.ClientQueryHelper;
 
 /**
  * 
@@ -24,7 +28,7 @@ import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.VirtuosoQueryHelper;
  *
  */
 public class MethodExec {
-	private QueryFactory[] factory = new QueryFactory[NAME.length];
+	private QueryFactory factory;
 
 	private QueryFactory factoryTemp;
 
@@ -36,17 +40,15 @@ public class MethodExec {
 
 	private int nbK;
 
-	private int rep;
+	private ChoiceOfTpst tripsto;
 
 	private float queryCountTime;
 
 	private int nbAnswers;
 
-	private int[] threshold;
+	private int[] kList;
 
-	private String page;
-
-	private static final String[] NAME = { "ALL", "STOP K", "COUNT", "LIMIT", "COUNT+LIMIT" };
+	private Map<QueryMethod, QueryFactory> listFactories;
 
 	/**
 	 * Constructor
@@ -55,97 +57,107 @@ public class MethodExec {
 	 * @param k
 	 * @param execution
 	 */
-	public MethodExec(String queries, int[] k, int execution, int repository, String pagename) {
-		for (int i = 0; i < NAME.length; i++) {
-			factory[i] = new JenaQueryFactory(i);
-		}
+	public MethodExec(String queries, int[] k, int execution, ChoiceOfTpst triplestore) {
 		file = queries;
-		threshold = k;
+		kList = k;
 		nbExec = execution;
-		nbK = threshold.length;
-		rep = repository;
-		page = pagename;
+		nbK = kList.length;
+		tripsto = triplestore;
+		listFactories = new HashMap<QueryMethod, QueryFactory>();
+		for (QueryMethod mtd : QueryMethod.values()) {
+			switch (tripsto) {
+			case jena:
+				factory = new JenaQueryFactory(mtd);
+				listFactories.put(mtd, factory);
+				break;
+			case fuseki:
+			case virtuoso:
+				factory = new ClientQueryFactory(mtd);
+				listFactories.put(mtd, factory);
+				break;
+			}
+		}
 	}
 
 	public void methodRun() throws Exception {
 
 		MethodStockResult resultsForMethods = new MethodStockResult(nbExec, nbK);
-		for (int j = 0; j < 5; j++) {
+		for (QueryMethod mtd : QueryMethod.values()) {
 			System.out.println("-----------------------------------------------------------");
-			System.out.println("                   METHOD " + NAME[j] + "                  ");
+			System.out.println("                   METHOD " + mtd + "                  ");
 			System.out.println("-----------------------------------------------------------");
-			factoryTemp = factory[j];
+			factoryTemp = listFactories.get(mtd);
 			List<QueryExplain> newQueryList = this.newQueryList(file);
 
 			for (int i = 0; i < newQueryList.size(); i++) {
-
-				if (j == 0 || j == 2) {
+				switch (mtd) {
+				case all:
+				case count:
 
 					for (int k = 0; k <= nbExec; k++) {
 						// Getting query to execute
 						QueryExplain qExplain = newQueryList.get(i);
 						Query q = qExplain.getQuery();
 						q = factoryTemp.createQuery(q.toString());
-						if (rep == 0) {
+						switch (tripsto) {
+						case jena:
 							// Creation of link with the repository
-							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-							JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
+							session = ((JenaQueryFactory) factoryTemp).createSession();
+							JenaQueryHelper jenaq = new JenaQueryHelper(q, mtd);
 							// Execution of query and get number of answers and query count time
-							nbAnswers = jenaq.executeQuery(session, threshold[0]);
+							nbAnswers = jenaq.executeQuery(session, kList[0]);
 							queryCountTime = session.getCountQueryTime();
-						}
-						if (rep == 1) {
-							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-							FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
-							nbAnswers = fusekiq.executeQuery(session, threshold[0]);
+							break;
+						case fuseki:
+						case virtuoso:
+							session = ((ClientQueryFactory) factoryTemp).createSession(tripsto);
+							ClientQueryHelper clientq = new ClientQueryHelper(q, mtd);
+							nbAnswers = clientq.executeQuery(session, kList[0]);
 							queryCountTime = session.getCountQueryTime();
-						}
-						if (rep == 2) {
-							session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-							VirtuosoQueryHelper virtuosoq = new VirtuosoQueryHelper(q, j);
-							nbAnswers = virtuosoq.executeQuery(session, threshold[0]);
-							queryCountTime = session.getCountQueryTime();
+							break;
 						}
 						// Printing intermediate results and adding them to the rest
 						if (k > 0) {
-							resultsForMethods.addResult(k - 1, 0, NAME[j], nbAnswers, queryCountTime, threshold[0]);
-							System.out.println("Method " + NAME[j] + " K = " + threshold[0] + " queryCountTime: "
+							resultsForMethods.addResult(k - 1, 0, mtd.toString(), nbAnswers, queryCountTime, kList[0]);
+							System.out.println("Method " + mtd + " K = " + kList[0] + " queryCountTime: "
 									+ queryCountTime + " Nbanswers: " + nbAnswers);
 						}
-
 					}
-				} else {
+					break;
+
+				case stopK:
+				case limit:
+				case countlimit:
 					for (int l = 0; l < nbK; l++) {
 
 						for (int k = 0; k <= nbExec; k++) {
 							QueryExplain qExplain = newQueryList.get(i);
 							Query q = qExplain.getQuery();
 							q = factoryTemp.createQuery(q.toString());
-							if (rep == 0) {
-								JenaQueryHelper jenaq = new JenaQueryHelper(q, j);
-								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-								nbAnswers = jenaq.executeQuery(session, threshold[l]);
+							switch (tripsto) {
+							case jena:
+								JenaQueryHelper jenaq = new JenaQueryHelper(q, mtd);
+								session = ((JenaQueryFactory) factoryTemp).createSession();
+								nbAnswers = jenaq.executeQuery(session, kList[l]);
 								queryCountTime = session.getCountQueryTime();
-							}
-							if (rep == 1) {
-								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-								FusekiQueryHelper fusekiq = new FusekiQueryHelper(q, j);
-								nbAnswers = fusekiq.executeQuery(session, threshold[l]);
+								break;
+							case fuseki:
+							case virtuoso:
+								session = ((ClientQueryFactory) factoryTemp).createSession(tripsto);
+								ClientQueryHelper clientq = new ClientQueryHelper(q, mtd);
+								nbAnswers = clientq.executeQuery(session, kList[l]);
 								queryCountTime = session.getCountQueryTime();
-							}
-							if (rep == 2) {
-								session = ((JenaQueryFactory) factoryTemp).createSession(rep, page);
-								VirtuosoQueryHelper virtuosoq = new VirtuosoQueryHelper(q, j);
-								nbAnswers = virtuosoq.executeQuery(session, threshold[l]);
-								queryCountTime = session.getCountQueryTime();
+								break;
 							}
 							if (k > 0) {
-								resultsForMethods.addResult(k - 1, l, NAME[j], nbAnswers, queryCountTime, threshold[l]);
-								System.out.println("Method " + NAME[j] + " K = " + threshold[l] + " queryCountTime: "
+								resultsForMethods.addResult(k - 1, l, mtd.toString(), nbAnswers, queryCountTime,
+										kList[l]);
+								System.out.println("Method " + mtd + " K = " + kList[l] + " queryCountTime: "
 										+ queryCountTime + " Nbanswers: " + nbAnswers);
 							}
 						}
 					}
+					break;
 				}
 			}
 		}

@@ -12,60 +12,64 @@ public abstract class SPARQLQueryHelper implements QueryHelper {
 	 * The query that this helper uses
 	 */
 	protected Query q;
-	
 
-	protected final int SELECT_ALL = 0;
-	protected final int SELECT_K = 1;
-	protected final int COUNT = 2;
-	protected final int LIMIT = 3;
-	protected final int LIMITCOUNT = 4;
-	protected int method;
+	protected QueryMethod method;
 
 	/***
 	 * Creates a SPARQLQueryHelper with query q
 	 * 
 	 * @param q the query
 	 */
-	public SPARQLQueryHelper(Query q, int method) {
+	public SPARQLQueryHelper(Query q, QueryMethod method) {
 		this.q = q;
 		this.method = method;
 	}
-	
+
+	public enum QueryMethod {
+		all, stopK, count, limit, countlimit;
+
+	}
+
 	@Override
 	public int executeQuery(Session session, int k) {
 		int i = 0;
 		long time = System.currentTimeMillis();
-
-		if (method == SELECT_ALL) {
+		switch (method) {
+		case all:
 			try {
-				i=execute_ALL(session, k);
+				i = execute_ALL(session, k);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if (method == SELECT_K) {
+			break;
+		case stopK:
 			try {
-				i=execute_STOPK(session, k);
+				i = execute_STOPK(session, k);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if (method == COUNT) {
+			break;
+		case count:
 			try {
-				i=execute_COUNT(session, k);
+				i = execute_COUNT(session, k);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if (method == LIMIT) {
+			break;
+		case limit:
 			try {
-				i=execute_LIMIT(session, k);
+				i = execute_LIMIT(session, k);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if (method == LIMITCOUNT) {
+			break;
+		case countlimit:
 			try {
-				i=execute_COUNTLIMIT(session, k);
+				i = execute_COUNTLIMIT(session, k);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			break;
 		}
 		long end = System.currentTimeMillis();
 		float tps = ((float) (end - time));

@@ -4,10 +4,8 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
 
 import fr.ensma.lias.tma4kb.query.AbstractQueryFactory;
+import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import fr.ensma.lias.tma4kb.query.Session;
-import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.OutputFormat;
-import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.SPARQLEndpointClient;
-import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.SPARQLEndpointSession;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
@@ -15,9 +13,9 @@ import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.SPARQLEndpointSession;
  */
 public class JenaQueryFactory extends AbstractQueryFactory {
 
-	private int method;
+	private QueryMethod method;
 
-	public JenaQueryFactory(int method) {
+	public JenaQueryFactory(QueryMethod method) {
 		super();
 		this.method = method;
 	}
@@ -27,32 +25,12 @@ public class JenaQueryFactory extends AbstractQueryFactory {
 		return new JenaQuery(this, rdfQuery, method);
 	}
 
-	public Session createSession(int rep, String page) {
-		if (rep == 0) {
-			// creates a link to the downloaded repository
-			Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
-			return new JenaSession(dataset);
-		} else if (rep == 1) {
-			// creates a link to the online knowledge base
-			SPARQLEndpointClient fuseki = new SPARQLEndpointClient.Builder().url("http://localhost:3030/" + page)
-					.defaultGraphURI("").outputFormat(OutputFormat.TAB_SEPARATED).build();
-
-			return new SPARQLEndpointSession(fuseki);
-		} else if (rep == 2) {
-			// creates a link to the online knowledge base
-			SPARQLEndpointClient virtuoso = new SPARQLEndpointClient.Builder().url("http://193.55.163.213:8890/sparql")
-					.defaultGraphURI(this.getConfig().sparqlendpointDefaultGraphURI())
-					.outputFormat(OutputFormat.TAB_SEPARATED).build();
-
-			return new SPARQLEndpointSession(virtuoso);
-		} else {
-			return null;
-		}
-	}
-
 	@Override
 	public Session createSession() {
-		// TODO Auto-generated method stub
-		return null;
+		// creates a link to the downloaded repository
+		Dataset dataset = TDBFactory.createDataset(this.getConfig().jenaRepository());
+		return new JenaSession(dataset);
+
 	}
+
 }

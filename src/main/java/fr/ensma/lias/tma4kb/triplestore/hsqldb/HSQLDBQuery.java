@@ -1,4 +1,4 @@
-package fr.ensma.lias.tma4kb.triplestore.hsqlsb;
+package fr.ensma.lias.tma4kb.triplestore.hsqldb;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ public class HSQLDBQuery extends AbstractQuery {
 			float tps = ((float) (end - time));
 			int i = 0;
 			session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
-			session.setCountQueryTime(session.getCountQueryTime()+tps);
+			session.setCountQueryTime(session.getCountQueryTime() + tps);
 			// This code is probably not efficient
 			// since it's only used for test issue, it's fine
 			while (rset.next()) { // Stop once more than k answers are found : && i<=k) { the result is inaccurate

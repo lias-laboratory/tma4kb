@@ -9,6 +9,11 @@ import org.aeonbits.owner.ConfigFactory;
  */
 public abstract class AbstractQueryFactory implements QueryFactory {
 
+	public enum ChoiceOfTpst {
+		jena, fuseki, virtuoso;
+	
+	}
+
 	private TMA4KBConfig config;
 
 	public AbstractQueryFactory() {

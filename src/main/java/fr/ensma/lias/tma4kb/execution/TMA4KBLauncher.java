@@ -1,5 +1,8 @@
 package fr.ensma.lias.tma4kb.execution;
 
+import fr.ensma.lias.tma4kb.execution.AlgorithmExec.AlgoChoice;
+import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
+import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -24,15 +27,22 @@ public class TMA4KBLauncher implements Runnable {
 
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
-	
-	@Option(names = { "-k", "--threshold" }, defaultValue = "100", description = "The threshold for overabundant answers.")
+
+	@Option(names = { "-k",
+			"--threshold" }, defaultValue = "100", description = "The threshold for overabundant answers.")
 	int k;
-	
-	@Option(names = { "-m", "--method"}, defaultValue = "0", description = "The evaluation method in Jena. 0: SELECT_ALL, 1: SELECT_K, 2: COUNT, 3: LIMIT, 4: COUNT&LIMIT")
-	int method;
-	
-	@Option(names = { "-a", "--algorithm"}, defaultValue = "1234", description = "The algorithm to run. 1: SELECT_BASE, 2: SELECT_BFS, 3: SELECT_VAR, 4: SELECT_FULL, 1234: SELECT_ALL")
-	String algorithm;
+
+	@Option(names = { "-m",
+			"--method" }, description = "The evaluation method in Jena. Methods possible: ${COMPLETION-CANDIDATES}")
+	QueryMethod method;
+
+	@Option(names = { "-a",
+			"--algorithm" }, split = ",", defaultValue = "base,bfs,var,full", description = "The algorithm to run: ${COMPLETION-CANDIDATES}. If all enter: base,bfs,var,full")
+	AlgoChoice[] algorithm;
+
+	@Option(names = { "-t",
+			"--triplestore" }, defaultValue = "jena", description = "Choice of triplstore: ${COMPLETION-CANDIDATES}")
+	ChoiceOfTpst triplestore;
 
 	public static void main(String[] args) {
 		new CommandLine(new TMA4KBLauncher()).execute(args);
@@ -40,7 +50,8 @@ public class TMA4KBLauncher implements Runnable {
 
 	@Override
 	public void run() {
-		AlgorithmExec t = new AlgorithmExec(numberExecution, queriesFile, cardinalitiesFile, k, method, algorithm);
+		AlgorithmExec t = new AlgorithmExec(numberExecution, queriesFile, cardinalitiesFile, k, method, algorithm,
+				triplestore);
 		try {
 			t.testGenAlgorithms();
 		} catch (Exception e) {

@@ -1,5 +1,6 @@
 package fr.ensma.lias.tma4kb.execution;
 
+import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
 import fr.ensma.lias.tma4kb.triplestore.jenatdb.MethodExec;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -26,12 +27,9 @@ public class MethodLauncher implements Runnable {
 	@Option(names = { "-e", "--execution" }, defaultValue = "5", description = "The number of executions.")
 	int numberExecution;
 
-	@Option(names = { "-r",
-			"--repository" }, defaultValue = "0", description = "To use Jena native (0) or Jena Fuseki (1) or Virtuoso (2).")
-	int repository;
-
-	@Option(names = { "-p", "--pagename" }, description = "The name given to fuseki instance.")
-	String pagename;
+	@Option(names = { "-t",
+			"--triplestore" }, defaultValue = "jena", description = "Choice of triplstore: ${COMPLETION-CANDIDATES}")
+	ChoiceOfTpst triplestore;
 
 	public static void main(String[] args) {
 		new CommandLine(new MethodLauncher()).execute(args);
@@ -39,7 +37,7 @@ public class MethodLauncher implements Runnable {
 
 	@Override
 	public void run() {
-		MethodExec t = new MethodExec(queriesFile, k, numberExecution, repository, pagename);
+		MethodExec t = new MethodExec(queriesFile, k, numberExecution, triplestore);
 		try {
 			t.methodRun();
 		} catch (Exception e) {
