@@ -18,7 +18,8 @@ public abstract class SPARQLQueryHelper implements QueryHelper {
 	/***
 	 * Creates a SPARQLQueryHelper with query q
 	 * 
-	 * @param q the query
+	 * @param q      the query
+	 * @param method
 	 */
 	public SPARQLQueryHelper(Query q, QueryMethod method) {
 		this.q = q;

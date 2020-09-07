@@ -7,7 +7,6 @@ import fr.ensma.lias.tma4kb.query.Session;
 
 /**
  * 
- * 
  * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  *
  */
@@ -25,6 +24,7 @@ public class ClientQuery extends AbstractQuery {
 	 * 
 	 * @param factory
 	 * @param query
+	 * @param method
 	 */
 	public ClientQuery(QueryFactory factory, String query, QueryMethod method) {
 		super(factory, query);

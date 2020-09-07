@@ -236,6 +236,9 @@ public class AlgorithmExec {
 			}
 		}
 		System.out.println("------------------------------------");
+		System.out.println(
+				"Query \t Execution time (ms) \t Max. Diff. with value (ms) \t Nb Executed Query \t Counting time (ms) \\t Max. Diff. with value (ms)");
+		System.out.println("------------------------------------");
 
 		for (int k = 0; k < algoName.length; k++) {
 			switch (algoName[k]) {
@@ -243,25 +246,25 @@ public class AlgorithmExec {
 				System.out.println("---------- BILAN BASE------------------");
 				System.out.println(resultsBase.toString());
 				System.out.println("------------------------------------");
-				resultsBase.toFile("exp-jena-base-" + tripsto.toString() + ".csv");
+				resultsBase.toFile("exp-" + tripsto.toString() + "-base-K" + kValue + ".csv");
 				break;
 			case bfs:
 				System.out.println("---------- BILAN BFS------------------");
 				System.out.println(resultsBFS.toString());
 				System.out.println("------------------------------------");
-				resultsBFS.toFile("exp-jena-BFS-" + tripsto.toString() + ".csv");
+				resultsBFS.toFile("exp-" + tripsto.toString() + "-bfs-K" + kValue + ".csv");
 				break;
 			case var:
 				System.out.println("---------- BILAN VAR ------------------");
 				System.out.println(resultsVar.toString());
 				System.out.println("------------------------------------");
-				resultsVar.toFile("exp-jena-var-" + tripsto.toString() + ".csv");
+				resultsVar.toFile("exp-" + tripsto.toString() + "-var-K" + kValue + ".csv");
 				break;
 			case full:
 				System.out.println("---------- BILAN FULL ------------------");
 				System.out.println(resultsFull.toString());
 				System.out.println("------------------------------------");
-				resultsFull.toFile("exp-jena-full-" + tripsto.toString() + ".csv");
+				resultsFull.toFile("exp-" + tripsto.toString() + "-full-K" + kValue + ".csv");
 				break;
 			}
 		}

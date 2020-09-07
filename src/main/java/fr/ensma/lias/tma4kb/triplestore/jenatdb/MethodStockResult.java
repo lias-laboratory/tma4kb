@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,20 @@ public class MethodStockResult {
 		return res / nbExec;
 	}
 
+	public float getBiggestGap(String m, int j, Float avgCountTime) {
+		float gap = 0;
+		List<List<MethodResult>> methodResults = resultsForMethods.get(m);
+		if (methodResults != null) {
+			for (int i = 0; i < nbExec; i++) {
+				float diff = Math.abs(avgCountTime - methodResults.get(i).get(j).getCountTime());
+				if (diff > gap) {
+					gap = diff;
+				}
+			}
+		}
+		return gap;
+	}
+
 	/***************************************************
 	 * Methods to display the results of the experiments
 	 ***************************************************/
@@ -126,7 +141,9 @@ public class MethodStockResult {
 				Float val = round(getAnswers(m, j), 2);
 				res.append(val.toString() + "\t \t");
 				Float countTime = round(getAvgCountTime(m, j), 2);
-				res.append(countTime.toString() + "\n");
+				res.append(countTime.toString() + "\t");
+				Float bigGap = round(getBiggestGap(m, j, countTime), 2);
+				res.append(bigGap.toString() + "\n");
 			}
 		}
 		return res.toString();
@@ -137,7 +154,7 @@ public class MethodStockResult {
 	 */
 	public static float round(float d, int decimalPlace) {
 		BigDecimal bd = new BigDecimal(Float.toString(d));
-		bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+		bd = bd.setScale(decimalPlace, RoundingMode.HALF_UP);
 		return bd.floatValue();
 	}
 

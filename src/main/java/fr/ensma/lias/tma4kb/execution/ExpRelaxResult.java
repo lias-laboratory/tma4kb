@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,6 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import fr.ensma.lias.tma4kb.query.Query;
 
 /**
@@ -20,6 +20,7 @@ import fr.ensma.lias.tma4kb.query.Query;
  * @author Stephane JEAN (jean@ensma.fr)
  * @author Ibrahim DELLAL (ibrahim.dellal@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
+ * @author Celia BORIES-GARCIA (celia.bories-garcia@etu.isae-ensma.fr)
  */
 public class ExpRelaxResult {
 
@@ -31,7 +32,7 @@ public class ExpRelaxResult {
 	private static int ID_TIME = 1;
 
 	private static int ID_NB_EXECUTED_QUERY = 2;
-	
+
 	private static int ID_COUNT_QUERY_TIME = 3;
 
 	/**
@@ -85,7 +86,7 @@ public class ExpRelaxResult {
 	public float getAvgNbExecutedQuery(Query q) {
 		return getAvgMetric(q, ID_NB_EXECUTED_QUERY);
 	}
-	
+
 	/**
 	 * Get the average of the counting time
 	 * 
@@ -120,11 +121,38 @@ public class ExpRelaxResult {
 	}
 
 	/**
+	 * Look for the biggest gap between values of time and the average corresponding
+	 * 
+	 * @param q
+	 * @param avgCountTime
+	 * @return gap
+	 */
+	public float getBiggestGap(Query q, Float avgTime, int idMetric) {
+		float gap = 0;
+		float temp = 0;
+		QueryResult[] results = resultsByQuery.get(q);
+		if (results != null) {
+			for (int i = 0; i < results.length; i++) {
+				if (idMetric == ID_TIME) {
+					temp = results[i].getTime();
+				} else if (idMetric == ID_COUNT_QUERY_TIME) {
+					temp = results[i].getCountTime();
+				}
+				float diff = Math.abs(avgTime - temp);
+				if (diff > gap) {
+					gap = diff;
+				}
+			}
+		}
+		return gap;
+	}
+
+	/**
 	 * Round a float to certain number of decimals
 	 */
 	public static float round(float d, int decimalPlace) {
 		BigDecimal bd = new BigDecimal(Float.toString(d));
-		bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+		bd = bd.setScale(decimalPlace, RoundingMode.HALF_UP);
 		return bd.floatValue();
 	}
 
@@ -141,10 +169,14 @@ public class ExpRelaxResult {
 			res.append("Q" + (i + 1) + "\t");
 			Float valTime = round(getAvgTime(q), 2);
 			res.append(valTime.toString() + "\t");
+			Float bigGapExecTime = round(getBiggestGap(q, valTime, ID_TIME), 2);
+			res.append(bigGapExecTime.toString() + "\t");
 			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
 			res.append(nbExecutedQuery + "\t");
-			Float countTime = round(getAvgCountTime(q),2);
-			res.append(countTime.toString() + "\n");
+			Float countTime = round(getAvgCountTime(q), 2);
+			res.append(countTime.toString() + "\t");
+			Float bigGapCountTime = round(getBiggestGap(q, countTime, ID_COUNT_QUERY_TIME), 2);
+			res.append(bigGapCountTime.toString() + "\n");
 		}
 		return res.toString();
 	}

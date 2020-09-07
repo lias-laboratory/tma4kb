@@ -164,10 +164,11 @@ public class MethodExec {
 
 		System.out.println("-----------------------------------------------------------");
 		System.out.println("                        BILAN METHOD                       ");
-		System.out.println("Name \t \t K \t Nb Answers \t Query Count Time (ms)");
+		System.out
+				.println("Name \t \t K \t Nb Answers \t Query Count Time (ms) \t Max. Diff. with extreme values (ms)");
 		System.out.println("-----------------------------------------------------------");
 		System.out.println(resultsForMethods.toString());
-		resultsForMethods.toFile("exp-allMethod-jena.csv");
+		resultsForMethods.toFile("exp-allMethods-" + tripsto.toString() + ".csv");
 
 	}
 

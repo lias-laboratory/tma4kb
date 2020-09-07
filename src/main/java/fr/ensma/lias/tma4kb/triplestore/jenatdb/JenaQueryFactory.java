@@ -9,7 +9,6 @@ import fr.ensma.lias.tma4kb.query.Session;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
- * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  */
 public class JenaQueryFactory extends AbstractQueryFactory {
 

@@ -2,7 +2,7 @@ package fr.ensma.lias.tma4kb.triplestore.jenatdb;
 
 /**
  * 
- * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr) 
+ * @author Célia Bories-Garcia (celia.bories-garcia@etu.isae-ensma.fr)
  *
  */
 

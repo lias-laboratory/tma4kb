@@ -28,7 +28,7 @@ public class MethodLauncher implements Runnable {
 	int numberExecution;
 
 	@Option(names = { "-t",
-			"--triplestore" }, defaultValue = "jena", description = "Choice of triplstore: ${COMPLETION-CANDIDATES}")
+			"--triplestore" }, defaultValue = "jena", description = "Choice of triplestore: ${COMPLETION-CANDIDATES}")
 	ChoiceOfTpst triplestore;
 
 	public static void main(String[] args) {
