@@ -1,5 +1,7 @@
 package fr.ensma.lias.tma4kb.query;
 
+import fr.ensma.lias.tma4kb.query.AbstractSession.Counters;
+
 /**
  * @author Mickael BARON (baron@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
@@ -48,6 +50,11 @@ public interface Session {
 	 * Clear the executed query time
 	 */
 	void clearCountQueryTime();
+	
+	public void addTimes(float time, Counters section);
+	public float[] getTimes();
+	public float getTime(Counters section);
+	public void clearTimes();
 
 
 }

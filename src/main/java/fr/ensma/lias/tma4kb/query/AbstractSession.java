@@ -8,6 +8,29 @@ public abstract class AbstractSession implements Session {
 
 	protected int executedQueryNumber = 0;
 	protected float countQueryTime =0;
+	protected float times[] = new float[11] ;
+	
+	public enum Counters {
+		initialisation(0), 
+		configCard(1), 
+		parentsFIS(2), 
+		computeCard(3),
+		getSuperQueries(4), 
+		isFailing(5), 
+		decomposeCP(6), 
+		updateFIS(7), 
+		nextQueries(8), 
+		varProp(9), 
+		cardProp(10);
+
+	     private int code;
+
+	     private Counters(int code) {
+	          this.code = code;
+	     }
+
+	     public int getCode() { return code; }
+	};
 
 	@Override
 	public int getExecutedQueryCount() {
@@ -37,5 +60,23 @@ public abstract class AbstractSession implements Session {
 	@Override
 	public void clearCountQueryTime() {
 		countQueryTime = 0;
+	}
+	
+	@Override
+	public void addTimes(float time, Counters section) {
+		times[section.getCode()]+=time;
+	}
+	@Override
+	public float[] getTimes() {
+		return times;
+	}
+	@Override
+	public void clearTimes() {
+		for (int i=0; i<times.length;i++)
+			times[i]=0;
+	}
+	@Override
+	public float getTime(Counters section) {
+		return times[section.getCode()];
 	}
 }

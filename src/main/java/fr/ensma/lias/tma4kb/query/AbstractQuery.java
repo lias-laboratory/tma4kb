@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+import fr.ensma.lias.tma4kb.query.AbstractSession.Counters;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
@@ -299,13 +300,17 @@ public abstract class AbstractQuery implements Query {
 	 * @return true iff this query is failing
 	 */
 	protected boolean isFailing(Map<Query, Integer> executedQueries, Session s, int k) {
+		long start = System.currentTimeMillis();
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
 				executedQueries.put(this, k + 1);
 				return true;
 			}
+			long time1 = System.currentTimeMillis();
 			decomposeCP();
+			long time2 = System.currentTimeMillis();
+			s.addTimes(time2 - time1, Counters.decomposeCP);
 			if (decomp.size() == 1) {
 				val = isFailing(s, k);
 				executedQueries.put(this, val);
@@ -332,6 +337,8 @@ public abstract class AbstractQuery implements Query {
 				executedQueries.put(this, val);
 			}
 		}
+		long end = System.currentTimeMillis();
+		s.addTimes(end - start, Counters.isFailing);
 		return val > k;
 	}
 
@@ -414,90 +421,105 @@ public abstract class AbstractQuery implements Query {
 			i++;
 		}
 	}
-
-	@Override
-	public void runBase(Session session, int k) {
+	
+	
+	/**
+	 * Variables for the algorithms
+	 */
+	private List<Query> listQuery = new ArrayList<>();
+	private Map<Query, Integer> executedQueries = new HashMap<>();
+	private Map<Query, Boolean> markedQueries = new HashMap<>();
+	private Map<Query, Boolean> listFIS = new HashMap<>();
+	
+	public void initialiseAlgo(Session session) {
+		long time1 = System.currentTimeMillis();
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
 		session.clearCountQueryTime();
 		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
+		listQuery = new ArrayList<>();
+		executedQueries = new HashMap<>();
+		markedQueries = new HashMap<>();
+		listFIS = new HashMap<>();
 		markedQueries.put(this, true);
 		listQuery.add(this);
+		long time4 = System.currentTimeMillis();
+		session.addTimes(time4 - time1, Counters.initialisation);
+	}
+	
+	public boolean parentsFIS(Session session, Query qTemp) {
+		long time1 = System.currentTimeMillis();
+		List<Query> superqueries = qTemp.getSuperQueries();
+		long time2 = System.currentTimeMillis();
+		session.addTimes(time2 - time1, Counters.getSuperQueries);
+		boolean parentsFIS = true;
+		while (parentsFIS && !superqueries.isEmpty()) {
+			Query superquery = superqueries.remove(0);
+			if (!listFIS.containsKey(superquery)) {
+				parentsFIS = false;
+			}
+		} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+			// qTemp are FISs
+		long time3 = System.currentTimeMillis();
+		session.addTimes(time3 - time1, Counters.parentsFIS);
+		return parentsFIS;
+	}
+	
+
+	@Override
+	public void runBase(Session session, int k) {
+		initialiseAlgo(session);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			List<Query> subqueries = qTemp.getSubQueries();
-			List<Query> superqueries = qTemp.getSuperQueries();
 			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-				boolean isAnFIS = true;
-				while (isAnFIS && !superqueries.isEmpty()) {
-					Query superquery = superqueries.remove(0);
-					if (!listFIS.containsKey(superquery)) {
-						isAnFIS = false;
-					}
-				}
-				if (isAnFIS) {
+				if (parentsFIS(session,qTemp)) {
+					long time1 = System.currentTimeMillis();
+					//System.out.println("time1 "+time1);
 					for (Query fis : listFIS.keySet()) {
 						if (((AbstractQuery) fis).includesSimple(qTemp)) {
 							allMFIS.remove(fis);
 						}
 					}
+//					try {
+//						Thread.sleep(100);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
+					long time2 = System.currentTimeMillis();
+					//System.out.println("time2 "+time2);
+					session.addTimes(time2 - time1, Counters.updateFIS);
 				}
 			} else { // Potential XSS
-
-				boolean isXSS = true;
-				while (isXSS && !superqueries.isEmpty()) {
-					Query superquery = superqueries.remove(0);
-					if (!listFIS.containsKey(superquery)) {
-						isXSS = false;
-					}
-				}
-				if (isXSS && !qTemp.isTheEmptyQuery())
+				if (parentsFIS(session,qTemp) && !qTemp.isTheEmptyQuery())
 					allXSS.add(qTemp);
 			}
+			long time1 = System.currentTimeMillis();
+			List<Query> subqueries = qTemp.getSubQueries();
 			for (Query subquery : subqueries) {
 				if (!markedQueries.containsKey(subquery)) {
 					markedQueries.put(subquery, true);
 					listQuery.add(subquery);
 				}
 			}
+			long time2 = System.currentTimeMillis();
+			session.addTimes(time2 - time1, Counters.nextQueries);
 
 		}
 	}
 
 	@Override
 	public void runBFS(Session session, int k) {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
-		markedQueries.put(this, true);
-		listQuery.add(this);
+		initialiseAlgo(session);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
+			if (parentsFIS(session,qTemp)) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
+					long time1 = System.currentTimeMillis();
 					for (Query fis : listFIS.keySet()) {
 						if (((AbstractQuery) fis).includesSimple(qTemp)) {
 							allMFIS.remove(fis);
@@ -505,6 +527,7 @@ public abstract class AbstractQuery implements Query {
 					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
+					long time2 = System.currentTimeMillis();
 					List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
 					for (Query subquery : subqueries) {
 						if (!markedQueries.containsKey(subquery)) {
@@ -512,6 +535,9 @@ public abstract class AbstractQuery implements Query {
 							listQuery.add(subquery);
 						}
 					}
+					long time3 = System.currentTimeMillis();
+					session.addTimes(time2 - time1, Counters.updateFIS);
+					session.addTimes(time3 - time2, Counters.nextQueries);
 				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);
@@ -522,30 +548,12 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runVar(Session session, int k) throws Exception {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
-		markedQueries.put(this, true);
-		listQuery.add(this);
+		initialiseAlgo(session);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
+			if (parentsFIS(session,qTemp)) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+					long time1 = System.currentTimeMillis();
 					// FIS
 					for (Query fis : listFIS.keySet()) {
 						if (((AbstractQuery) fis).includesSimple(qTemp)) {
@@ -554,21 +562,29 @@ public abstract class AbstractQuery implements Query {
 					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
+					long time2 = System.currentTimeMillis();
 					List<Query> subqueries = new ArrayList<Query>();
 					for (TriplePattern tp : qTemp.getTriplePatterns()) {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
 						subqueries.add(qNew);
+						long time4 = System.currentTimeMillis();
 						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
 							executedQueries.put(qNew, k + 1);
 						}
+						long time5 = System.currentTimeMillis();
+						session.addTimes(time5 - time4, Counters.varProp);
 					}
+					
 					for (Query subquery : subqueries) {
 						if (!markedQueries.containsKey(subquery)) {
 							markedQueries.put(subquery, true);
 							listQuery.add(subquery);
 						}
 					}
+					long time3 = System.currentTimeMillis();
+					session.addTimes(time2 - time1, Counters.updateFIS);
+					session.addTimes(time3 - time2, Counters.nextQueries);
 				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);
@@ -579,32 +595,22 @@ public abstract class AbstractQuery implements Query {
 
 	@Override
 	public void runFull(Session session, int k, String card) throws Exception {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
+		initialiseAlgo(session);
+		long time2 = System.currentTimeMillis();
 		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
-		markedQueries.put(this, true);
-		listQuery.add(this);
+		long time3 = System.currentTimeMillis();
+		session.addTimes(time3 - time2, Counters.configCard);
+		long time1=0;
+		long time4=0;
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
+			time1 = System.currentTimeMillis();
 			c.computeMaxCardinalities(qTemp);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
+			time2 = System.currentTimeMillis();
+			session.addTimes(time2 - time1, Counters.computeCard);
+			if (parentsFIS(session,qTemp)) {
 				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
+					time2 = System.currentTimeMillis();
 					// FIS
 					for (Query fis : listFIS.keySet()) {
 						if (((AbstractQuery) fis).includesSimple(qTemp)) {
@@ -613,18 +619,24 @@ public abstract class AbstractQuery implements Query {
 					}
 					listFIS.put(qTemp, true);
 					allMFIS.add(qTemp);
+					time3 = System.currentTimeMillis();
 					List<Query> subqueries = new ArrayList<>();
 					for (TriplePattern tp : qTemp.getTriplePatterns()) {
 						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
 						subqueries.add(qNew);
+						long time5 = System.currentTimeMillis();						
 						if (!tp.isPredicateVariable() && tp.getCardMax() <= 1
 								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
 							executedQueries.put(qNew, k + 1);
 						}
+						long time6 = System.currentTimeMillis();
 						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
 							executedQueries.put(qNew, k + 1);
 						}
+						long time7 = System.currentTimeMillis();
+						session.addTimes(time7 - time6, Counters.varProp);
+						session.addTimes(time6 - time5, Counters.cardProp);
 					}
 					for (Query subquery : subqueries) {
 						if (!markedQueries.containsKey(subquery)) {
@@ -632,6 +644,9 @@ public abstract class AbstractQuery implements Query {
 							listQuery.add(subquery);
 						}
 					}
+					time4 = System.currentTimeMillis();
+					session.addTimes(time3 - time2, Counters.updateFIS);
+					session.addTimes(time4 - time3, Counters.nextQueries);
 				} else { // XSS
 					if (!qTemp.isTheEmptyQuery())
 						allXSS.add(qTemp);

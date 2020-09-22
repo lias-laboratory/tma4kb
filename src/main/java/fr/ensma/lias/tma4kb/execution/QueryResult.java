@@ -12,16 +12,19 @@ public class QueryResult {
 	 * Execution time in ms
 	 */
 	private float time;
+	
+	private float[] times;
 
 	private int nbExecutedQuery;
 	
 	private float queryCountTime;
 
-	public QueryResult(float time, int nbExecutedQuery,  float countTime) {
+	public QueryResult(float time, int nbExecutedQuery,  float countTime, float[] times) {
 		super();
 		this.time = time;
 		this.nbExecutedQuery = nbExecutedQuery;
 		this.queryCountTime=countTime;
+		this.times=times;
 	}
 
 	public float getTime() {
@@ -34,6 +37,10 @@ public class QueryResult {
 
 	public float getCountTime() {
 		return queryCountTime;
+	}
+	
+	public float[] getTimes() {
+		return times;
 	}
 
 }
