@@ -117,13 +117,13 @@ public class AlgorithmExec {
 						float tps = ((float) (end - time));// /1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
 						float queryCountTime = session.getCountQueryTime();
+						float[] times = session.getTimes();
 
 						if (k > 0) {
-							resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime);
+							resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime,times);
 							System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
 									+ " queryCountTime: " + queryCountTime);
 						}
-
 					}
 					break;
 
@@ -147,9 +147,10 @@ public class AlgorithmExec {
 						float tps = ((float) (end - time));// / 1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
 						float queryCountTime = session.getCountQueryTime();
+						float[] times = session.getTimes();
 
 						if (k > 0) {
-							resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime);
+							resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime,times);
 							System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
 									+ " queryCountTime: " + queryCountTime);
 						}
@@ -176,9 +177,10 @@ public class AlgorithmExec {
 						float tps = ((float) (end - time)); // /1000f) ;
 						int nbExecutedQuery = session.getExecutedQueryCount();
 						float queryCountTime = session.getCountQueryTime();
+						float[] times = session.getTimes();
 
 						if (k > 0) {
-							resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime);
+							resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime, times);
 							System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery
 									+ " queryCountTime: " + queryCountTime);
 						}
@@ -206,14 +208,14 @@ public class AlgorithmExec {
 						float tps = ((float) (end - time));
 						int nbExecutedQuery = session.getExecutedQueryCount();
 						float queryCountTime = session.getCountQueryTime();
+						float[] times = session.getTimes();
 
 						if (k > 0) {
-							resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime);
+							resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime, times);
 							System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: "
 									+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
 						}
 					}
-					break;
 				}
 			}
 
@@ -247,24 +249,28 @@ public class AlgorithmExec {
 				System.out.println(resultsBase.toString());
 				System.out.println("------------------------------------");
 				resultsBase.toFile("exp-" + tripsto.toString() + "-base-K" + kValue + ".csv");
+				resultsBase.allResultsToFile("exp-" + tripsto.toString() + "-base-K" + kValue + "-all.csv");
 				break;
 			case bfs:
 				System.out.println("---------- BILAN BFS------------------");
 				System.out.println(resultsBFS.toString());
 				System.out.println("------------------------------------");
 				resultsBFS.toFile("exp-" + tripsto.toString() + "-bfs-K" + kValue + ".csv");
+				resultsBFS.allResultsToFile("exp-" + tripsto.toString() + "-bfs-K" + kValue + "-all.csv");
 				break;
 			case var:
 				System.out.println("---------- BILAN VAR ------------------");
 				System.out.println(resultsVar.toString());
 				System.out.println("------------------------------------");
 				resultsVar.toFile("exp-" + tripsto.toString() + "-var-K" + kValue + ".csv");
+				resultsVar.allResultsToFile("exp-" + tripsto.toString() + "-var-K" + kValue + "-all.csv");
 				break;
 			case full:
 				System.out.println("---------- BILAN FULL ------------------");
 				System.out.println(resultsFull.toString());
 				System.out.println("------------------------------------");
 				resultsFull.toFile("exp-" + tripsto.toString() + "-full-K" + kValue + ".csv");
+				resultsFull.allResultsToFile("exp-" + tripsto.toString() + "-full-K" + kValue + "-all.csv");
 				break;
 			}
 		}

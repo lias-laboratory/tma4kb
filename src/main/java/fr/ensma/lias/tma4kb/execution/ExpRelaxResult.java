@@ -34,7 +34,7 @@ public class ExpRelaxResult {
 	private static int ID_NB_EXECUTED_QUERY = 2;
 
 	private static int ID_COUNT_QUERY_TIME = 3;
-
+	
 	/**
 	 * Number of execution of each algorithm
 	 */
@@ -52,14 +52,14 @@ public class ExpRelaxResult {
 		this.resultsByQuery = new HashMap<Query, QueryResult[]>();
 	}
 
-	public void addQueryResult(int i, Query q, float time, int nbExecutedQuery, float queryCountTime) {
+	public void addQueryResult(int i, Query q, float time, int nbExecutedQuery, float queryCountTime, float[] times) {
 
 		QueryResult[] queryResults = resultsByQuery.get(q);
 		if (queryResults == null) {
 			queryResults = new QueryResult[nbExecutions];
 			listOfQueries.add(q);
 		}
-		queryResults[i] = new QueryResult(time, nbExecutedQuery, queryCountTime);
+		queryResults[i] = new QueryResult(time, nbExecutedQuery, queryCountTime, times);
 		resultsByQuery.put(q, queryResults);
 	}
 
@@ -160,6 +160,9 @@ public class ExpRelaxResult {
 	 * Methods to display the results of the experiments
 	 ***************************************************/
 
+	/**
+	 * Display the average over all executions of a query
+	 */
 	@Override
 	public String toString() {
 		StringBuffer res = new StringBuffer("");
@@ -180,9 +183,27 @@ public class ExpRelaxResult {
 		}
 		return res.toString();
 	}
+	
+	/**
+	 * Display every result
+	 * @return
+	 */
+	public String allResults() {
+		StringBuffer res = new StringBuffer("");
+		for (int i = 0; i < listOfQueries.size(); i++) {
+			Query q = listOfQueries.get(i);
+			for (QueryResult r: resultsByQuery.get(q)) {
+				res.append("Q" + (i + 1) + "\t");
+				res.append(r.getTime() + "\t");
+				res.append(r.getNbExecutedQuery() + "\t");
+				res.append(r.getCountTime() + "\n");
+			}
+		}
+		return res.toString();
+	}
 
 	/**
-	 * Create a file with the results of the experiments
+	 * Create a file with the average results of the experiments
 	 * 
 	 * @param descriExp the name of the file
 	 */
@@ -191,6 +212,23 @@ public class ExpRelaxResult {
 		try {
 			fichier = new BufferedWriter(new FileWriter(descriExp));
 			fichier.write(toString());
+			fichier.close();
+		} catch (IOException e) {
+			System.err.println("Unable to create the file with the experiment results.");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Create a file with the results of all the experiments
+	 * 
+	 * @param descriExp the name of the file
+	 */
+	public void allResultsToFile(String descriExp) {
+		BufferedWriter fichier;
+		try {
+			fichier = new BufferedWriter(new FileWriter(descriExp));
+			fichier.write(allResults());
 			fichier.close();
 		} catch (IOException e) {
 			System.err.println("Unable to create the file with the experiment results.");
