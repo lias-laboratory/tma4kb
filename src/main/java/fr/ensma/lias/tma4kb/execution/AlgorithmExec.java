@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+import fr.ensma.lias.tma4kb.query.AbstractQuery;
 import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
@@ -35,6 +37,10 @@ public class AlgorithmExec {
 
 	private String file_card;
 
+	private String file_local;
+
+	private String file_cs;
+
 	private int nb_exec;
 
 	private int kValue;
@@ -44,9 +50,11 @@ public class AlgorithmExec {
 	private QueryMethod qMethod;
 
 	private AlgoChoice[] algoName;
+	
+	private ComputeCardinalitiesConfig c;
 
 	public enum AlgoChoice {
-		base, bfs, var, full;
+		base, bfs, var, full, local, cs, any;
 	}
 
 	public void setUp() {
@@ -62,11 +70,13 @@ public class AlgorithmExec {
 		}
 	}
 
-	public AlgorithmExec(int nb_ex, String queries, String card, int k, QueryMethod method, AlgoChoice[] algo,
+	public AlgorithmExec(int nb_ex, String queries, String card, String local, String cs, int k, QueryMethod method, AlgoChoice[] algo,
 			ChoiceOfTpst triplestore) {
 		nb_exec = nb_ex;
 		file_queries = queries;
 		file_card = card;
+		file_local = local;
+		file_cs=cs;
 		kValue = k;
 		qMethod = method;
 		algoName = algo;
@@ -92,10 +102,20 @@ public class AlgorithmExec {
 		ExpRelaxResult resultsBFS = new ExpRelaxResult(nb_exec);
 		ExpRelaxResult resultsVar = new ExpRelaxResult(nb_exec);
 		ExpRelaxResult resultsFull = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsLoc = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsCS = new ExpRelaxResult(nb_exec);
+		ExpRelaxResult resultsAny = new ExpRelaxResult(nb_exec);
+		long cs_calc_time=0;
+		for (int j = 0; j < algoName.length; j++) {
+			if (algoName[j].equals(AlgoChoice.cs)) {
+				long time = System.currentTimeMillis();
+				c = AbstractQuery.calculateCSCard(file_cs);
+				long end = System.currentTimeMillis();
+				cs_calc_time=end-time;
+			}
 		for (int i = 0; i < newTestResultPairList.size(); i++) {
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
-			for (int j = 0; j < algoName.length; j++) {
 				switch (algoName[j]) {
 				case base:
 					/**/
@@ -216,6 +236,97 @@ public class AlgorithmExec {
 									+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
 						}
 					}
+					break;
+				case any:
+					/**/
+
+					// ******************* any ********************
+
+					Query q3 = qExplain.getQuery();
+					description = qExplain.getDescription();
+					System.out.println("-----------------------------------------------------------");
+					System.out.println("Query (" + description + "): " + q3);
+					System.out.println("-----------------------------------------------------------");
+
+					for (int k = 0; k <= nb_exec; k++) {
+						q3 = qExplain.getQuery();
+						q3 = factory.createQuery(q3.toString());
+						createSessionHere(factory);
+						long time = System.currentTimeMillis();
+						q3.runFull_AnyCard(session, kValue, file_card);
+						long end = System.currentTimeMillis();
+						float tps = ((float) (end - time));
+						int nbExecutedQuery = session.getExecutedQueryCount();
+						float queryCountTime = session.getCountQueryTime();
+						float[] times = session.getTimes();
+
+						if (k > 0) {
+							resultsAny.addQueryResult(k - 1, q3, tps, nbExecutedQuery, queryCountTime, times);
+							System.out.println("any card - Time = " + tps + "ms, NbQueriesExecuted: "
+									+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
+						}
+					}
+					break;
+				case local:
+						/**/
+
+						// ******************* local ********************
+
+						Query q4 = qExplain.getQuery();
+						description = qExplain.getDescription();
+						System.out.println("-----------------------------------------------------------");
+						System.out.println("Query (" + description + "): " + q4);
+						System.out.println("-----------------------------------------------------------");
+
+						for (int k = 0; k <= nb_exec; k++) {
+							q4 = qExplain.getQuery();
+							q4 = factory.createQuery(q4.toString());
+							createSessionHere(factory);
+							long time = System.currentTimeMillis();
+							q4.runFull_Local(session, kValue, file_local);
+							long end = System.currentTimeMillis();
+							float tps = ((float) (end - time));
+							int nbExecutedQuery = session.getExecutedQueryCount();
+							float queryCountTime = session.getCountQueryTime();
+							float[] times = session.getTimes();
+
+							if (k > 0) {
+								resultsLoc.addQueryResult(k - 1, q4, tps, nbExecutedQuery, queryCountTime, times);
+								System.out.println("cardloc - Time = " + tps + "ms, NbQueriesExecuted: "
+										+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
+							}
+						}
+						break;
+					case cs:
+						/**/
+
+						// ******************* full ********************
+
+						Query q5 = qExplain.getQuery();
+						description = qExplain.getDescription();
+						System.out.println("-----------------------------------------------------------");
+						System.out.println("Query (" + description + "): " + q5);
+						System.out.println("-----------------------------------------------------------");
+
+						for (int k = 0; k <= nb_exec; k++) {
+							q5 = qExplain.getQuery();
+							q5 = factory.createQuery(q5.toString());
+							createSessionHere(factory);
+							long time = System.currentTimeMillis();
+							q5.runFull_CS(session, kValue, c);
+							long end = System.currentTimeMillis();
+							float tps = ((float) (end - time));
+							int nbExecutedQuery = session.getExecutedQueryCount();
+							float queryCountTime = session.getCountQueryTime();
+							float[] times = session.getTimes();
+
+							if (k > 0) {
+								resultsCS.addQueryResult(k - 1, q5, tps, nbExecutedQuery, queryCountTime, times);
+								System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: "
+										+ nbExecutedQuery + " queryCountTime: " + queryCountTime);
+							}
+						}
+						break;
 				}
 			}
 
@@ -233,6 +344,15 @@ public class AlgorithmExec {
 					break;
 				case full:
 					System.out.print(resultsFull.toString());
+					break;
+				case any:
+					System.out.print(resultsAny.toString());
+					break;
+				case local:
+					System.out.print(resultsLoc.toString());
+					break;
+				case cs:
+					System.out.print(resultsCS.toString());
 					break;
 				}
 			}
@@ -271,6 +391,27 @@ public class AlgorithmExec {
 				System.out.println("------------------------------------");
 				resultsFull.toFile("exp-" + tripsto.toString() + "-full-K" + kValue + ".csv");
 				resultsFull.allResultsToFile("exp-" + tripsto.toString() + "-full-K" + kValue + "-all.csv");
+				break;
+			case any:
+				System.out.println("---------- BILAN ANY------------------");
+				System.out.println(resultsAny.toString());
+				System.out.println("------------------------------------");
+				resultsAny.toFile("exp-" + tripsto.toString() + "-any-K" + kValue + ".csv");
+				resultsAny.allResultsToFile("exp-" + tripsto.toString() + "-any-K" + kValue + "-all.csv");
+				break;
+			case local:
+				System.out.println("---------- BILAN LOCAL ------------------");
+				System.out.println(resultsLoc.toString());
+				System.out.println("------------------------------------");
+				resultsLoc.toFile("exp-" + tripsto.toString() + "-loc-K" + kValue + ".csv");
+				resultsLoc.allResultsToFile("exp-" + tripsto.toString() + "-loc-K" + kValue + "-all.csv");
+				break;
+			case cs:
+				System.out.println("---------- BILAN CS ------------------");
+				System.out.println(resultsCS.toString());
+				System.out.println("------------------------------------");
+				resultsCS.toFile("exp-" + tripsto.toString() + "-cs-K" + kValue + ".csv");
+				resultsCS.allResultsToFile("exp-" + tripsto.toString() + "-cs-K" + kValue + "-all.csv");
 				break;
 			}
 		}

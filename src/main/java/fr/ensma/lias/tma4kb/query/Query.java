@@ -3,6 +3,8 @@ package fr.ensma.lias.tma4kb.query;
 import java.util.List;
 import java.util.Set;
 
+import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+
 /**
  * @author Stephane JEAN (jean@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
@@ -147,5 +149,7 @@ public interface Query {
 	 * @param card    the file containing cardinalities
 	 */
 	void runFull_Local(Session session, int k, String card) throws Exception;
+
+	void runFull_CS(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
 
 }

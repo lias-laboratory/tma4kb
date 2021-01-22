@@ -1,12 +1,19 @@
 package fr.ensma.lias.tma4kb.cardinalities;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+
+import org.roaringbitmap.RoaringBitmap;
 
 import fr.ensma.lias.tma4kb.query.AbstractQuery;
 import fr.ensma.lias.tma4kb.query.Query;
@@ -18,6 +25,9 @@ import fr.ensma.lias.tma4kb.query.TriplePattern;
 public class ComputeCardinalitiesConfig {
 
 	Properties properties = new Properties();
+	List<String> predicates;
+	Map<RoaringBitmap, RoaringBitmap> bitmap;
+	String src;
 
 	/**
 	 * @param source the file containing cardinalities
@@ -27,7 +37,10 @@ public class ComputeCardinalitiesConfig {
 		InputStream input = new FileInputStream(new File(source));
 		properties.load(input);
 		input.close();
+		src=source;
 	}
+	
+	
 
 	/**
 	 * Removes the prefix from an URI
@@ -135,5 +148,71 @@ public class ComputeCardinalitiesConfig {
 					t.setDomain("");
 			}
 		}
+	}
+
+	/**
+	 * makeCS stores Characteristic sets  using RoaringBitmap. 
+	 * 
+	 * @throws Exception
+	 */
+	public void makeCS() throws Exception {
+		predicates = new ArrayList<>();
+		BufferedReader reader;
+		reader = new BufferedReader(new FileReader(src));
+		String line = reader.readLine();
+		while (line != null) {
+			line = line.substring(1, line.length() - 1);
+			String[] split = line.split(">,");
+			String[] pred = split[0].split(">;");
+			for (String p : pred)
+				if (!predicates.contains(getNiceName(p)))
+					predicates.add(getNiceName(p));
+			line = reader.readLine();
+		}
+		reader.close();
+		bitmap = new HashMap<>();
+		reader = new BufferedReader(new FileReader(src));
+		line = reader.readLine();
+		while (line != null) {
+			RoaringBitmap presence = new RoaringBitmap();
+			RoaringBitmap card1 = new RoaringBitmap();
+			line = line.substring(1, line.length() - 1);
+			String[] split = line.split(">,");
+			String[] pred = split[0].split(">;");
+			String[] cards = split[1].split(";");
+			for (int i = 0; i < pred.length; i++) {
+				presence.flip(predicates.indexOf(getNiceName(pred[i])));
+				if (cards[i].equals("1"))
+					card1.flip(predicates.indexOf(getNiceName(pred[i])));
+			}
+			bitmap.put(presence, card1);
+			line = reader.readLine();
+		}
+		reader.close();
+	}
+
+	/**
+	 * hasCard1 uses characteristic sets to determine if the predicate of t has cardinality 1 within query q
+	 * @param t the triple pattern containing the predicate to determine the cardinality of
+	 * @param q the query being used to find the characteristic sets
+	 * @return true if p(t) has cardinality 1, false otherwise
+	 */
+	public boolean hasCard1(TriplePattern t, Query q) {
+		Boolean card1 = true;
+		for (RoaringBitmap b : bitmap.keySet()) {
+			boolean contains = true;
+			for (TriplePattern tp : ((AbstractQuery) q).getTriplePatterns()) {
+				if (tp.getSubject().equals(t.getSubject())
+						&& !b.contains(predicates.indexOf(getNiceName(tp.getPredicate())))){
+					contains = false;
+				}
+			}
+			if (contains) {
+				card1 = card1 && bitmap.get(b).contains(predicates.indexOf(getNiceName(t.getPredicate())));
+				if (!card1)
+					return false;
+			}
+		}
+		return card1;
 	}
 }

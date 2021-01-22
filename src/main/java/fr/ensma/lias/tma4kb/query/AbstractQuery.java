@@ -783,4 +783,71 @@ public abstract class AbstractQuery implements Query {
 			}
 		}
 	}
+	public static ComputeCardinalitiesConfig calculateCSCard(String card) throws Exception {
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
+		c.makeCS();
+		return (c);
+	}
+
+	@Override
+	public void runFull_CS(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
+		allMFIS = new HashSet<>();
+		allXSS = new HashSet<>();
+		session.clearExecutedQueryCount();
+		session.clearCountQueryTime();
+		initialQuery = this;
+		List<Query> listQuery = new ArrayList<>();
+		Map<Query, Integer> executedQueries = new HashMap<>();
+		Map<Query, Boolean> markedQueries = new HashMap<>();
+		Map<Query, Boolean> listFIS = new HashMap<>();
+		markedQueries.put(this, true);
+		listQuery.add(this);
+		while (!listQuery.isEmpty()) {
+			Query qTemp = listQuery.remove(0);
+			List<Query> superqueries = qTemp.getSuperQueries();
+			boolean parentsFIS = true;
+			while (parentsFIS && !superqueries.isEmpty()) {
+				Query superquery = superqueries.remove(0);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
+			if (parentsFIS) {
+				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
+				if (Nb > k) {
+					// FIS
+					for (Query fis : listFIS.keySet()) {
+						if (((AbstractQuery) fis).includesSimple(qTemp)) {
+							allMFIS.remove(fis);
+						}
+					}
+					listFIS.put(qTemp, true);
+					allMFIS.add(qTemp);
+					List<Query> subqueries = new ArrayList<Query>();
+					for (TriplePattern tp : qTemp.getTriplePatterns()) {
+						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
+						qNew.removeTriplePattern(tp);
+						subqueries.add(qNew);
+						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
+							executedQueries.put(qNew, Nb);
+						} else if (!tp.isPredicateVariable() && c.hasCard1(tp, qTemp)
+								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
+							executedQueries.put(qNew, k + 1);
+						}
+					}
+					for (Query subquery : subqueries) {
+						if (!markedQueries.containsKey(subquery)) {
+							markedQueries.put(subquery, true);
+							listQuery.add(subquery);
+						}
+					}
+				} else { // XSS
+					if (!qTemp.isTheEmptyQuery())
+						allXSS.add(qTemp);
+				}
+			}
+		}
+	}
+	
 }

@@ -48,6 +48,11 @@
 			<artifactId>picocli</artifactId>
 			<version>${picocli.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.roaringbitmap</groupId>
+			<artifactId>RoaringBitmap</artifactId>
+			<version>0.4.10</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
