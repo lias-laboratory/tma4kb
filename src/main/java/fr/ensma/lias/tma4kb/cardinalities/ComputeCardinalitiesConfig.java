@@ -1,13 +1,16 @@
 package fr.ensma.lias.tma4kb.cardinalities;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +36,40 @@ public class ComputeCardinalitiesConfig {
 	 * @param source the file containing cardinalities
 	 * @throws IOException
 	 */
-	public ComputeCardinalitiesConfig(String source) throws IOException {
-		InputStream input = new FileInputStream(new File(source));
-		properties.load(input);
-		input.close();
+	public ComputeCardinalitiesConfig(String source) {
 		src=source;
 	}
 	
-	
+	public void importSource() throws IOException {
+		long time = System.currentTimeMillis();
+		File OUTPUT_FILE = new File("output");
+		BufferedReader br = Files.newBufferedReader(Paths.get(src));
+		FileWriter res = new FileWriter(OUTPUT_FILE);
+		BufferedWriter bw = new BufferedWriter(res);
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			line=removeSyntax(line).replace("(", "").replace(")", "");
+			String[] parts = line.split(",");
+			String p = "";
+			if (parts.length==2)
+				bw.write(parts[0].replace(":", "\\:") + ".domain=" + parts[1]);
+			else {
+				for (int i = 0; i < parts.length - 2; i++)
+					p += parts[i];
+				String cardMax = parts[parts.length - 1];
+				bw.write(p.replace(":", "\\:") + "=" + cardMax);
+			}
+			bw.newLine();
+		}
+		br.close();
+		bw.close();
+		long end = System.currentTimeMillis();
+		System.out.println(end-time);
+		InputStream input = new FileInputStream(OUTPUT_FILE);
+		properties.load(input);
+		input.close();		
+	}
+		
 
 	/**
 	 * Removes the prefix from an URI
@@ -48,15 +77,8 @@ public class ComputeCardinalitiesConfig {
 	 * @param uri the URI to remove the prefix from
 	 * @return the URI without its prefix
 	 */
-	public String getNiceName(String uri) {
-		int indexOfSeparator = uri.indexOf('#');
-
-		if (indexOfSeparator != -1) {
-			return uri.substring(indexOfSeparator + 1, uri.length());
-		} else {
-			int indexOfSlash = uri.lastIndexOf("/");
-			return uri.substring(indexOfSlash + 1, uri.length());
-		}
+	public String removeSyntax(String uri) {
+		return uri.replace("<", "").replace(">", "");
 	}
 
 	/**
@@ -76,10 +98,9 @@ public class ComputeCardinalitiesConfig {
 			if (!t.isPredicateVariable())
 				predicates.add(t.getPredicate());
 		}
-
 		int i = 0;
 		for (String p : predicates) {
-			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p) + ".max").toString());
+			Integer cardMax = Integer.parseInt(properties.get(p).toString());
 			((AbstractQuery) query).setCardMax(i, cardMax);
 			i++;
 		}
@@ -109,17 +130,19 @@ public class ComputeCardinalitiesConfig {
 				}
 			}
 
-			Integer cardMax = Integer.parseInt(properties.get(getNiceName(p) + ".max").toString()); // commencer par la
+			Integer cardMax = Integer.parseInt(properties.get(p).toString()); // commencer par la
 																									// cardinalité
 																									// globale
 			int k = 0;
 			while (cardMax > 1 && k < domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale
 														// max est aussi 1
 				String classe = domains.get(k);
-				if (!classe.equals("thing")) {
-					Integer newCard = Integer.parseInt(properties.get(classe + getNiceName(p) + ".max").toString());
+				if (!classe.equals("http://www.w3.org/2002/07/owl#Thing")) {
+					try {
+					Integer newCard = Integer.parseInt(properties.get(classe + p).toString());
 					if (newCard < cardMax)
 						cardMax = newCard;
+					}catch (NullPointerException e) {} // cas où il n'y a pas de cardinalité enregistré pour cette classe
 				}
 				k++;
 			}
@@ -142,7 +165,7 @@ public class ComputeCardinalitiesConfig {
 				domain = t.getObject();
 				t.setDomain(domain);
 			} else {
-				domain = properties.getProperty(getNiceName(predicate) + ".domain");
+				domain = properties.getProperty(predicate + ".domain");
 				t.setDomain(domain);
 				if (domain == null)
 					t.setDomain("");
@@ -165,8 +188,8 @@ public class ComputeCardinalitiesConfig {
 			String[] split = line.split(">,");
 			String[] pred = split[0].split(">;");
 			for (String p : pred)
-				if (!predicates.contains(getNiceName(p)))
-					predicates.add(getNiceName(p));
+				if (!predicates.contains(removeSyntax(p)))
+					predicates.add(removeSyntax(p));
 			line = reader.readLine();
 		}
 		reader.close();
@@ -181,9 +204,9 @@ public class ComputeCardinalitiesConfig {
 			String[] pred = split[0].split(">;");
 			String[] cards = split[1].split(";");
 			for (int i = 0; i < pred.length; i++) {
-				presence.flip(predicates.indexOf(getNiceName(pred[i])));
+				presence.flip(predicates.indexOf(removeSyntax(pred[i])));
 				if (cards[i].equals("1"))
-					card1.flip(predicates.indexOf(getNiceName(pred[i])));
+					card1.flip(predicates.indexOf(removeSyntax(pred[i])));
 			}
 			bitmap.put(presence, card1);
 			line = reader.readLine();
@@ -203,12 +226,12 @@ public class ComputeCardinalitiesConfig {
 			boolean contains = true;
 			for (TriplePattern tp : ((AbstractQuery) q).getTriplePatterns()) {
 				if (tp.getSubject().equals(t.getSubject())
-						&& !b.contains(predicates.indexOf(getNiceName(tp.getPredicate())))){
+						&& !b.contains(predicates.indexOf(removeSyntax(tp.getPredicate())))){
 					contains = false;
 				}
 			}
 			if (contains) {
-				card1 = card1 && bitmap.get(b).contains(predicates.indexOf(getNiceName(t.getPredicate())));
+				card1 = card1 && bitmap.get(b).contains(predicates.indexOf(removeSyntax(t.getPredicate())));
 				if (!card1)
 					return false;
 			}

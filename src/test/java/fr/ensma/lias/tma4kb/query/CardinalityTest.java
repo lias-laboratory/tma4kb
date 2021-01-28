@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
 import fr.ensma.lias.tma4kb.query.util.ScriptRunner;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBSession;
@@ -27,7 +28,9 @@ public class CardinalityTest {
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
 		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");
 		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
-
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig("src/test/resources/cardinalities.config");
+		c.importSource();
+		
 		List<Query> expectedMFIS = new ArrayList<>();
 		List<Query> expectedXSS = new ArrayList<>();
 
@@ -41,7 +44,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runFull(instance, 3, "src/test/resources/cardinalities.config");
+		q.runFull(instance, 3, c);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -59,7 +62,9 @@ public class CardinalityTest {
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
 		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");
 		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
-
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig("src/test/resources/cardinalities1.config");
+		c.importSource();
+		
 		List<Query> expectedMFIS = new ArrayList<>();
 		List<Query> expectedXSS = new ArrayList<>();
 
@@ -73,7 +78,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		((AbstractQuery) q).runFull_AnyCard(instance, 3, "src/test/resources/cardinalities1.config");
+		((AbstractQuery) q).runFull_AnyCard(instance, 3, c);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -91,7 +96,9 @@ public class CardinalityTest {
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
 		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing.sql");
 		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
-
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig("src/test/resources/cardinalities1.config");
+		c.importSource();
+		
 		List<Query> expectedMFIS = new ArrayList<>();
 		List<Query> expectedXSS = new ArrayList<>();
 
@@ -105,7 +112,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		((AbstractQuery) q).runFull_Local(instance, 3, "src/test/resources/cardinalities1.config");
+		((AbstractQuery) q).runFull_Local(instance, 3, c);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -123,6 +130,8 @@ public class CardinalityTest {
 		ScriptRunner newScriptRunner = new ScriptRunner(((HSQLDBSession) instance).getConnection(), false, false);
 		InputStream resourceAsStream = getClass().getResourceAsStream("/dump_test_query_failing_composite.sql");
 		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
+		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig("src/test/resources/cardinalities2.config");
+		c.importSource();
 
 		Query q = currentQueryFactory.createQuery(
 				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
@@ -140,7 +149,7 @@ public class CardinalityTest {
 		
 		//When
 
-		q.runFull(instance, 4, "src/test/resources/cardinalities2.config");
+		q.runFull(instance, 4, c);
 
 		//Then
 

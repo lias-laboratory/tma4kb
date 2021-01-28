@@ -428,7 +428,6 @@ public abstract class AbstractQuery implements Query {
 	 */
 	private List<Query> listQuery = new ArrayList<>();
 	private Map<Query, Integer> executedQueries = new HashMap<>();
-	private Map<Query, Boolean> markedQueries = new HashMap<>();
 	private Map<Query, Boolean> listFIS = new HashMap<>();
 	
 	public void initialiseAlgo(Session session) {
@@ -440,9 +439,7 @@ public abstract class AbstractQuery implements Query {
 		initialQuery = this;
 		listQuery = new ArrayList<>();
 		executedQueries = new HashMap<>();
-		markedQueries = new HashMap<>();
 		listFIS = new HashMap<>();
-		markedQueries.put(this, true);
 		listQuery.add(this);
 		long time4 = System.currentTimeMillis();
 		session.addTimes(time4 - time1, Counters.initialisation);
@@ -500,8 +497,8 @@ public abstract class AbstractQuery implements Query {
 			long time1 = System.currentTimeMillis();
 			List<Query> subqueries = qTemp.getSubQueries();
 			for (Query subquery : subqueries) {
-				if (!markedQueries.containsKey(subquery)) {
-					markedQueries.put(subquery, true);
+
+				if (!listQuery.contains(subquery)) {
 					listQuery.add(subquery);
 				}
 			}
@@ -530,8 +527,8 @@ public abstract class AbstractQuery implements Query {
 					long time2 = System.currentTimeMillis();
 					List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}
@@ -577,8 +574,8 @@ public abstract class AbstractQuery implements Query {
 					}
 					
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}
@@ -594,14 +591,9 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runFull(Session session, int k, String card) throws Exception {
+	public void runFull(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
 		initialiseAlgo(session);
-		long time2 = System.currentTimeMillis();
-		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
-		long time3 = System.currentTimeMillis();
-		session.addTimes(time3 - time2, Counters.configCard);
-		long time1=0;
-		long time4=0;
+		long time1,time2,time3,time4=0;
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
 			time1 = System.currentTimeMillis();
@@ -639,8 +631,7 @@ public abstract class AbstractQuery implements Query {
 						session.addTimes(time6 - time5, Counters.cardProp);
 					}
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}
@@ -656,8 +647,7 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runFull_AnyCard(Session session, int k, String card) throws Exception {
-		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
+	public void runFull_AnyCard(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
@@ -665,9 +655,7 @@ public abstract class AbstractQuery implements Query {
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
 		Map<Query, Boolean> listFIS = new HashMap<>();
-		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
@@ -706,8 +694,8 @@ public abstract class AbstractQuery implements Query {
 						}
 					}
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}
@@ -720,8 +708,7 @@ public abstract class AbstractQuery implements Query {
 	}
 
 	@Override
-	public void runFull_Local(Session session, int k, String card) throws Exception {
-		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
+	public void runFull_Local(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
 		allMFIS = new HashSet<>();
 		allXSS = new HashSet<>();
 		session.clearExecutedQueryCount();
@@ -729,9 +716,7 @@ public abstract class AbstractQuery implements Query {
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
 		Map<Query, Boolean> listFIS = new HashMap<>();
-		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
@@ -771,8 +756,7 @@ public abstract class AbstractQuery implements Query {
 						}
 					}
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}
@@ -782,11 +766,6 @@ public abstract class AbstractQuery implements Query {
 				}
 			}
 		}
-	}
-	public static ComputeCardinalitiesConfig calculateCSCard(String card) throws Exception {
-		ComputeCardinalitiesConfig c = new ComputeCardinalitiesConfig(card);
-		c.makeCS();
-		return (c);
 	}
 
 	@Override
@@ -798,9 +777,7 @@ public abstract class AbstractQuery implements Query {
 		initialQuery = this;
 		List<Query> listQuery = new ArrayList<>();
 		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> markedQueries = new HashMap<>();
 		Map<Query, Boolean> listFIS = new HashMap<>();
-		markedQueries.put(this, true);
 		listQuery.add(this);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
@@ -837,8 +814,7 @@ public abstract class AbstractQuery implements Query {
 						}
 					}
 					for (Query subquery : subqueries) {
-						if (!markedQueries.containsKey(subquery)) {
-							markedQueries.put(subquery, true);
+						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
 					}

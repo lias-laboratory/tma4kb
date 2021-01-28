@@ -172,14 +172,14 @@ public class ExpRelaxResult {
 			res.append("Q" + (i + 1) + "\t");
 			Float valTime = round(getAvgTime(q), 2);
 			res.append(valTime.toString() + "\t");
-			Float bigGapExecTime = round(getBiggestGap(q, valTime, ID_TIME), 2);
-			res.append(bigGapExecTime.toString() + "\t");
+			//Float bigGapExecTime = round(getBiggestGap(q, valTime, ID_TIME), 2);
+			//res.append(bigGapExecTime.toString() + "\t");
 			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
-			res.append(nbExecutedQuery + "\t");
-			Float countTime = round(getAvgCountTime(q), 2);
-			res.append(countTime.toString() + "\t");
-			Float bigGapCountTime = round(getBiggestGap(q, countTime, ID_COUNT_QUERY_TIME), 2);
-			res.append(bigGapCountTime.toString() + "\n");
+			res.append(nbExecutedQuery + "\n");
+			//Float countTime = round(getAvgCountTime(q), 2);
+			//res.append(countTime.toString() + "\t");
+			//Float bigGapCountTime = round(getBiggestGap(q, countTime, ID_COUNT_QUERY_TIME), 2);
+			//res.append(bigGapCountTime.toString() + "\n");
 		}
 		return res.toString();
 	}

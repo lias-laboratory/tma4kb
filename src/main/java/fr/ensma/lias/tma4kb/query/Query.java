@@ -128,7 +128,7 @@ public interface Query {
 	 * @param k       maximum number of results
 	 * @param card    the file containing cardinalities
 	 */
-	void runFull(Session session, int k, String card) throws Exception;
+	void runFull(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
 
 	/**
 	 * Run the cardinality-based algorithm for any cardinality and fills allMFIS and
@@ -138,7 +138,7 @@ public interface Query {
 	 * @param k       maximum number of results
 	 * @param card    the file containing cardinalities
 	 */
-	void runFull_AnyCard(Session session, int k, String card) throws Exception;
+	void runFull_AnyCard(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
 
 	/**
 	 * Run the cardinality-based algorithm with local cardinalities and fills
@@ -148,7 +148,7 @@ public interface Query {
 	 * @param k       maximum number of results
 	 * @param card    the file containing cardinalities
 	 */
-	void runFull_Local(Session session, int k, String card) throws Exception;
+	void runFull_Local(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
 
 	void runFull_CS(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
 
