@@ -95,6 +95,7 @@
 									<goal>single</goal>
 								</goals>
 								<configuration>
+									<finalName>${artifactId}</finalName>
 									<descriptors>
 										<descriptor>src/main/assembly/tma4kb_dist.xml</descriptor>
 									</descriptors>
