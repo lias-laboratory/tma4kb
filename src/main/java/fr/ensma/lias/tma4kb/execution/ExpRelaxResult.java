@@ -35,6 +35,8 @@ public class ExpRelaxResult {
 
 	private static int ID_COUNT_QUERY_TIME = 3;
 	
+	private static int ID_ALL_TIMES = 4;
+	
 	/**
 	 * Number of execution of each algorithm
 	 */
@@ -96,6 +98,28 @@ public class ExpRelaxResult {
 	public float getAvgCountTime(Query q) {
 		return getAvgMetric(q, ID_COUNT_QUERY_TIME);
 	}
+	/**
+	 * Get the average of the cardinality calculation time
+	 * 
+	 * @param q the query
+	 * @return the average of the computing time
+	 */
+	public float getAvgCardTime(Query q) {
+		return getAvgMetric(q, ID_ALL_TIMES);
+	}
+	
+	public float[] getAvgTimes(Query q) {
+		float[] times = new float[10];
+		QueryResult[] results = resultsByQuery.get(q);
+		for (int i=0; i<times.length;i++)
+			times[i]=0;
+		for (int j = 0; j < results.length; j++) 
+			for (int i=0; i<times.length;i++)
+				times[i]+=results[j].getTimes()[i];
+		for (int i=0; i<times.length;i++)
+			times[i]=times[i]/nbExecutions;
+		return times;
+	}
 
 	/**
 	 * Computes the average of a given metrics
@@ -106,6 +130,7 @@ public class ExpRelaxResult {
 	 */
 	public float getAvgMetric(Query q, int idMetric) {
 		float res = 0;
+		
 		QueryResult[] results = resultsByQuery.get(q);
 		if (results != null) {
 			for (int j = 0; j < results.length; j++) {
@@ -175,9 +200,13 @@ public class ExpRelaxResult {
 			//Float bigGapExecTime = round(getBiggestGap(q, valTime, ID_TIME), 2);
 			//res.append(bigGapExecTime.toString() + "\t");
 			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
-			res.append(nbExecutedQuery + "\n");
-			//Float countTime = round(getAvgCountTime(q), 2);
-			//res.append(countTime.toString() + "\t");
+			res.append(nbExecutedQuery + "\t");
+			Float countTime = round(getAvgCountTime(q), 2);
+			res.append(countTime.toString() + "\t");
+			float[] times = getAvgTimes(q);
+			for (int j=0; j<times.length;j++)
+				res.append(times[j]+ "\t");
+			res.append("\n");
 			//Float bigGapCountTime = round(getBiggestGap(q, countTime, ID_COUNT_QUERY_TIME), 2);
 			//res.append(bigGapCountTime.toString() + "\n");
 		}

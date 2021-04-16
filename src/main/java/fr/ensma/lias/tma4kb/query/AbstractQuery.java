@@ -304,7 +304,7 @@ public abstract class AbstractQuery implements Query {
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
-				executedQueries.put(this, k + 1);
+				executedQueries.put(this, 1);
 				return true;
 			}
 			long time1 = System.currentTimeMillis();

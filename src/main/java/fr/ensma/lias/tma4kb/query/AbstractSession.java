@@ -8,20 +8,19 @@ public abstract class AbstractSession implements Session {
 
 	protected int executedQueryNumber = 0;
 	protected float countQueryTime =0;
-	protected float times[] = new float[11] ;
+	protected float times[] = new float[10] ;
 	
 	public enum Counters {
 		initialisation(0), 
-		configCard(1), 
-		parentsFIS(2), 
-		computeCard(3),
-		getSuperQueries(4), 
-		isFailing(5), 
-		decomposeCP(6), 
-		updateFIS(7), 
-		nextQueries(8), 
-		varProp(9), 
-		cardProp(10);
+		parentsFIS(1), 
+		computeCard(2),
+		getSuperQueries(3), 
+		isFailing(4), 
+		decomposeCP(5), 
+		updateFIS(6), 
+		nextQueries(7), 
+		varProp(8), 
+		cardProp(9);
 
 	     private int code;
 
