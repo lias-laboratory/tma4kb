@@ -14,11 +14,16 @@ import java.util.regex.Pattern;
 
 import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
 import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
-import fr.ensma.lias.tma4kb.query.AbstractSession.Counters;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
 import fr.ensma.lias.tma4kb.query.SPARQLQueryHelper.QueryMethod;
 import fr.ensma.lias.tma4kb.query.Session;
+import fr.ensma.lias.tma4kb.query.algorithms.AnyCard;
+import fr.ensma.lias.tma4kb.query.algorithms.BFS;
+import fr.ensma.lias.tma4kb.query.algorithms.CS;
+import fr.ensma.lias.tma4kb.query.algorithms.Full;
+import fr.ensma.lias.tma4kb.query.algorithms.Local;
+import fr.ensma.lias.tma4kb.query.algorithms.Var;
 import fr.ensma.lias.tma4kb.triplestore.jenatdb.JenaQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.sparqlendpoint.ClientQueryFactory;
 
@@ -146,7 +151,7 @@ public class AlgorithmExec {
 						q0 = factory.createQuery(q0.toString());
 						createSessionHere(factory);
 						time = System.currentTimeMillis();
-						q0.runBase(session, kValue);
+						q0.runAlgo(session, kValue);
 						end = System.currentTimeMillis();
 						float tps = ((float) (end - time));// /1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -173,10 +178,10 @@ public class AlgorithmExec {
 
 					for (int k = 0; k <= nb_exec; k++) {
 						q1 = qExplain.getQuery();
-						q1 = factory.createQuery(q1.toString());
+						q1 = factory.createQuery(q1.toString(), new BFS());
 						createSessionHere(factory);
 						time = System.currentTimeMillis();
-						q1.runBFS(session, kValue);
+						q1.runAlgo(session, kValue);
 						end = System.currentTimeMillis();
 						float tps = ((float) (end - time));// / 1000f;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -203,10 +208,10 @@ public class AlgorithmExec {
 					System.out.println("-----------------------------------------------------------");
 
 					for (int k = 0; k <= nb_exec; k++) {
-						q = factory.createQuery(q.toString());
+						q = factory.createQuery(q.toString(), new Var());
 						createSessionHere(factory);
 						time = System.currentTimeMillis();
-						q.runVar(session, kValue);
+						q.runAlgo(session, kValue);
 						end = System.currentTimeMillis();
 						float tps = ((float) (end - time)); // /1000f) ;
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -234,10 +239,10 @@ public class AlgorithmExec {
 
 					for (int k = 0; k <= nb_exec; k++) {
 						q2 = qExplain.getQuery();
-						q2 = factory.createQuery(q2.toString());
+						q2 = factory.createQuery(q2.toString(), new Full(card_global));
 						createSessionHere(factory);
 						time = System.currentTimeMillis();
-						q2.runFull(session, kValue, card_global);
+						q2.runAlgo(session, kValue);
 						end = System.currentTimeMillis();
 						float tps = ((float) (end - time));
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -264,10 +269,10 @@ public class AlgorithmExec {
 
 					for (int k = 0; k <= nb_exec; k++) {
 						q3 = qExplain.getQuery();
-						q3 = factory.createQuery(q3.toString());
+						q3 = factory.createQuery(q3.toString(), new AnyCard(card_global));
 						createSessionHere(factory);
 						time = System.currentTimeMillis();
-						q3.runFull_AnyCard(session, kValue, card_global);
+						q3.runAlgo(session, kValue);
 						end = System.currentTimeMillis();
 						float tps = ((float) (end - time));
 						int nbExecutedQuery = session.getExecutedQueryCount();
@@ -294,10 +299,10 @@ public class AlgorithmExec {
 
 						for (int k = 0; k <= nb_exec; k++) {
 							q4 = qExplain.getQuery();
-							q4 = factory.createQuery(q4.toString());
+							q4 = factory.createQuery(q4.toString(), new Local(card_local));
 							createSessionHere(factory);
 							time = System.currentTimeMillis();
-							q4.runFull_Local(session, kValue, card_local);
+							q4.runAlgo(session, kValue);
 							end = System.currentTimeMillis();
 							float tps = ((float) (end - time));
 							int nbExecutedQuery = session.getExecutedQueryCount();
@@ -324,10 +329,10 @@ public class AlgorithmExec {
 
 						for (int k = 0; k <= nb_exec; k++) {
 							q5 = qExplain.getQuery();
-							q5 = factory.createQuery(q5.toString());
+							q5 = factory.createQuery(q5.toString(), new CS(card_cs));
 							createSessionHere(factory);
 							time = System.currentTimeMillis();
-							q5.runFull_CS(session, kValue, card_cs);
+							q5.runAlgo(session, kValue);
 							end = System.currentTimeMillis();
 							float tps = ((float) (end - time));
 							int nbExecutedQuery = session.getExecutedQueryCount();

@@ -1,9 +1,10 @@
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+import fr.ensma.lias.tma4kb.query.algorithms.Algorithm;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
@@ -18,7 +19,7 @@ public interface Query {
 	 * @param k the maximum number of answers
 	 * @return the number of answers
 	 */
-	int isFailing(Session session, int k);
+	int nbResults(Session session, int k);
 
 	/**
 	 * get the factory that created this query
@@ -97,59 +98,14 @@ public interface Query {
 	 */
 	public void setInitialQuery(Query query);
 
-	/**
-	 * Run the Baseline algorithm and fills allMFIS and allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 */
-	void runBase(Session session, int k);
+		void setAlgorithm(Algorithm alg);
 
-	/**
-	 * Run the BFS algorithm and fills allMFIS and allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 */
-	void runBFS(Session session, int k);
+	boolean includesSimple(Query q);
 
-	/**
-	 * Run the variable-based algorithm and fills allMFIS and allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 */
-	void runVar(Session session, int k) throws Exception;
+	void setCardMax(int triple, int cardMax);
 
-	/**
-	 * Run the cardinality-based algorithm and fills allMFIS and allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 * @param card    the file containing cardinalities
-	 */
-	void runFull(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
+	Integer nbResults(Map<Query, Integer> executedQueries, Session s, int k);
 
-	/**
-	 * Run the cardinality-based algorithm for any cardinality and fills allMFIS and
-	 * allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 * @param card    the file containing cardinalities
-	 */
-	void runFull_AnyCard(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
-
-	/**
-	 * Run the cardinality-based algorithm with local cardinalities and fills
-	 * allMFIS and allXSS
-	 * 
-	 * @param session connection to the KB
-	 * @param k       maximum number of results
-	 * @param card    the file containing cardinalities
-	 */
-	void runFull_Local(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
-
-	void runFull_CS(Session session, int k, ComputeCardinalitiesConfig c) throws Exception;
+	void runAlgo(Session session, int k);
 
 }

@@ -33,7 +33,7 @@ public class ClientQuery extends AbstractQuery {
 	}
 
 	@Override
-	public int isFailing(Session session, int k) {
+	public int nbResults(Session session, int k) {
 		return helper.executeQuery(session, k);
 
 	}

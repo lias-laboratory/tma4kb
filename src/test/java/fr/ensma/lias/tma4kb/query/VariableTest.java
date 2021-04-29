@@ -1,6 +1,7 @@
 package fr.ensma.lias.tma4kb.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import fr.ensma.lias.tma4kb.query.algorithms.Var;
 import fr.ensma.lias.tma4kb.query.util.ScriptRunner;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBSession;
@@ -31,7 +33,7 @@ public class VariableTest {
 		List<Query> expectedXSS = new ArrayList<>();
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }", new Var());
 		Query t1t2t3 = currentQueryFactory
 				.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }");
 		Query t4 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <teacherOf> ?c }");
@@ -40,7 +42,7 @@ public class VariableTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runVar(instance, 3);
+		q.runAlgo(instance, 3);
 
 		// Then
 		assertEquals(5, instance.getExecutedQueryCount());
@@ -60,7 +62,7 @@ public class VariableTest {
 		newScriptRunner.runScript(new InputStreamReader(resourceAsStream));
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
+				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }", new Var());
 
 
 		List<Query> expectedMFIS = new ArrayList<>();
@@ -75,7 +77,7 @@ public class VariableTest {
 
 		//When
 
-		q.runVar(instance, 4);
+		q.runAlgo(instance, 4);
 		
 		//Then
 		

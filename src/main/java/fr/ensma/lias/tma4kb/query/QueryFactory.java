@@ -1,5 +1,7 @@
 package fr.ensma.lias.tma4kb.query;
 
+import fr.ensma.lias.tma4kb.query.algorithms.Algorithm;
+
 /**
  * @author Stephane JEAN (jean@ensma.fr)
  * @author Louise PARKIN (louise.parkin@ensma.fr)
@@ -30,4 +32,6 @@ public interface QueryFactory {
      * @return a connection to the KB
      */
     Session createSession();
+
+	Query createQuery(String rdfQuery, Algorithm alg);
 }

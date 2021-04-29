@@ -20,7 +20,7 @@ public class HSQLDBQuery extends AbstractQuery {
 	}
 
 	@Override
-	public int isFailing(Session session, int k) {
+	public int nbResults(Session session, int k) {
 		try {
 			Statement stmt = ((HSQLDBSession) session).getConnection().createStatement();
 			long time = System.currentTimeMillis();

@@ -1,6 +1,7 @@
 package fr.ensma.lias.tma4kb.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import fr.ensma.lias.tma4kb.query.algorithms.BFS;
 import fr.ensma.lias.tma4kb.query.util.ScriptRunner;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBSession;
@@ -38,10 +40,10 @@ public class BFSTest {
 		expectedXSS.add(t1t2t3);
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }", new BFS());
 
 		// When
-		q.runBFS(instance, 3);
+		q.runAlgo(instance, 3);
 
 		// Then
 		for (Query mfis : q.getAllMFIS()) {

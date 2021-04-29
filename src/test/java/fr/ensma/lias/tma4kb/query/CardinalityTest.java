@@ -11,6 +11,9 @@ import java.util.List;
 import org.junit.Test;
 
 import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+import fr.ensma.lias.tma4kb.query.algorithms.AnyCard;
+import fr.ensma.lias.tma4kb.query.algorithms.Full;
+import fr.ensma.lias.tma4kb.query.algorithms.Local;
 import fr.ensma.lias.tma4kb.query.util.ScriptRunner;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBQueryFactory;
 import fr.ensma.lias.tma4kb.triplestore.hsqldb.HSQLDBSession;
@@ -35,7 +38,7 @@ public class CardinalityTest {
 		List<Query> expectedXSS = new ArrayList<>();
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }", new Full(c));
 		Query t1t2t3 = currentQueryFactory
 				.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }");
 		Query t4 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <teacherOf> ?c }");
@@ -44,7 +47,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		q.runFull(instance, 3, c);
+		q.runAlgo(instance, 3);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -69,7 +72,7 @@ public class CardinalityTest {
 		List<Query> expectedXSS = new ArrayList<>();
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }", new AnyCard(c));
 		Query t1t2t3 = currentQueryFactory
 				.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }");
 		Query t4 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <teacherOf> ?c }");
@@ -78,7 +81,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		((AbstractQuery) q).runFull_AnyCard(instance, 3, c);
+		((AbstractQuery) q).runAlgo(instance, 3);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -103,7 +106,7 @@ public class CardinalityTest {
 		List<Query> expectedXSS = new ArrayList<>();
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
+				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }", new Local(c));
 		Query t1t2t3 = currentQueryFactory
 				.createQuery("SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n }");
 		Query t4 = currentQueryFactory.createQuery("SELECT * WHERE { ?fp <teacherOf> ?c }");
@@ -112,7 +115,7 @@ public class CardinalityTest {
 		expectedXSS.add(t1t2t3);
 
 		// When
-		((AbstractQuery) q).runFull_Local(instance, 3, c);
+		((AbstractQuery) q).runAlgo(instance, 3);
 
 		// Then
 		assertEquals(2, instance.getExecutedQueryCount());
@@ -134,7 +137,7 @@ public class CardinalityTest {
 		c.importSource();
 
 		Query q = currentQueryFactory.createQuery(
-				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }");
+				"SELECT * WHERE { ?a <advisor> ?e . ?a <age> ?b . ?a <teacherOf> ?c . ?e <type> <Student> . ?e <nationality> ?g }", new Full(c));
 
 
 		List<Query> expectedMFIS = new ArrayList<>();
@@ -149,7 +152,7 @@ public class CardinalityTest {
 		
 		//When
 
-		q.runFull(instance, 4, c);
+		q.runAlgo(instance, 4);
 
 		//Then
 

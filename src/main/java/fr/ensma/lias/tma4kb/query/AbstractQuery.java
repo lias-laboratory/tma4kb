@@ -1,14 +1,13 @@
 package fr.ensma.lias.tma4kb.query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
-import fr.ensma.lias.tma4kb.query.AbstractSession.Counters;
+import fr.ensma.lias.tma4kb.query.algorithms.Algorithm;
+import fr.ensma.lias.tma4kb.query.algorithms.Baseline;
 
 /**
  * @author Stephane JEAN (jean@ensma.fr)
@@ -20,32 +19,31 @@ public abstract class AbstractQuery implements Query {
 	/**
 	 * Factory to create other queries
 	 */
-	protected QueryFactory factory;
+	private QueryFactory factory;
 
 	/**
 	 * String of this query
 	 */
-	protected String rdfQuery;
+	private String rdfQuery;
 
 	/**
 	 * List of triple patterns of this query
 	 */
-	protected List<TriplePattern> triplePatterns;
+	private List<TriplePattern> triplePatterns;
 
 	/**
 	 * Number of triple patterns of this query (this could be computed)
 	 */
-	protected int nbTriplePatterns;
+	private int nbTriplePatterns;
 
 	/**
 	 * List of the MFIS of this query
 	 */
-	public Set<Query> allMFIS;
-
+	private Set<Query> allMFIS = new HashSet<>();
 	/**
 	 * List of the XSS of this query
 	 */
-	public Set<Query> allXSS;
+	private Set<Query> allXSS = new HashSet<>();
 
 	/**
 	 * Most queries will be created during the execution of algorithms the
@@ -58,6 +56,12 @@ public abstract class AbstractQuery implements Query {
 	 * in only one set decomp is used to avoid executing cartesian products
 	 */
 	protected List<Set<TriplePattern>> decomp;
+	
+	/**
+	 * Algorithm used to compute the MFIS and XSS
+	 */
+	private Algorithm algo;
+	
 
 	/**
 	 * Builds a query from its string and a reference to its factory
@@ -71,17 +75,24 @@ public abstract class AbstractQuery implements Query {
 		this.decomp = new ArrayList<>();
 		this.decomposeQuery();
 		nbTriplePatterns = triplePatterns.size();
+		this.algo=new Baseline();
 	}
 
 	@Override
 	public QueryFactory getFactory() {
 		return factory;
 	}
-
+	
+	@Override
+	public void setAlgorithm (Algorithm alg) {
+		algo = alg;
+	}
+	
+	
 	/**
 	 * Decompose a SPARQL Query into a set of triple patterns.
 	 */
-	protected void decomposeQuery() {
+	private void decomposeQuery() {
 		triplePatterns = new ArrayList<TriplePattern>();
 
 		if (!rdfQuery.equals("")) {
@@ -157,12 +168,8 @@ public abstract class AbstractQuery implements Query {
 		return nbTriplePatterns == 0;
 	}
 
-	/**
-	 * Check whether a query includes another one
-	 * 
-	 * @param q a query
-	 * @return true if this query includes q
-	 */
+	
+	@Override
 	public boolean includesSimple(Query q) {
 		for (TriplePattern tp : q.getTriplePatterns()) {
 			if (!includes(tp))
@@ -249,12 +256,7 @@ public abstract class AbstractQuery implements Query {
 		rdfQuery = computeRDFQuery(triplePatterns);
 	}
 
-	/**
-	 * Sets the maximum cardinality of triple
-	 * 
-	 * @param triple  the triple pattern
-	 * @param cardMax the cardinality value
-	 */
+	@Override
 	public void setCardMax(int triple, int cardMax) {
 		this.triplePatterns.get(triple).setCardMax(cardMax);
 	}
@@ -288,70 +290,17 @@ public abstract class AbstractQuery implements Query {
 		return res;
 	}
 
-	/**
-	 * Returns a boolean: true if the query fails (returns more than k results).
-	 * Avoids executing Cartesian products by multiplying the number of results of
-	 * the subqueries
-	 * 
-	 * @param executedQueries a cache of already executed queries associated with
-	 *                        their nb of results
-	 * @param s               connection to the KB
-	 * @param k               the maximum number of results
-	 * @return true iff this query is failing
-	 */
-	protected boolean isFailing(Map<Query, Integer> executedQueries, Session s, int k) {
-		long start = System.currentTimeMillis();
+	@Override
+	public Integer nbResults(Map<Query, Integer> executedQueries, Session s, int k) {
 		Integer val = executedQueries.get(this);
 		if (val == null) {
 			if (this.isTheEmptyQuery()) {
 				executedQueries.put(this, 1);
-				return true;
-			}
-			long time1 = System.currentTimeMillis();
-			decomposeCP();
-			long time2 = System.currentTimeMillis();
-			s.addTimes(time2 - time1, Counters.decomposeCP);
-			if (decomp.size() == 1) {
-				val = isFailing(s, k);
-				executedQueries.put(this, val);
-			} else {
-				List<Query> subQ = new ArrayList<>();
-				for (Set<TriplePattern> set : decomp) {
-					Query q = factory.createQuery("", initialQuery);
-					for (TriplePattern t : set) {
-						q.addTriplePattern(t);
-					}
-					subQ.add(q);
-				}
-				val = 1;
-				Integer val2;
-				while (!subQ.isEmpty() & val <= k) {
-					Query q = subQ.remove(0);
-					val2 = executedQueries.get(q);
-					if (val2 == null) {
-						val2 = q.isFailing(s, k);
-						executedQueries.put(q, val2);
-					}
-					val *= val2;
-				}
-				executedQueries.put(this, val);
-			}
-		}
-		long end = System.currentTimeMillis();
-		s.addTimes(end - start, Counters.isFailing);
-		return val > k;
-	}
-
-	protected Integer isFailingNb(Map<Query, Integer> executedQueries, Session s, int k) {
-		Integer val = executedQueries.get(this);
-		if (val == null) {
-			if (this.isTheEmptyQuery()) {
-				executedQueries.put(this, k + 1);
-				return k + 1;
+				return 1;
 			}
 			decomposeCP();
 			if (decomp.size() == 1) {
-				val = isFailing(s, k);
+				val = nbResults(s, k);
 				executedQueries.put(this, val);
 			} else {
 				List<Query> subQ = new ArrayList<>();
@@ -368,7 +317,7 @@ public abstract class AbstractQuery implements Query {
 					Query q = subQ.remove(0);
 					val2 = executedQueries.get(q);
 					if (val2 == null) {
-						val2 = q.isFailing(s, k);
+						val2 = q.nbResults(s, k);
 						executedQueries.put(q, val2);
 					}
 					val *= val2;
@@ -378,14 +327,14 @@ public abstract class AbstractQuery implements Query {
 		}
 		return val;
 	}
-
+	
 	/**
 	 * decompose Cartesian products and fill the decomp field with separate sets of
 	 * triple patterns
 	 * 
 	 * @return
 	 */
-	public void decomposeCP() {
+	void decomposeCP() {
 		int i = 0;
 		Query initQuery = factory.createQuery(rdfQuery);
 		List<TriplePattern> triples = new ArrayList<>();
@@ -422,408 +371,38 @@ public abstract class AbstractQuery implements Query {
 		}
 	}
 	
-	
-	/**
-	 * Variables for the algorithms
-	 */
-	private List<Query> listQuery = new ArrayList<>();
-	private Map<Query, Integer> executedQueries = new HashMap<>();
-	private Map<Query, Boolean> listFIS = new HashMap<>();
-	
-	public void initialiseAlgo(Session session) {
-		long time1 = System.currentTimeMillis();
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		listQuery = new ArrayList<>();
-		executedQueries = new HashMap<>();
-		listFIS = new HashMap<>();
-		listQuery.add(this);
-		long time4 = System.currentTimeMillis();
-		session.addTimes(time4 - time1, Counters.initialisation);
+	public Query findAnMFS(Session session, Map<Query, Integer> executedQueries) {
+		Query q1=factory.createQuery("");
+		Query q2=factory.createQuery(rdfQuery);
+		for (TriplePattern tp : getTriplePatterns()) {
+			q2.removeTriplePattern(tp);
+			Query q3=factory.createQuery(q2.toString());
+			for (TriplePattern t:q1.getTriplePatterns()) {
+				q3.addTriplePattern(t);
+			}
+			if (q3.nbResults(executedQueries, session, 0)==0)
+				q1.addTriplePattern(tp);
+		}
+		return q1;
 	}
 	
-	public boolean parentsFIS(Session session, Query qTemp) {
-		long time1 = System.currentTimeMillis();
-		List<Query> superqueries = qTemp.getSuperQueries();
-		long time2 = System.currentTimeMillis();
-		session.addTimes(time2 - time1, Counters.getSuperQueries);
-		boolean parentsFIS = true;
-		while (parentsFIS && !superqueries.isEmpty()) {
-			Query superquery = superqueries.remove(0);
-			if (!listFIS.containsKey(superquery)) {
-				parentsFIS = false;
-			}
-		} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-			// qTemp are FISs
-		long time3 = System.currentTimeMillis();
-		session.addTimes(time3 - time1, Counters.parentsFIS);
-		return parentsFIS;
+	public List<Query> computePotentialXSS(Query mfs) {
+		List<Query> res = new ArrayList<Query>();
+		if (nbTriplePatterns == 1)
+			return res;
+		for (TriplePattern t : mfs.getTriplePatterns()) {
+			Query q = factory.createQuery(rdfQuery, this);
+			q.removeTriplePattern(t);
+			res.add(q);
+		}
+		return res;
 	}
 	
-
 	@Override
-	public void runBase(Session session, int k) {
-		initialiseAlgo(session);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-				if (parentsFIS(session,qTemp)) {
-					long time1 = System.currentTimeMillis();
-					//System.out.println("time1 "+time1);
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-//					try {
-//						Thread.sleep(100);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					long time2 = System.currentTimeMillis();
-					//System.out.println("time2 "+time2);
-					session.addTimes(time2 - time1, Counters.updateFIS);
-				}
-			} else { // Potential XSS
-				if (parentsFIS(session,qTemp) && !qTemp.isTheEmptyQuery())
-					allXSS.add(qTemp);
-			}
-			long time1 = System.currentTimeMillis();
-			List<Query> subqueries = qTemp.getSubQueries();
-			for (Query subquery : subqueries) {
-
-				if (!listQuery.contains(subquery)) {
-					listQuery.add(subquery);
-				}
-			}
-			long time2 = System.currentTimeMillis();
-			session.addTimes(time2 - time1, Counters.nextQueries);
-
-		}
+	public void runAlgo (Session session, int k) {
+		algo.runAlgo(session, k, this);
 	}
 
-	@Override
-	public void runBFS(Session session, int k) {
-		initialiseAlgo(session);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			if (parentsFIS(session,qTemp)) {
-				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-					// FIS
-					long time1 = System.currentTimeMillis();
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					long time2 = System.currentTimeMillis();
-					List<Query> subqueries = qTemp.getSubQueries(); // we only study subqueries of FISs
-					for (Query subquery : subqueries) {
-
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-					long time3 = System.currentTimeMillis();
-					session.addTimes(time2 - time1, Counters.updateFIS);
-					session.addTimes(time3 - time2, Counters.nextQueries);
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void runVar(Session session, int k) throws Exception {
-		initialiseAlgo(session);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			if (parentsFIS(session,qTemp)) {
-				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-					long time1 = System.currentTimeMillis();
-					// FIS
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					long time2 = System.currentTimeMillis();
-					List<Query> subqueries = new ArrayList<Query>();
-					for (TriplePattern tp : qTemp.getTriplePatterns()) {
-						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-						qNew.removeTriplePattern(tp);
-						subqueries.add(qNew);
-						long time4 = System.currentTimeMillis();
-						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
-							executedQueries.put(qNew, k + 1);
-						}
-						long time5 = System.currentTimeMillis();
-						session.addTimes(time5 - time4, Counters.varProp);
-					}
-					
-					for (Query subquery : subqueries) {
-
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-					long time3 = System.currentTimeMillis();
-					session.addTimes(time2 - time1, Counters.updateFIS);
-					session.addTimes(time3 - time2, Counters.nextQueries);
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void runFull(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
-		initialiseAlgo(session);
-		long time1,time2,time3,time4=0;
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			time1 = System.currentTimeMillis();
-			c.computeMaxCardinalities(qTemp);
-			time2 = System.currentTimeMillis();
-			session.addTimes(time2 - time1, Counters.computeCard);
-			if (parentsFIS(session,qTemp)) {
-				if (((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
-					time2 = System.currentTimeMillis();
-					// FIS
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					time3 = System.currentTimeMillis();
-					List<Query> subqueries = new ArrayList<>();
-					for (TriplePattern tp : qTemp.getTriplePatterns()) {
-						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-						qNew.removeTriplePattern(tp);
-						subqueries.add(qNew);
-						long time5 = System.currentTimeMillis();						
-						if (!tp.isPredicateVariable() && tp.getCardMax() <= 1
-								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
-							executedQueries.put(qNew, k + 1);
-						}
-						long time6 = System.currentTimeMillis();
-						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
-							executedQueries.put(qNew, k + 1);
-						}
-						long time7 = System.currentTimeMillis();
-						session.addTimes(time7 - time6, Counters.varProp);
-						session.addTimes(time6 - time5, Counters.cardProp);
-					}
-					for (Query subquery : subqueries) {
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-					time4 = System.currentTimeMillis();
-					session.addTimes(time3 - time2, Counters.updateFIS);
-					session.addTimes(time4 - time3, Counters.nextQueries);
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void runFull_AnyCard(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
-		listQuery.add(this);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			c.computeMaxCardinalities(qTemp);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
-				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
-				if (Nb > k) {
-					// FIS
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					List<Query> subqueries = new ArrayList<>();
-					for (TriplePattern tp : qTemp.getTriplePatterns()) {
-						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-						qNew.removeTriplePattern(tp);
-						subqueries.add(qNew);
-						if (!tp.isPredicateVariable() && Nb / tp.getCardMax() > k
-								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
-							executedQueries.put(qNew, Nb / tp.getCardMax());
-						}
-						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
-							executedQueries.put(qNew, Nb);
-						}
-					}
-					for (Query subquery : subqueries) {
-
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void runFull_Local(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
-		listQuery.add(this);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			c.computeDomains(qTemp);
-			c.computeMaxLocalCardinalities(qTemp);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
-				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
-				if (Nb > k) {
-					// FIS
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					List<Query> subqueries = new ArrayList<>();
-					for (TriplePattern tp : qTemp.getTriplePatterns()) {
-						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-						qNew.removeTriplePattern(tp);
-						subqueries.add(qNew);
-						if (!tp.isPredicateVariable() && Nb / tp.getCardMax() > k
-								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
-							executedQueries.put(qNew, Nb / tp.getCardMax());
-						}
-						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
-							executedQueries.put(qNew, Nb);
-						}
-					}
-					for (Query subquery : subqueries) {
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
-
-	@Override
-	public void runFull_CS(Session session, int k, ComputeCardinalitiesConfig c) throws Exception {
-		allMFIS = new HashSet<>();
-		allXSS = new HashSet<>();
-		session.clearExecutedQueryCount();
-		session.clearCountQueryTime();
-		initialQuery = this;
-		List<Query> listQuery = new ArrayList<>();
-		Map<Query, Integer> executedQueries = new HashMap<>();
-		Map<Query, Boolean> listFIS = new HashMap<>();
-		listQuery.add(this);
-		while (!listQuery.isEmpty()) {
-			Query qTemp = listQuery.remove(0);
-			List<Query> superqueries = qTemp.getSuperQueries();
-			boolean parentsFIS = true;
-			while (parentsFIS && !superqueries.isEmpty()) {
-				Query superquery = superqueries.remove(0);
-				if (!listFIS.containsKey(superquery)) {
-					parentsFIS = false;
-				}
-			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
-				// qTemp are FISs
-			if (parentsFIS) {
-				int Nb = ((AbstractQuery) qTemp).isFailingNb(executedQueries, session, k);
-				if (Nb > k) {
-					// FIS
-					for (Query fis : listFIS.keySet()) {
-						if (((AbstractQuery) fis).includesSimple(qTemp)) {
-							allMFIS.remove(fis);
-						}
-					}
-					listFIS.put(qTemp, true);
-					allMFIS.add(qTemp);
-					List<Query> subqueries = new ArrayList<Query>();
-					for (TriplePattern tp : qTemp.getTriplePatterns()) {
-						Query qNew = factory.createQuery(qTemp.toString(), initialQuery);
-						qNew.removeTriplePattern(tp);
-						subqueries.add(qNew);
-						if (qNew.getVariables().size() == qTemp.getVariables().size()) { // variable property
-							executedQueries.put(qNew, Nb);
-						} else if (!tp.isPredicateVariable() && c.hasCard1(tp, qTemp)
-								&& qNew.getVariables().contains(tp.getSubject())) { // cardinality property
-							executedQueries.put(qNew, k + 1);
-						}
-					}
-					for (Query subquery : subqueries) {
-						if (!listQuery.contains(subquery)) {
-							listQuery.add(subquery);
-						}
-					}
-				} else { // XSS
-					if (!qTemp.isTheEmptyQuery())
-						allXSS.add(qTemp);
-				}
-			}
-		}
-	}
+	
 	
 }

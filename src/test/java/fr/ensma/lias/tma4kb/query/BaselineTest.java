@@ -42,7 +42,7 @@ public class BaselineTest {
 				"SELECT * WHERE { ?fp <type> <FullProfessor> . ?fp <age> ?a . ?fp <nationality> ?n . ?fp <teacherOf> ?c }");
 
 		// When
-		q.runBase(instance, 3);
+		q.runAlgo(instance, 3);
 
 		// Then
 		for (Query mfis : q.getAllMFIS()) {
