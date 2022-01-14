@@ -195,12 +195,12 @@ public class ExpRelaxResult {
 		for (int i = 0; i < listOfQueries.size(); i++) {
 			Query q = listOfQueries.get(i);
 			res.append("Q" + (i + 1) + "\t");
+			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
+			res.append(nbExecutedQuery + "\t");
 			Float valTime = round(getAvgTime(q), 2);
 			res.append(valTime.toString() + "\t");
 			//Float bigGapExecTime = round(getBiggestGap(q, valTime, ID_TIME), 2);
 			//res.append(bigGapExecTime.toString() + "\t");
-			int nbExecutedQuery = Math.round(getAvgNbExecutedQuery(q));
-			res.append(nbExecutedQuery + "\t");
 			Float countTime = round(getAvgCountTime(q), 2);
 			res.append(countTime.toString() + "\t");
 			float[] times = getAvgTimes(q);

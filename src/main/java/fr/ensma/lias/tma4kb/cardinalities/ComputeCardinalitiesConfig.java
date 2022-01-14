@@ -37,9 +37,9 @@ public class ComputeCardinalitiesConfig {
 	 * @throws IOException
 	 */
 	public ComputeCardinalitiesConfig(String source) {
-		src=source;
+		src = source;
 	}
-	
+
 	public void importSource() throws IOException {
 		long time = System.currentTimeMillis();
 		File OUTPUT_FILE = new File("output");
@@ -48,10 +48,10 @@ public class ComputeCardinalitiesConfig {
 		BufferedWriter bw = new BufferedWriter(res);
 		String line = null;
 		while ((line = br.readLine()) != null) {
-			line=removeSyntax(line).replace("(", "").replace(")", "");
+			line = removeSyntax(line).replace("(", "").replace(")", "");
 			String[] parts = line.split(",");
 			String p = "";
-			if (parts.length==2)
+			if (parts.length == 2)
 				bw.write(parts[0].replace(":", "\\:") + ".domain=" + parts[1]);
 			else {
 				for (int i = 0; i < parts.length - 2; i++)
@@ -64,12 +64,11 @@ public class ComputeCardinalitiesConfig {
 		br.close();
 		bw.close();
 		long end = System.currentTimeMillis();
-		System.out.println(end-time);
+		System.out.println(end - time);
 		InputStream input = new FileInputStream(OUTPUT_FILE);
 		properties.load(input);
-		input.close();		
+		input.close();
 	}
-		
 
 	/**
 	 * Removes the prefix from an URI
@@ -105,7 +104,7 @@ public class ComputeCardinalitiesConfig {
 			i++;
 		}
 	}
-	
+
 	public void computeMaxLocalCardinalities(Query query) throws Exception {
 
 		List<TriplePattern> triples = ((AbstractQuery) query).getTriplePatterns();
@@ -131,18 +130,19 @@ public class ComputeCardinalitiesConfig {
 			}
 
 			Integer cardMax = Integer.parseInt(properties.get(p).toString()); // commencer par la
-																									// cardinalité
-																									// globale
+																				// cardinalité
+																				// globale
 			int k = 0;
 			while (cardMax > 1 && k < domains.size()) { // si la cardinalité globale max est 1, la cardinalité locale
 														// max est aussi 1
 				String classe = domains.get(k);
 				if (!classe.equals("http://www.w3.org/2002/07/owl#Thing")) {
 					try {
-					Integer newCard = Integer.parseInt(properties.get(classe + p).toString());
-					if (newCard < cardMax)
-						cardMax = newCard;
-					}catch (NullPointerException e) {} // cas où il n'y a pas de cardinalité enregistré pour cette classe
+						Integer newCard = Integer.parseInt(properties.get(classe + p).toString());
+						if (newCard < cardMax)
+							cardMax = newCard;
+					} catch (NullPointerException e) {
+					} // cas où il n'y a pas de cardinalité enregistré pour cette classe
 				}
 				k++;
 			}
@@ -174,7 +174,7 @@ public class ComputeCardinalitiesConfig {
 	}
 
 	/**
-	 * makeCS stores Characteristic sets  using RoaringBitmap. 
+	 * makeCS stores Characteristic sets using RoaringBitmap.
 	 * 
 	 * @throws Exception
 	 */
@@ -215,8 +215,11 @@ public class ComputeCardinalitiesConfig {
 	}
 
 	/**
-	 * hasCard1 uses characteristic sets to determine if the predicate of t has cardinality 1 within query q
-	 * @param t the triple pattern containing the predicate to determine the cardinality of
+	 * hasCard1 uses characteristic sets to determine if the predicate of t has
+	 * cardinality 1 within query q
+	 * 
+	 * @param t the triple pattern containing the predicate to determine the
+	 *          cardinality of
 	 * @param q the query being used to find the characteristic sets
 	 * @return true if p(t) has cardinality 1, false otherwise
 	 */
@@ -226,7 +229,7 @@ public class ComputeCardinalitiesConfig {
 			boolean contains = true;
 			for (TriplePattern tp : ((AbstractQuery) q).getTriplePatterns()) {
 				if (tp.getSubject().equals(t.getSubject())
-						&& !b.contains(predicates.indexOf(removeSyntax(tp.getPredicate())))){
+						&& !b.contains(predicates.indexOf(removeSyntax(tp.getPredicate())))) {
 					contains = false;
 				}
 			}

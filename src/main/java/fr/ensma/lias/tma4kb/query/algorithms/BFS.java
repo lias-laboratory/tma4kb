@@ -19,37 +19,67 @@ public class BFS extends Baseline{
 	@Override
 	public void runAlgo(Session session, int k, Query initialQuery) {
 		initialiseAlgo(session);
-		listQuery.add(initialQuery);
+		//listQuery.add(initialQuery);
+		long time4 = System.currentTimeMillis();
+		makeLattice(initialQuery);
+
+		long time3= System.currentTimeMillis();
+		session.addTimes(time3 - time4, Counters.cardProp);
 		initialQuery.setInitialQuery(initialQuery);
 		while (!listQuery.isEmpty()) {
 			Query qTemp = listQuery.remove(0);
+			long time1 = System.currentTimeMillis();
 			calculateCard(qTemp);
-			if (parentsFIS(session,qTemp)) {
+			long time2 = System.currentTimeMillis();
+			session.addTimes(time2 - time1, Counters.computeCard);
+			time1 = System.currentTimeMillis();
+			List<Query> superqueries = qTemp.getSuperQueries();
+			time2 = System.currentTimeMillis();
+			session.addTimes(time2 - time1, Counters.getSuperQueries);
+			boolean parentsFIS = true;
+			int i=0;
+			while (parentsFIS && i<superqueries.size()) {
+				Query superquery = superqueries.get(i);
+				if (!listFIS.containsKey(superquery)) {
+					parentsFIS = false;
+				}
+				i++;
+			} // at the end of the loop, parentsFIS=true, if and only if all superqueries of
+				// qTemp are FISs
+			time3 = System.currentTimeMillis();
+			session.addTimes(time3 - time1, Counters.parentsFIS);
+			if (parentsFIS) {
 				int Nb = ((AbstractQuery) qTemp).nbResults(executedQueries, session, k);
 				if (Nb>k) {//((AbstractQuery) qTemp).isFailing(executedQueries, session, k)) {
 					// FIS
-					long time1 = System.currentTimeMillis();
-					for (Query fis : listFIS.keySet()) {
-						if (fis.includesSimple(qTemp)) {
-							initialQuery.getAllMFIS().remove(fis);
-						}
+					time1 = System.currentTimeMillis();
+					for (Query q:superqueries) {
+						initialQuery.getAllMFIS().remove(q);
 					}
 					listFIS.put(qTemp, true);
 					initialQuery.getAllMFIS().add(qTemp);
-					long time2 = System.currentTimeMillis();
+					time2 = System.currentTimeMillis();
 					List<Query> subqueries = new ArrayList<Query>();
 					for (TriplePattern tp : qTemp.getTriplePatterns()) {
 						Query qNew = qTemp.getFactory().createQuery(qTemp.toString(), initialQuery);
 						qNew.removeTriplePattern(tp);
 						subqueries.add(qNew);
+						time4 = System.currentTimeMillis();
 						useProperties(tp,qNew,qTemp,k,Nb);
+						long time5 = System.currentTimeMillis();
+						session.addTimes(time5 - time4, Counters.varProp);
 					}
-					for (Query subquery : subqueries) {
+					/*long time4 = System.currentTimeMillis();
+					for (Query q:listQuery) {
+						subqueries.remove(q);
+					}
+					listQuery.addAll(subqueries);
+					/*for (Query subquery : subqueries) {
 						if (!listQuery.contains(subquery)) {
 							listQuery.add(subquery);
 						}
-					}
-					long time3 = System.currentTimeMillis();
+					}*/
+					time3 = System.currentTimeMillis();
 					session.addTimes(time2 - time1, Counters.updateFIS);
 					session.addTimes(time3 - time2, Counters.nextQueries);
 				} else { // XSS

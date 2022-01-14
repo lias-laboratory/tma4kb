@@ -160,7 +160,7 @@ public class AlgorithmExec {
 
 						if (k > 0) {
 							resultsBase.addQueryResult(k - 1, q0, tps, nbExecutedQuery, queryCountTime,times);
-							System.out.println("Base - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+							System.out.println("Base - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: " + nbExecutedQuery );
 									//+ " queryCountTime: " + queryCountTime);
 						}
 					}
@@ -190,7 +190,7 @@ public class AlgorithmExec {
 
 						if (k > 0) {
 							resultsBFS.addQueryResult(k - 1, q1, tps, nbExecutedQuery, queryCountTime,times);
-							System.out.println("bfs - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+							System.out.println("bfs - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: " + nbExecutedQuery);
 //									+ " queryCountTime: " + queryCountTime);
 						}
 
@@ -220,7 +220,7 @@ public class AlgorithmExec {
 
 						if (k > 0) {
 							resultsVar.addQueryResult(k - 1, q, tps, nbExecutedQuery, queryCountTime, times);
-							System.out.println("var - Time = " + tps + "ms, NbQueriesExecuted: " + nbExecutedQuery);
+							System.out.println("var - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: " + nbExecutedQuery);
 //									+ " queryCountTime: " + queryCountTime);
 						}
 					}
@@ -251,8 +251,9 @@ public class AlgorithmExec {
 
 						if (k > 0) {
 							resultsFull.addQueryResult(k - 1, q2, tps, nbExecutedQuery, queryCountTime, times);
-							System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: "
-									+ nbExecutedQuery );//+ " queryCountTime: " + queryCountTime);
+							System.out.println("cardinality based - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: "
+									+ nbExecutedQuery);//+ " queryCountTime: " + queryCountTime);
+
 						}
 					}
 					break;
@@ -281,7 +282,7 @@ public class AlgorithmExec {
 
 						if (k > 0) {
 							resultsAny.addQueryResult(k - 1, q3, tps, nbExecutedQuery, queryCountTime, times);
-							System.out.println("any card - Time = " + tps + "ms, NbQueriesExecuted: "
+							System.out.println("any card - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: "
 									+ nbExecutedQuery );//+ " queryCountTime: " + queryCountTime);
 						}
 					}
@@ -311,7 +312,7 @@ public class AlgorithmExec {
 
 							if (k > 0) {
 								resultsLoc.addQueryResult(k - 1, q4, tps, nbExecutedQuery, queryCountTime, times);
-								System.out.println("cardloc - Time = " + tps + "ms, NbQueriesExecuted: "
+								System.out.println("cardloc - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: "
 										+ nbExecutedQuery );//+ " queryCountTime: " + queryCountTime);
 							}
 						}
@@ -341,7 +342,7 @@ public class AlgorithmExec {
 
 							if (k > 0) {
 								resultsCS.addQueryResult(k - 1, q5, tps, nbExecutedQuery, queryCountTime, times);
-								System.out.println("cardinality based - Time = " + tps + "ms, NbQueriesExecuted: "
+								System.out.println("cardinality based - Time = " + tps + "("+queryCountTime+")"+"ms, NbQueriesExecuted: "
 										+ nbExecutedQuery );//+ " queryCountTime: " + queryCountTime);
 							}
 						}
@@ -378,7 +379,7 @@ public class AlgorithmExec {
 		}
 		System.out.println("------------------------------------");
 		System.out.println(
-				"Query \t Execution time (ms) \t Max. Diff. with value (ms) \t Nb Executed Query \t Counting time (ms) \\t Max. Diff. with value (ms)");
+				"Query \t Nb Executed Query \t Total time (ms) \t Query Execution time (ms)");
 		System.out.println("------------------------------------");
 
 		for (int k = 0; k < algoName.length; k++) {

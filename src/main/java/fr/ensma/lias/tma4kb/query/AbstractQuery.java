@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fr.ensma.lias.tma4kb.query.AbstractSession.Counters;
 import fr.ensma.lias.tma4kb.query.algorithms.Algorithm;
 import fr.ensma.lias.tma4kb.query.algorithms.Baseline;
 
@@ -298,7 +299,10 @@ public abstract class AbstractQuery implements Query {
 				executedQueries.put(this, 1);
 				return 1;
 			}
+			long time1 = System.currentTimeMillis();
 			decomposeCP();
+			long time2 = System.currentTimeMillis();
+			s.addTimes(time2 - time1, Counters.decomposeCP);
 			if (decomp.size() == 1) {
 				val = nbResults(s, k);
 				executedQueries.put(this, val);
