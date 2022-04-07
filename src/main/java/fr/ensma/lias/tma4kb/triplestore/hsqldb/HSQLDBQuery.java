@@ -23,9 +23,9 @@ public class HSQLDBQuery extends AbstractQuery {
 	public int nbResults(Session session, int k) {
 		try {
 			Statement stmt = ((HSQLDBSession) session).getConnection().createStatement();
-			long time = System.currentTimeMillis();
+			long time = System.nanoTime();
 			ResultSet rset = stmt.executeQuery(toNativeQuery());
-			long end = System.currentTimeMillis();
+			long end = System.nanoTime();
 			float tps = ((float) (end - time));
 			int i = 0;
 			session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);

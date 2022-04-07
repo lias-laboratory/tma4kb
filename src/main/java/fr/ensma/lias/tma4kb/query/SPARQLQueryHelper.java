@@ -34,7 +34,7 @@ public abstract class SPARQLQueryHelper implements QueryHelper {
 	@Override
 	public int executeQuery(Session session, int k) {
 		int i = 0;
-		long time = System.currentTimeMillis();
+		long time = System.nanoTime();
 		switch (method) {
 		case all:
 			try {
@@ -72,7 +72,7 @@ public abstract class SPARQLQueryHelper implements QueryHelper {
 			}
 			break;
 		}
-		long end = System.currentTimeMillis();
+		long end = System.nanoTime();
 		float tps = ((float) (end - time));
 		session.setExecutedQueryCount(session.getExecutedQueryCount() + 1);
 		session.setCountQueryTime(session.getCountQueryTime() + tps);

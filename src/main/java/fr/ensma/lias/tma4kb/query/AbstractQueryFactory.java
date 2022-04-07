@@ -12,7 +12,7 @@ import fr.ensma.lias.tma4kb.query.algorithms.Algorithm;
 public abstract class AbstractQueryFactory implements QueryFactory {
 
 	public enum ChoiceOfTpst {
-		jena, fuseki, virtuoso;
+		jena, fuseki, virtuoso,url;
 	
 	}
 

@@ -64,7 +64,7 @@ public class ComputeCardinalitiesConfig {
 		br.close();
 		bw.close();
 		long end = System.currentTimeMillis();
-		System.out.println(end - time);
+		//System.out.println(end - time);
 		InputStream input = new FileInputStream(OUTPUT_FILE);
 		properties.load(input);
 		input.close();

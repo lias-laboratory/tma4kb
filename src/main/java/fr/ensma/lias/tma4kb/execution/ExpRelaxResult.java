@@ -109,7 +109,7 @@ public class ExpRelaxResult {
 	}
 	
 	public float[] getAvgTimes(Query q) {
-		float[] times = new float[10];
+		float[] times = new float[9];
 		QueryResult[] results = resultsByQuery.get(q);
 		for (int i=0; i<times.length;i++)
 			times[i]=0;

@@ -43,6 +43,13 @@ public class ClientQueryFactory extends AbstractQueryFactory {
 			return null;
 		}
 	}
+	
+	public Session createSession(String url) {
+		SPARQLEndpointClient virtuoso = new SPARQLEndpointClient.Builder().url(url)
+				.outputFormat(OutputFormat.TAB_SEPARATED).build();
+
+		return new SPARQLEndpointSession(virtuoso);
+	}
 
 	@Override
 	public Session createSession() {

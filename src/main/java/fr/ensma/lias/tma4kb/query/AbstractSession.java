@@ -12,15 +12,14 @@ public abstract class AbstractSession implements Session {
 	
 	public enum Counters {
 		initialisation(0), 
-		parentsFIS(1), 
+		makeLattice(1),
 		computeCard(2),
 		getSuperQueries(3), 
-		isFailing(4), 
+		parentsFIS(4), 
 		decomposeCP(5), 
 		updateFIS(6), 
 		nextQueries(7), 
-		varProp(8), 
-		cardProp(9);
+		properties(8);
 
 	     private int code;
 

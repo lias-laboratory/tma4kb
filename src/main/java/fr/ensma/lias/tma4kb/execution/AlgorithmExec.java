@@ -8,11 +8,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.ensma.lias.tma4kb.cardinalities.ComputeCardinalitiesConfig;
+import fr.ensma.lias.tma4kb.exception.NotYetImplementedException;
 import fr.ensma.lias.tma4kb.query.AbstractQueryFactory.ChoiceOfTpst;
 import fr.ensma.lias.tma4kb.query.Query;
 import fr.ensma.lias.tma4kb.query.QueryFactory;
@@ -40,6 +43,8 @@ public class AlgorithmExec {
 
 	private String file_queries;
 
+	private String initialQuery;
+	
 	private String file_card;
 
 	private String file_local;
@@ -55,6 +60,9 @@ public class AlgorithmExec {
 	private QueryMethod qMethod;
 
 	private AlgoChoice[] algoName;
+	
+	private String url;
+	private String output;
 	
 	private ComputeCardinalitiesConfig card_global;
 	private ComputeCardinalitiesConfig card_local;
@@ -73,7 +81,9 @@ public class AlgorithmExec {
 		case virtuoso:
 			factory = new ClientQueryFactory(qMethod);
 			break;
-
+		case url:
+			factory = new ClientQueryFactory(qMethod);
+			break;
 		}
 	}
 
@@ -91,6 +101,20 @@ public class AlgorithmExec {
 		setUp();
 	}
 
+	public AlgorithmExec(int numberExecution, String query, String cardinalitiesFile, int k, AlgoChoice[] algorithm,
+			String outputFile, String endpoint) {
+		nb_exec = numberExecution;
+		initialQuery = query;
+		file_card = cardinalitiesFile;
+		kValue = k;
+		qMethod = QueryMethod.countlimit;
+		algoName = algorithm;
+		tripsto = ChoiceOfTpst.url;
+		url=endpoint;
+		output=outputFile;
+		setUp();
+	}
+
 	public void createSessionHere(QueryFactory factory) {
 		switch (tripsto) {
 		case jena:
@@ -100,6 +124,66 @@ public class AlgorithmExec {
 		case virtuoso:
 			session = ((ClientQueryFactory) factory).createSession(tripsto);
 			break;
+		case url:
+			session = ((ClientQueryFactory) factory).createSession(url);
+			break;
+		}
+	}
+	
+	public void shinyExec() throws Exception {
+		Query q = factory.createQuery(initialQuery);
+		Map <AlgoChoice, ShinyResult> results = new HashMap<AlgoChoice, ShinyResult>();
+		long time=0;
+		long end=0;
+		for (int j = 0; j < algoName.length; j++) {
+			switch (algoName[j]) {
+			case full:
+				card_global=new ComputeCardinalitiesConfig(file_card);
+				card_global.importSource();
+				break;
+			default:
+				break;
+			}
+			for (int k=0;k<=nb_exec;k++) {
+				createSessionHere(factory);
+				switch (algoName[j]) {
+				case bfs:
+					q = factory.createQuery(q.toString(), new BFS());
+					break;
+				case var:
+					q = factory.createQuery(q.toString(), new Var());
+					break;
+				case full:
+					q = factory.createQuery(q.toString(), new Full(card_global));
+					break;
+				default:
+					break;
+				}
+				time = System.currentTimeMillis();
+				q.runAlgo(session, kValue);
+				end = System.currentTimeMillis();
+				Integer nbExecutedQuery = session.getExecutedQueryCount();
+				if (k==0) {
+					results.put(algoName[j], new ShinyResult(algoName[j],q.getAllMFIS(),q.getAllXSS(),nbExecutedQuery));
+				}
+				else {
+					if (!q.getAllMFIS().containsAll(results.get(algoName[j]).getMFIS()) | !results.get(algoName[j]).getMFIS().containsAll(q.getAllMFIS())|
+						!q.getAllMFIS().containsAll(results.get(algoName[j]).getMFIS()) | !results.get(algoName[j]).getMFIS().containsAll(q.getAllMFIS())|
+						!nbExecutedQuery.equals(results.get(algoName[j]).getNb())) {
+						throw new NotYetImplementedException();
+					}
+				}
+				
+				float[] timer = session.getTimes();
+				Integer[] times = new Integer[5];
+				times[0]=(int) (timer[1]/1000);
+				times[1]=(int) ((timer[3]+timer[4])/1000);
+				times[2]=(int) (session.getCountQueryTime()/1000);
+				times[3]=(int) timer[8]/1000;
+				times[4]=(int) (end-time)/1000;
+				results.get(algoName[j]).addTimes(times);
+			}
+			results.get(algoName[j]).save(output);
 		}
 	}
 
@@ -163,6 +247,12 @@ public class AlgorithmExec {
 							System.out.println("Base - Time = " + tps + "("+queryCountTime+")"+ "ms, NbQueriesExecuted: " + nbExecutedQuery );
 									//+ " queryCountTime: " + queryCountTime);
 						}
+						System.out.println("MFIS");
+						for (Query q : q0.getAllMFIS())
+							System.out.println(q);
+						System.out.println("XSS");
+						for (Query q : q0.getAllXSS())
+							System.out.println(q);
 					}
 					break;
 
