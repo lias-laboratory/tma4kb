@@ -69,7 +69,7 @@ public class AlgorithmExec {
 	private ComputeCardinalitiesConfig card_cs;
 
 	public enum AlgoChoice {
-		base, bfs, var, full, local, cs, any;
+		Base, BFS, Var, Full, Local, CS, Any;
 	}
 
 	public void setUp() {
@@ -137,7 +137,7 @@ public class AlgorithmExec {
 		long end=0;
 		for (int j = 0; j < algoName.length; j++) {
 			switch (algoName[j]) {
-			case full:
+			case Full:
 				card_global=new ComputeCardinalitiesConfig(file_card);
 				card_global.importSource();
 				break;
@@ -147,13 +147,13 @@ public class AlgorithmExec {
 			for (int k=0;k<=nb_exec;k++) {
 				createSessionHere(factory);
 				switch (algoName[j]) {
-				case bfs:
+				case BFS:
 					q = factory.createQuery(q.toString(), new BFS());
 					break;
-				case var:
+				case Var:
 					q = factory.createQuery(q.toString(), new Var());
 					break;
-				case full:
+				case Full:
 					q = factory.createQuery(q.toString(), new Full(card_global));
 					break;
 				default:
@@ -164,7 +164,7 @@ public class AlgorithmExec {
 				end = System.currentTimeMillis();
 				Integer nbExecutedQuery = session.getExecutedQueryCount();
 				if (k==0) {
-					results.put(algoName[j], new ShinyResult(algoName[j],q.getAllMFIS(),q.getAllXSS(),nbExecutedQuery));
+					results.put(algoName[j], new ShinyResult(algoName[j],q.getAllMFIS(),q.getAllXSS(),nbExecutedQuery,kValue));
 				}
 				else {
 					if (!q.getAllMFIS().containsAll(results.get(algoName[j]).getMFIS()) | !results.get(algoName[j]).getMFIS().containsAll(q.getAllMFIS())|
@@ -200,16 +200,16 @@ public class AlgorithmExec {
 		long end=0;
 		for (int j = 0; j < algoName.length; j++) {
 			switch (algoName[j]) {
-			case full:
-			case any:
+			case Full:
+			case Any:
 				card_global=new ComputeCardinalitiesConfig(file_card);
 				card_global.importSource();
 				break;
-			case local:
+			case Local:
 				card_local=new ComputeCardinalitiesConfig(file_local);
 				card_local.importSource();
 				break;
-			case cs:
+			case CS:
 				card_cs=new ComputeCardinalitiesConfig(file_cs);
 				card_cs.makeCS();
 				break;
@@ -220,7 +220,7 @@ public class AlgorithmExec {
 			QueryExplain qExplain = newTestResultPairList.get(i);
 			String description = qExplain.getDescription();
 				switch (algoName[j]) {
-				case base:
+				case Base:
 					/**/
 
 					// *********************** Base******************************
@@ -256,7 +256,7 @@ public class AlgorithmExec {
 					}
 					break;
 
-				case bfs:
+				case BFS:
 					/**/
 
 					// *********************** BFS******************************
@@ -287,7 +287,7 @@ public class AlgorithmExec {
 					}
 					break;
 
-				case var:
+				case Var:
 					/**/
 
 					// ******************* var ********************
@@ -316,7 +316,7 @@ public class AlgorithmExec {
 					}
 					break;
 
-				case full:
+				case Full:
 					/**/
 
 					// ******************* full ********************
@@ -347,7 +347,7 @@ public class AlgorithmExec {
 						}
 					}
 					break;
-				case any:
+				case Any:
 					/**/
 
 					// ******************* any ********************
@@ -377,7 +377,7 @@ public class AlgorithmExec {
 						}
 					}
 					break;
-				case local:
+				case Local:
 						/**/
 
 						// ******************* local ********************
@@ -407,7 +407,7 @@ public class AlgorithmExec {
 							}
 						}
 						break;
-					case cs:
+					case CS:
 						/**/
 
 						// ******************* full ********************
@@ -443,25 +443,25 @@ public class AlgorithmExec {
 			System.out.println("------------------------------------");
 			for (int l = 0; l < algoName.length; l++) {
 				switch (algoName[l]) {
-				case base:
+				case Base:
 					System.out.print(resultsBase.toString());
 					break;
-				case bfs:
+				case BFS:
 					System.out.print(resultsBFS.toString());
 					break;
-				case var:
+				case Var:
 					System.out.print(resultsVar.toString());
 					break;
-				case full:
+				case Full:
 					System.out.print(resultsFull.toString());
 					break;
-				case any:
+				case Any:
 					System.out.print(resultsAny.toString());
 					break;
-				case local:
+				case Local:
 					System.out.print(resultsLoc.toString());
 					break;
-				case cs:
+				case CS:
 					System.out.print(resultsCS.toString());
 					break;
 				}
@@ -474,43 +474,43 @@ public class AlgorithmExec {
 
 		for (int k = 0; k < algoName.length; k++) {
 			switch (algoName[k]) {
-			case base:
+			case Base:
 				System.out.println("---------- BILAN BASE------------------");
 				System.out.println(resultsBase.toString());
 				System.out.println("------------------------------------");
 				resultsBase.toFile("exp-" + tripsto.toString() + "-base-K" + kValue + ".csv");
 				break;
-			case bfs:
+			case BFS:
 				System.out.println("---------- BILAN BFS------------------");
 				System.out.println(resultsBFS.toString());
 				System.out.println("------------------------------------");
 				resultsBFS.toFile("exp-" + tripsto.toString() + "-bfs-K" + kValue + ".csv");
 				break;
-			case var:
+			case Var:
 				System.out.println("---------- BILAN VAR ------------------");
 				System.out.println(resultsVar.toString());
 				System.out.println("------------------------------------");
 				resultsVar.toFile("exp-" + tripsto.toString() + "-var-K" + kValue + ".csv");
 				break;
-			case full:
+			case Full:
 				System.out.println("---------- BILAN FULL ------------------");
 				System.out.println(resultsFull.toString());
 				System.out.println("------------------------------------");
 				resultsFull.toFile("exp-" + tripsto.toString() + "-full-K" + kValue + ".csv");
 				break;
-			case any:
+			case Any:
 				System.out.println("---------- BILAN ANY------------------");
 				System.out.println(resultsAny.toString());
 				System.out.println("------------------------------------");
 				resultsAny.toFile("exp-" + tripsto.toString() + "-any-K" + kValue + ".csv");
 				break;
-			case local:
+			case Local:
 				System.out.println("---------- BILAN LOCAL ------------------");
 				System.out.println(resultsLoc.toString());
 				System.out.println("------------------------------------");
 				resultsLoc.toFile("exp-" + tripsto.toString() + "-loc-K" + kValue + ".csv");
 				break;
-			case cs:
+			case CS:
 				System.out.println("---------- BILAN CS ------------------");
 				System.out.println(resultsCS.toString());
 				System.out.println("------------------------------------");

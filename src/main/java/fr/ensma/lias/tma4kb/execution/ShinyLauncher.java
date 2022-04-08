@@ -28,11 +28,10 @@ public class ShinyLauncher implements Runnable {
 		int k;
 
 		@Option(names = { "-a",
-				"--algos" }, split = ",", defaultValue = "base,var,full", description = "The algorithm to run: ${COMPLETION-CANDIDATES}")
+				"--algos" }, split = ",", defaultValue = "Base,Var,Full", description = "The algorithm to run: ${COMPLETION-CANDIDATES}")
 		AlgoChoice[] algorithm;
 
 		@Option(names = { "-c", "--cards" }, description = "The file which contains the dataset cardinalities.")
-		// TODO
 		String cardinalities;
 		
 		@Option(names = { "-o",

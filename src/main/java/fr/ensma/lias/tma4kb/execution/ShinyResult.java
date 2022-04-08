@@ -13,17 +13,19 @@ import fr.ensma.lias.tma4kb.query.Query;
 
 public class ShinyResult {
 	private AlgoChoice algo;
+	private int limit;
 	private Set<Query> xss = new HashSet<Query>();
 	private Set<Query> mfis = new HashSet<Query>();
 	
 	private Integer nbExec;
 	private List<Integer[]> times = new ArrayList<Integer[]>();
 	
-	public ShinyResult(AlgoChoice algorithm, Set<Query> m, Set<Query> x, Integer nb) {
+	public ShinyResult(AlgoChoice algorithm, Set<Query> m, Set<Query> x, Integer nb, int K) {
 		algo=algorithm;
 		mfis=m;
 		xss=x;
 		nbExec=nb;
+		limit=K+1;
 	}
 	
 	public void addTimes(Integer[] t) {
@@ -51,19 +53,27 @@ public class ShinyResult {
 		String sep = "  ";
 		try {
 			fichier = new BufferedWriter(new FileWriter(file,true));
-			fichier.write(sep+sep+"- algo: "+algo+"\n"+sep+sep +sep+"xss:\n");
-			for (Query q : xss) {
-				fichier.write(sep+sep+sep+sep+"- " +q+"\n");
+			fichier.write(sep+sep+"- algo: "+algo+"\n"+sep+sep +sep+"xss:");
+			if (xss.isEmpty()) {
+				fichier.write(" []");
 			}
-			fichier.write(sep+sep+sep+"mfis:\n");
+			fichier.write("\n");
+			for (Query q : xss) {
+				fichier.write(sep+sep+sep+sep+"- " +q+" limit "+limit+"\n");
+			}
+			fichier.write(sep+sep+sep+"mfis:");
+			if (mfis.isEmpty()) {
+				fichier.write(" []");
+			}
+			fichier.write("\n");
 			for (Query q : mfis) {
-				fichier.write(sep+sep+sep+sep+"- " +q+"\n");
+				fichier.write(sep+sep+sep+sep+"- " +q+" limit "+limit+"\n");
 			}
 			fichier.write(sep+sep+sep+"nbr: "+nbExec+"\n"+sep+sep+sep+"stats:\n");
 			for (Integer i=0;i<times.size();i++) {
 				fichier.write(sep+sep+sep+sep+"- iteration: "+ i+"\n");
 				fichier.write(sep+sep+sep+sep+sep+"exec_time_lattice: "+ times.get(i)[0]+"\n");
-				fichier.write(sep+sep+sep+sep+sep+"xec_time_pfis: "+ times.get(i)[1]+"\n");
+				fichier.write(sep+sep+sep+sep+sep+"exec_time_pfis: "+ times.get(i)[1]+"\n");
 				fichier.write(sep+sep+sep+sep+sep+"exec_time_queries: "+ times.get(i)[2]+"\n");
 				fichier.write(sep+sep+sep+sep+sep+"exec_time_properties: "+ times.get(i)[3]+"\n");
 			}
