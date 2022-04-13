@@ -144,7 +144,7 @@ public class AlgorithmExec {
 			default:
 				break;
 			}
-			for (int k=0;k<=nb_exec;k++) {
+			for (int k=0;k<nb_exec;k++) {
 				createSessionHere(factory);
 				switch (algoName[j]) {
 				case BFS:

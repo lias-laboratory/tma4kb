@@ -59,7 +59,7 @@ public class ShinyResult {
 			}
 			fichier.write("\n");
 			for (Query q : xss) {
-				fichier.write(sep+sep+sep+sep+"- " +q.toString().toLowerCase()+" limit "+limit+"\n");
+				fichier.write(sep+sep+sep+sep+"- " +q+"\n");
 			}
 			fichier.write(sep+sep+sep+"mfis:");
 			if (mfis.isEmpty()) {
@@ -67,7 +67,7 @@ public class ShinyResult {
 			}
 			fichier.write("\n");
 			for (Query q : mfis) {
-				fichier.write(sep+sep+sep+sep+"- " +q.toString().toLowerCase()+" limit "+limit+"\n");
+				fichier.write(sep+sep+sep+sep+"- " +q+"\n");
 			}
 			fichier.write(sep+sep+sep+"nbr: "+nbExec+"\n"+sep+sep+sep+"stats:\n");
 			for (Integer i=0;i<times.size();i++) {
