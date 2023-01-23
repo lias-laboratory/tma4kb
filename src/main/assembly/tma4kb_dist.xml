@@ -17,7 +17,7 @@
 			<destName>${artifactId}.${packaging}</destName>
 		</file>
 		<file>
-			<source>${project.basedir}/src/main/license/lgpl.txt</source>
+			<source>${project.basedir}/LICENSE</source>
 		</file>
 		<file>
 			<source>${project.basedir}/README.md</source>
