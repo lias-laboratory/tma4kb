@@ -232,7 +232,7 @@ When using the WatDiv dataset, the query file is available at samples/queriesWat
 
 Details the license agreement of TMA4KB: [LICENCE](LICENCE)
 
-## Historic Contributors (core developers first and alphabetical order)
+## Historic Contributors (core developers first followed by alphabetical order)
 
 * [Louise PARKIN (core developer)](https://www.lias-lab.fr/members/louiseparkin/)
 * [Mickael BARON](https://www.lias-lab.fr/members/mickaelbaron/)
