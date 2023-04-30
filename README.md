@@ -230,7 +230,7 @@ When using the WatDiv dataset, the query file is available at samples/queriesWat
 
 ## Software licence agreement
 
-Details the license agreement of TMA4KB: [LICENCE](LICENCE)
+Details the license agreement of TMA4KB: [LICENSE](LICENSE)
 
 ## Historic Contributors (core developers first followed by alphabetical order)
 
