@@ -228,7 +228,7 @@ When using the DBpedia dataset, the query file is available at samples/queriesDB
 
 When using the WatDiv dataset, the query file is available at samples/queriesWatDiv, the cardinalities file at samples/cardWatDiv and the characteristic sets at samples/CSWatDiv
 
-## Software licence agreement
+## Software license agreement
 
 Details the license agreement of TMA4KB: [LICENSE](LICENSE)
 
